@@ -18,6 +18,34 @@ export default function ModalChangePassword({ show, handleClose, email }) {
       toast.error("Mật khẩu mới và xác nhận mật khẩu không khớp!");
       return;
     }
+  try {
+      setLoading(true);
+      const response = await fetch("http://localhost:9999/api/change-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify({ email, oldPassword, newPassword }),
+      });
+
+      const data = await response.json();
+      setLoading(false);
+
+      if (response.ok) {
+        toast.success("Mật khẩu đã được cập nhật!");
+        handleClose();
+        setOldPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+      } else {
+        toast.error(data.message || "Đổi mật khẩu thất bại!");
+      }
+    } catch (error) {
+      setLoading(false);
+      console.error("Lỗi khi đổi mật khẩu:", error);
+      toast.error("Có lỗi xảy ra, vui lòng thử lại!");
+    }
   };
   const handleCloseModal = () => {
     setOldPassword("");
