@@ -24,13 +24,29 @@ function Header() {
     };
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("accountDetail");
-    setToken(null);
-    setAccountDetail(null);
-    navigate("/login");
+  const handleLogout = async () => {
+    const refreshToken = localStorage.getItem("refreshToken");
+    try {
+      if (refreshToken) {
+        await fetch("/api/authen/logout", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ refreshToken }),
+        });
+      }
+    } catch (error) {
+      // Có thể log lỗi hoặc xử lý thêm nếu cần
+      console.error("Logout failed:", error);
+    } finally {
+      localStorage.removeItem("token");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("accountDetail");
+      setToken(null);
+      setAccountDetail(null);
+      navigate("/login");
+    }
   };
 
   const navItems =
@@ -41,8 +57,8 @@ function Header() {
     accountDetail?.role === "ADMIN"
       ? ["admin"]
       : accountDetail?.role === "STAFF"
-      ? ["staff-order"]
-      : ["home", "menu", "introduction", "blogs"];
+        ? ["staff-order"]
+        : ["home", "menu", "introduction", "blogs"];
 
   const location = useLocation();
 
@@ -57,8 +73,8 @@ function Header() {
               accountDetail?.role === "ADMIN"
                 ? "/admin"
                 : accountDetail?.role === "STAFF"
-                ? "/staff-order"
-                : "/"
+                  ? "/staff-order"
+                  : "/"
             }
           >
             <img
@@ -88,11 +104,10 @@ function Header() {
               {navItems.map((item, index) => (
                 <li className="nav-item" key={index}>
                   <Link
-                    className={`nav-link fw-semibold text-dark position-relative ${
-                      location.pathname === `/${navItemLinks[index]}`
+                    className={`nav-link fw-semibold text-dark position-relative ${location.pathname === `/${navItemLinks[index]}`
                         ? "active"
                         : ""
-                    }`}
+                      }`}
                     to={`/${navItemLinks[index]}`}
                   >
                     {item}
