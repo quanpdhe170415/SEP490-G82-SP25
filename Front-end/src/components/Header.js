@@ -47,9 +47,10 @@ function Header() {
       setAccountDetail(null);
       navigate("/login");
     }
+
   };
 
-  const navItems =
+const navItems =
     accountDetail?.role === "ADMIN" || accountDetail?.role === "STAFF"
       ? ["DASHBOARD"]
       : ["TRANG CHỦ", "MENU", "GIỚI THIỆU", "TIN TỨC"];
@@ -57,8 +58,9 @@ function Header() {
     accountDetail?.role === "ADMIN"
       ? ["admin"]
       : accountDetail?.role === "STAFF"
-        ? ["staff-order"]
-        : ["home", "menu", "introduction", "blogs"];
+      ? ["staff-order"]
+      : ["home", "menu", "introduction", "blogs"];
+
 
   const location = useLocation();
 
@@ -73,8 +75,8 @@ function Header() {
               accountDetail?.role === "ADMIN"
                 ? "/admin"
                 : accountDetail?.role === "STAFF"
-                  ? "/staff-order"
-                  : "/"
+                ? "/staff-order"
+                : "/"
             }
           >
             <img
@@ -104,10 +106,11 @@ function Header() {
               {navItems.map((item, index) => (
                 <li className="nav-item" key={index}>
                   <Link
-                    className={`nav-link fw-semibold text-dark position-relative ${location.pathname === `/${navItemLinks[index]}`
+                    className={`nav-link fw-semibold text-dark position-relative ${
+                      location.pathname === `/${navItemLinks[index]}`
                         ? "active"
                         : ""
-                      }`}
+                    }`}
                     to={`/${navItemLinks[index]}`}
                   >
                     {item}
