@@ -24,16 +24,33 @@ function Header() {
     };
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("accountDetail");
-    setToken(null);
-    setAccountDetail(null);
-    navigate("/login");
+  const handleLogout = async () => {
+    const refreshToken = localStorage.getItem("refreshToken");
+    try {
+      if (refreshToken) {
+        await fetch("/api/authen/logout", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ refreshToken }),
+        });
+      }
+    } catch (error) {
+      // Có thể log lỗi hoặc xử lý thêm nếu cần
+      console.error("Logout failed:", error);
+    } finally {
+      localStorage.removeItem("token");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("accountDetail");
+      setToken(null);
+      setAccountDetail(null);
+      navigate("/login");
+    }
+
   };
 
-  const navItems =
+const navItems =
     accountDetail?.role === "ADMIN" || accountDetail?.role === "STAFF"
       ? ["DASHBOARD"]
       : ["TRANG CHỦ", "MENU", "GIỚI THIỆU", "TIN TỨC"];
@@ -43,6 +60,7 @@ function Header() {
       : accountDetail?.role === "STAFF"
       ? ["staff-order"]
       : ["home", "menu", "introduction", "blogs"];
+
 
   const location = useLocation();
 
