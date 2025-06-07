@@ -5,6 +5,7 @@ const goodsSchema = new mongoose.Schema({
     productCode: { type: String, required: true },                       // Mã hàng hóa 
     name: { type: String, required: true },
     description: { type: String },
+    image: { type: String },                                         
     physicalAtributes: {
         weight: { type: Number },
         //thêm các thuộc tính mở rộng khác nếu cần                            
