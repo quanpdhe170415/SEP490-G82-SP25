@@ -40,10 +40,11 @@ public class MyNotificationListener extends NotificationListenerService {
 
                 // Trích xuất số tiền
                 String amount = extractAmount(message);
-                if (amount != null) {
-                    String speakText = "Bạn đã nhận được " + amount + " đồng";
-                    speakOut(speakText);
-                }
+                //TODO: Uncomment the next line to enable speech output
+                // if (amount != null) {
+                //     String speakText = "Bạn đã nhận được " + amount + " đồng";
+                //     speakOut(speakText);
+                // }
             }
         }
     }
