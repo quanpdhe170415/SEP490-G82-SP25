@@ -14,6 +14,7 @@ const db = {
 db.connectDB = async () => {
   try {
     const mongoURI = process.env.MONGODB_URL;
+    console.log(`Connecting to MongoDB at ${mongoURI}`);
     
     await mongoose.connect(mongoURI);
     
