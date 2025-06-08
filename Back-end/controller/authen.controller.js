@@ -7,13 +7,17 @@ exports.resetPassword = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const account = await Account.findOne({ user_name: email });
+    // Tìm tài khoản dựa trên email
+    const account = await Account.findOne({ email });
     if (!account) {
       return res.status(404).json({ message: "Email không tồn tại trong hệ thống!" });
     }
 
+    // Tạo salt và hash mật khẩu mới
     const salt = await bcrypt.genSalt(10);
     account.password = await bcrypt.hash(password, salt);
+
+    // Lưu thay đổi
     await account.save();
 
     res.status(200).json({ message: "Đổi mật khẩu thành công." });
