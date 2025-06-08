@@ -1,0 +1,44 @@
+
+const {Bill} = require('../models');
+
+//Check bill status for Bank Transfer payment
+exports.isBillPaid = async (req, res) => {
+    try {
+        const { bill_id } = req.params;
+
+        if (!bill_id) {
+            return res.status(400).json({
+                success: false,
+                message: 'Bill ID is required'
+            });
+        }
+
+        const bill = await Bill.findOne({ 
+            bill_id: bill_id,
+            paymentMethod: 'transfer' 
+        });
+
+        if (!bill) {
+            return res.status(404).json({
+                success: false,
+                message: 'Bill not found or not a Bank Transfer payment'
+            });
+        }
+
+        const isPaid = bill.payment_status === 'Paid';
+
+        return res.status(200).json({
+            success: true,
+            bill_id: bill.bill_id,
+            is_paid: isPaid
+        });
+
+    } catch (error) {
+        console.error('Error checking if bill is paid:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error'
+        });
+    }
+};
+
