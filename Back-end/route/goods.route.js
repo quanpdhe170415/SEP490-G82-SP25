@@ -3,6 +3,6 @@ const router = express.Router();
 const controller = require('../controller/index');
 
 //Searching goods
-router.get('/search', controller.goodsController.filterByPriceRange);
+router.get('/search', controller.goodsController.searchText);
 
 module.exports = router;

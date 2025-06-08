@@ -25,7 +25,8 @@ const goodsSchema = new mongoose.Schema({
     },
     category: {
         type: mongoose.Schema.Types.ObjectId, ref: 'Category'
-    }
+    },
+    isActive: { type: Boolean, default: true }, 
 });
 
 const Goods = mongoose.model('Goods', goodsSchema);
