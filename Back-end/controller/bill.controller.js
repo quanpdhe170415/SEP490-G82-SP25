@@ -4,7 +4,7 @@ const {Bill} = require('../models');
 //Check bill status for Bank Transfer payment
 exports.isBillPaid = async (req, res) => {
     try {
-        const { bill_id } = req.params;
+        const { bill_id } = req.body;
 
         if (!bill_id) {
             return res.status(400).json({
@@ -25,7 +25,7 @@ exports.isBillPaid = async (req, res) => {
             });
         }
 
-        const isPaid = bill.payment_status === 'Paid';
+        const isPaid = bill.payment_status === 'paid';
 
         return res.status(200).json({
             success: true,
