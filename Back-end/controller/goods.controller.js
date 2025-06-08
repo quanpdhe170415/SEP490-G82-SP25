@@ -1,17 +1,28 @@
 const Goods = require('../models/goods');
 
 // Searching function
-exports.searchGoodsByText = async (req, res) => {
-    const { searchText } = req.body;
+exports.searchGoods = async (req, res) => {
+    const { searchQuery } = req.body;
+
+    if (!searchQuery) {
+        return res.status(400).json({ message: 'Vui lòng cung cấp từ khóa tìm kiếm.' });
+    }
+
     try {
+        // Tìm kiếm đồng thời trên name, barcode và productCode
         const goods = await Goods.find({
-            name: { $regex: searchText, $options: 'i' } //$regex tìm kiếm name chuỗi gần giống với searchText
+            $or: [
+                { name: { $regex: searchQuery, $options: 'i' } },
+                { barcode: { $regex: searchQuery, $options: 'i' } },
+                { productCode: { $regex: searchQuery, $options: 'i' } }
+            ]
         }).populate('category').populate('price').populate('consignment');
+
         if (goods.length === 0) {
-            return res.status(404).json({ message: 'Không tìm thấy hàng hóa với mã barcode này.' });
+            return res.status(404).json({ message: 'Không tìm thấy hàng hóa phù hợp.' });
         }
 
-        //Lọc ra những thông tin cần thiết ở mặt hàng
+        // Lọc ra những thông tin cần thiết
         const filteredGoods = goods.map(item => ({
             barcode: item.barcode,
             productCode: item.productCode,
@@ -20,76 +31,17 @@ exports.searchGoodsByText = async (req, res) => {
             image: item.image,
             physicalAtributes: item.physicalAtributes,
             unit: item.unit,
-            price: item.price?.retailPrice, // Assuming price is an object with necessary details
+            retailPrice: item.price?.retailPrice,
             status: item.status,
-            category: item.category ? item.category.name : null // Assuming category has a name field
+            category: item.category ? item.category.name : null
         }));
+
         res.status(200).json(filteredGoods);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Lỗi khi tìm kiếm hàng hóa.' });
+        res.status(500).json({ message: `Lỗi khi tìm kiếm hàng hóa. ${error.message}` });
     }
-}
-
-exports.searchGoodsByBarcode = async (req, res) => {
-    const { barcode } = req.body;
-    try {
-        const goods = await Goods.find({
-            barcode: { $regex: barcode, $options: 'i' } //$regex tìm kiếm barcode chuỗi gần giống với barcode
-        }).populate('category').populate('price').populate('consignment');
-        if (goods.length === 0) {
-            return res.status(404).json({ message: 'Không tìm thấy hàng hóa với mã barcode này.' });
-        }
-
-        //Lọc ra những thông tin cần thiết ở mặt hàng
-        const filteredGoods = goods.map(item => ({
-            barcode: item.barcode,
-            productCode: item.productCode,
-            name: item.name,
-            description: item.description,
-            image: item.image,
-            physicalAtributes: item.physicalAtributes,
-            unit: item.unit,
-            retailPrice: item.price?.retailPrice, // Assuming price is an object with necessary details
-            status: item.status,
-            category: item.category ? item.category.name : null // Assuming category has a name field
-        }));
-        res.status(200).json(filteredGoods);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Lỗi khi tìm kiếm hàng hóa.' });
-    }
-}
-
-exports.searchGoodsByProductCode = async (req, res) => {
-    const { productCode } = req.body;
-    try {
-        const goods = await Goods.find({
-            productCode: { $regex: productCode, $options: 'i' } //$regex tìm kiếm productCode chuỗi gần giống với productCode
-        }).populate('category').populate('price').populate('consignment');
-        if (goods.length === 0) {
-            return res.status(404).json({ message: 'Không tìm thấy hàng hóa với mã productCode này.' });
-        }
-
-        //Lọc ra những thông tin cần thiết ở mặt hàng
-        const filteredGoods = goods.map(item => ({
-            barcode: item.barcode,
-            productCode: item.productCode,
-            name: item.name,
-            description: item.description,
-            image: item.image,
-            physicalAtributes: item.physicalAtributes,
-            unit: item.unit,
-            price: item.price?.retailPrice, // Assuming price is an object with necessary details
-            status: item.status,
-            category: item.category ? item.category.name : null // Assuming category has a name field
-        }));
-        res.status(200).json(filteredGoods);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Lỗi khi tìm kiếm hàng hóa.' });
-    }
-}
+};
 
 
 //Filter goods
@@ -99,12 +51,12 @@ exports.filterByCategory = async (req, res) => {
     const { categoryId } = req.body;
 
     try {
-        const goods = await Goods.find({ category: categoryId })
+        const goods = await Goods.find({
+            category: categoryId
+        })
             .populate('category', 'name')
             .populate('price')
-            .populate('consignment')
-            .limit(limit * 1)
-            .skip((page - 1) * limit);
+            .populate('consignment');
 
         if (goods.length === 0) {
             return res.status(404).json({ message: 'Không tìm thấy hàng hóa trong danh mục này.' });
@@ -118,9 +70,9 @@ exports.filterByCategory = async (req, res) => {
             image: item.image,
             physicalAtributes: item.physicalAtributes,
             unit: item.unit,
-            price: item.price?.retailPrice, // Assuming price is an object with necessary details
+            price: item.price?.retailPrice, 
             status: item.status,
-            category: item.category ? item.category.name : null // Assuming category has a name field
+            category: item.category ? item.category.name : null 
         }));
         res.status(200).json(filteredGoods);
     } catch (error) {
@@ -152,9 +104,9 @@ exports.filterByStatus = async (req, res) => {
             image: item.image,
             physicalAtributes: item.physicalAtributes,
             unit: item.unit,
-            price: item.price?.retailPrice, // Assuming price is an object with necessary details
+            price: item.price?.retailPrice, 
             status: item.status,
-            category: item.category ? item.category.name : null // Assuming category has a name field
+            category: item.category ? item.category.name : null 
         }));
         res.status(200).json(filteredGoods);
     } catch (error) {
@@ -213,7 +165,7 @@ exports.filterGoodsByPriceRange = async (req, res) => {
         const goods = await Goods.aggregate(pipeline);
 
         if (goods.length === 0) {
-            return res.status(404).json({ message: 'Không tìm thấy hàng hóa trong khoảng giá này.' });
+            return res.status(404).json({ message: 'Không tìm thấy mặt hàng trong khoảng giá này.' });
         }
 
         // Format dữ liệu cho aggregate result
