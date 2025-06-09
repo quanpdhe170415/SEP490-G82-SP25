@@ -14,10 +14,10 @@ exports.isBillPaid = async (req, res) => {
         }
 
         const bill = await Bill.findOne({ 
-            bill_id: bill_id,
-            paymentMethod: 'transfer' 
+            _id: bill_id,
+            payment_method: 'transfer' 
         });
-
+        
         if (!bill) {
             return res.status(404).json({
                 success: false,
@@ -29,7 +29,7 @@ exports.isBillPaid = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            bill_id: bill.bill_id,
+            bill_id: bill._id,
             is_paid: isPaid
         });
 

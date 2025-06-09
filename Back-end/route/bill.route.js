@@ -1,6 +1,6 @@
 const Router = require('express').Router();
 const { billController } = require('../controller');
 
-Router.get('/bills/status', billController.isBillPaid);
+Router.get('/checkStatus', billController.isBillPaid);
 
 module.exports = Router;

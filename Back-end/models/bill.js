@@ -2,9 +2,9 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const BillSchema = new Schema({
-    bill_id: { type: String, required: true, unique: true },
+    bill_detail_id: { type: Schema.Types.ObjectId, ref: 'BillDetail', required: true },
     total_amount: { type: Number, required: true },
-    paymentMethod: {
+    payment_method: {
         type: String,
         enum: ['cash', 'transfer'],
         default: 'cash'
@@ -13,9 +13,9 @@ const BillSchema = new Schema({
         type: String,
         enum: ['paid', 'unpaid', 'pending'],
         default: 'unpaid'
-    },
-    created_at: { type: Date, default: Date.now },
-    updated_at: { type: Date, default: Date.now }
+    }
+},{
+    timestamps: true
 });
 
 const Bill = mongoose.model('Bill', BillSchema);
