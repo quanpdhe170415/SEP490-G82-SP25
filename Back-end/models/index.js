@@ -3,12 +3,17 @@ require('dotenv').config();
 
 const Account = require('./account');
 const Role = require('./role');
-
+const Bill = require('./bill');
+const BillStatus = require('./billStatus');
+const BillDetail = require('./billDetail');
 mongoose.Promise = global.Promise;
 
 const db = {
   Account,
-  Role
+  Role,
+  Bill,
+  BillStatus,
+  BillDetail
 };
 
 db.connectDB = async () => {
