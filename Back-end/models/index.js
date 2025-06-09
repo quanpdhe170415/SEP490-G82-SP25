@@ -3,8 +3,9 @@ require('dotenv').config();
 
 const Account = require('./account');
 const Role = require('./role');
-const Consignment = require('./consignment');
-const Price = require('./price');
+const ImportBatch = require('./import_batch');
+const ImportDetail = require('./import_detail');
+const PriceHistory = require('./price_history');
 const Goods = require('./goods');
 const Category = require('./category');
 
@@ -13,11 +14,13 @@ mongoose.Promise = global.Promise;
 const db = {
   Account,
   Role,
-  Consignment,
-  Price,
+  ImportBatch,
+  ImportDetail,
+  PriceHistory,
   Goods,
   Category
 };
+  
 
 db.connectDB = async () => {
   try {

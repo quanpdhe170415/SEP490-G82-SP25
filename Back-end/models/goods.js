@@ -1,32 +1,61 @@
 const mongoose = require('mongoose');
 
 const goodsSchema = new mongoose.Schema({
-    barcode: { type: String, unique: true, required: true },      // Mã định danh barcode
-    productCode: { type: String, required: true },                       // Mã hàng hóa 
-    name: { type: String, required: true },
-    description: { type: String },
-    image: { type: String },                                         
-    physicalAtributes: {
-        weight: { type: Number },
-        //thêm các thuộc tính mở rộng khác nếu cần                            
-    },
-    consignment: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Consignment'
+    goods_name: {
+        type: String,
+        required: true
     }, 
-    unit: { type: String },                                      
-    price: {
+    barcode: {
+        type: String,
+        required: true,
+        unique: true
+    },
+    unit_of_measure: {
+        type: String,
+        required: true
+    },
+    description: {
+        type: String,
+        required: false
+    },
+    category_id:{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Price'
-    },                                                  // Giá thành (tham chiếu bảng giá)
-    status: {
-        type: String, enum: ['in_stock', 'out_of_stock', 'low_stock'],
-        default: 'in_stock'
+        ref: 'Category',
+        required: false
     },
-    category: {
-        type: mongoose.Schema.Types.ObjectId, ref: 'Category'
+    selling_price: {
+        type: Number,
+        required: true
     },
-    isActive: { type: Boolean, default: true }, 
+    average_import_price: {
+        type: Number,
+        required: true
+    },
+    last_import_price: {
+        type: Number,
+        required: true
+    },
+    last_import_date:{
+        type: Date,
+        required: true
+    },
+    stock_quantity: {
+        type: Number,
+        required: true,
+        default: 0
+    },
+    minimum_stock_quantity: {
+        type: Number,
+        required: true,
+        default: 0
+    },
+    is_active: {
+        type: Boolean,
+        required: true,
+        default: true
+    },
+},{
+    timestamps: true,
 });
 
 const Goods = mongoose.model('Goods', goodsSchema);

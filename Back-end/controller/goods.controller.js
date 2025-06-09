@@ -9,14 +9,13 @@ exports.searchGoods = async (req, res) => {
     }
 
     try {
-        // Tìm kiếm đồng thời trên name, barcode và productCode
+        // Tìm kiếm đồng thời trên goods_name và barcode
         const goods = await Goods.find({
             $or: [
-                { name: { $regex: searchQuery, $options: 'i' } },
-                { barcode: { $regex: searchQuery, $options: 'i' } },
-                { productCode: { $regex: searchQuery, $options: 'i' } }
+                { goods_name: { $regex: searchQuery, $options: 'i' } },
+                { barcode: { $regex: searchQuery, $options: 'i' } }
             ]
-        }).populate('category').populate('price').populate('consignment');
+        }).populate('category_id');
 
         if (goods.length === 0) {
             return res.status(404).json({ message: 'Không tìm thấy hàng hóa phù hợp.' });
@@ -25,15 +24,16 @@ exports.searchGoods = async (req, res) => {
         // Lọc ra những thông tin cần thiết
         const filteredGoods = goods.map(item => ({
             barcode: item.barcode,
-            productCode: item.productCode,
-            name: item.name,
+            goods_name: item.goods_name,
             description: item.description,
-            image: item.image,
-            physicalAtributes: item.physicalAtributes,
-            unit: item.unit,
-            retailPrice: item.price?.retailPrice,
-            status: item.status,
-            category: item.category ? item.category.name : null
+            unit_of_measure: item.unit_of_measure,
+            selling_price: item.selling_price,
+            average_import_price: item.average_import_price,
+            last_import_price: item.last_import_price,
+            stock_quantity: item.stock_quantity,
+            minimum_stock_quantity: item.minimum_stock_quantity,
+            is_active: item.is_active,
+            category: item.category_id ? item.category_id.name : null
         }));
 
         res.status(200).json(filteredGoods);
@@ -43,20 +43,14 @@ exports.searchGoods = async (req, res) => {
     }
 };
 
-
-//Filter goods
-
 // Lọc theo danh mục
 exports.filterByCategory = async (req, res) => {
     const { categoryId } = req.body;
 
     try {
         const goods = await Goods.find({
-            category: categoryId
-        })
-            .populate('category', 'name')
-            .populate('price')
-            .populate('consignment');
+            category_id: categoryId
+        }).populate('category_id', 'name');
 
         if (goods.length === 0) {
             return res.status(404).json({ message: 'Không tìm thấy hàng hóa trong danh mục này.' });
@@ -64,16 +58,18 @@ exports.filterByCategory = async (req, res) => {
 
         const filteredGoods = goods.map(item => ({
             barcode: item.barcode,
-            productCode: item.productCode,
-            name: item.name,
+            goods_name: item.goods_name,
             description: item.description,
-            image: item.image,
-            physicalAtributes: item.physicalAtributes,
-            unit: item.unit,
-            price: item.price?.retailPrice, 
-            status: item.status,
-            category: item.category ? item.category.name : null 
+            unit_of_measure: item.unit_of_measure,
+            selling_price: item.selling_price,
+            average_import_price: item.average_import_price,
+            last_import_price: item.last_import_price,
+            stock_quantity: item.stock_quantity,
+            minimum_stock_quantity: item.minimum_stock_quantity,
+            is_active: item.is_active,
+            category: item.category_id ? item.category_id.name : null 
         }));
+        
         res.status(200).json(filteredGoods);
     } catch (error) {
         console.error(error);
@@ -81,16 +77,13 @@ exports.filterByCategory = async (req, res) => {
     }
 }
 
-// Lọc theo trạng thái
+// Lọc theo trạng thái hoạt động
 exports.filterByStatus = async (req, res) => {
-    const { status } = req.body;
-
+    const { is_active } = req.body;
 
     try {
-        const goods = await Goods.find({ status })
-            .populate('category', 'name')
-            .populate('price')
-            .populate('consignment')
+        const goods = await Goods.find({ is_active })
+            .populate('category_id', 'name');
 
         if (goods.length === 0) {
             return res.status(404).json({ message: 'Không tìm thấy hàng hóa với trạng thái này.' });
@@ -98,16 +91,18 @@ exports.filterByStatus = async (req, res) => {
 
         const filteredGoods = goods.map(item => ({
             barcode: item.barcode,
-            productCode: item.productCode,
-            name: item.name,
+            goods_name: item.goods_name,
             description: item.description,
-            image: item.image,
-            physicalAtributes: item.physicalAtributes,
-            unit: item.unit,
-            price: item.price?.retailPrice, 
-            status: item.status,
-            category: item.category ? item.category.name : null 
+            unit_of_measure: item.unit_of_measure,
+            selling_price: item.selling_price,
+            average_import_price: item.average_import_price,
+            last_import_price: item.last_import_price,
+            stock_quantity: item.stock_quantity,
+            minimum_stock_quantity: item.minimum_stock_quantity,
+            is_active: item.is_active,
+            category: item.category_id ? item.category_id.name : null 
         }));
+        
         res.status(200).json(filteredGoods);
     } catch (error) {
         console.error(error);
@@ -115,7 +110,7 @@ exports.filterByStatus = async (req, res) => {
     }
 }
 
-// Lọc theo khoảng giá
+// Lọc theo khoảng giá bán
 exports.filterGoodsByPriceRange = async (req, res) => {
     let { minPrice, maxPrice } = req.body;
     minPrice = parseFloat(minPrice);
@@ -127,59 +122,29 @@ exports.filterGoodsByPriceRange = async (req, res) => {
     }
 
     try {
-        const pipeline = [
-            {
-                $lookup: {
-                    from: 'prices',
-                    localField: 'price',
-                    foreignField: '_id',
-                    as: 'priceInfo'
-                }
-            },
-            {
-                $match: {
-                    'priceInfo.retailPrice': {
-                        $gte: minPrice,
-                        $lte: maxPrice
-                    }
-                }
-            },
-            {
-                $lookup: {
-                    from: 'categories',
-                    localField: 'category',
-                    foreignField: '_id',
-                    as: 'categoryInfo'
-                }
-            },
-            {
-                $lookup: {
-                    from: 'consignments',
-                    localField: 'consignment',
-                    foreignField: '_id',
-                    as: 'consignmentInfo'
-                }
+        const goods = await Goods.find({
+            selling_price: {
+                $gte: minPrice,
+                $lte: maxPrice
             }
-        ];
-
-        const goods = await Goods.aggregate(pipeline);
+        }).populate('category_id', 'name');
 
         if (goods.length === 0) {
             return res.status(404).json({ message: 'Không tìm thấy mặt hàng trong khoảng giá này.' });
         }
 
-        // Format dữ liệu cho aggregate result
         const filteredGoods = goods.map(item => ({
             barcode: item.barcode,
-            productCode: item.productCode,
-            name: item.name,
+            goods_name: item.goods_name,
             description: item.description,
-            image: item.image,
-            physicalAtributes: item.physicalAtributes,
-            unit: item.unit,
-            retailPrice: item.priceInfo[0]?.retailPrice,
-            status: item.status,
-            category: item.categoryInfo[0]?.name || null
+            unit_of_measure: item.unit_of_measure,
+            selling_price: item.selling_price,
+            average_import_price: item.average_import_price,
+            last_import_price: item.last_import_price,
+            stock_quantity: item.stock_quantity,
+            minimum_stock_quantity: item.minimum_stock_quantity,
+            is_active: item.is_active,
+            category: item.category_id ? item.category_id.name : null
         }));
 
         res.status(200).json(filteredGoods);
