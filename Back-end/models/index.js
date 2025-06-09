@@ -3,25 +3,21 @@ require('dotenv').config();
 
 const Account = require('./account');
 const Role = require('./role');
+const Good = require('./goods');
+const ImportBatch = require('./import_batch');
+const ImportDetail = require('./import_detail');
+const Permission = require('./permission');
+const Category = require('./category');
 
 mongoose.Promise = global.Promise;
 
 const db = {
   Account,
-  Role
+  Role,
+  Good,
+  ImportBatch,
+  ImportDetail,
+  Permission,
+  Category
 };
 
-db.connectDB = async () => {
-  try {
-    const mongoURI = process.env.MONGODB_URL;
-    
-    await mongoose.connect(mongoURI);
-    
-  } catch (err) {
-    console.error('Error connecting to MongoDB:', err.message);
-    process.exit(1);
-  }
-};
-
-
-module.exports = db;
