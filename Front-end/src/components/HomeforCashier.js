@@ -11,20 +11,38 @@ import 'react-toastify/dist/ReactToastify.css';
 const HomeForCashier = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedType, setSelectedType] = useState(null); // State để lưu loại sản phẩm được chọn
   const [products, setProducts] = useState([
     { id: 1, name: 'Nước', price: 20000, image: waterImg, type: 'Drink' },
     { id: 2, name: 'Bánh', price: 15000, image: breadImg, type: 'Snack' },
     { id: 3, name: 'Kẹo', price: 10000, image: candyImg, type: 'Snack' },
   ]);
+  const [originalProducts] = useState([...products]); // Lưu bản gốc của products
   const [invoices, setInvoices] = useState([{ id: 1, cart: [], total: 0 }]); // Danh sách hóa đơn
   const [selectedInvoice, setSelectedInvoice] = useState(1); // Hóa đơn đang chọn
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
-    const filteredProducts = products.filter(product =>
-      product.name.toLowerCase().includes(e.target.value.toLowerCase())
-    );
-    setProducts(filteredProducts);
+    filterProducts(e.target.value, selectedType);
+  };
+
+  const filterProducts = (searchTerm, type) => {
+    let filtered = [...originalProducts]; // Sử dụng bản gốc để lọc lại
+    if (searchTerm) {
+      filtered = filtered.filter(product =>
+        product.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    if (type) {
+      filtered = filtered.filter(product => product.type === type);
+    }
+    setProducts(filtered);
+  };
+
+  const handleTypeFilter = (type) => {
+    const newSelectedType = type === selectedType ? null : type; // Bỏ chọn nếu nhấn lại cùng type
+    setSelectedType(newSelectedType);
+    filterProducts(searchTerm, newSelectedType);
   };
 
   const addToCart = (product, invoiceId) => {
@@ -112,8 +130,9 @@ const HomeForCashier = () => {
       return updatedInvoices.map((inv, index) => ({ ...inv, id: index + 1 }));
     });
     setSelectedInvoice(prev => {
-      const newInvoices = invoices.filter(i => i.id !== invoiceId);
-      return newInvoices.length > 0 ? newInvoices[0].id : 1;
+      const newInvoices = invoices.filter(i => i.id !== invoiceId).sort((a, b) => a.id - b.id);
+      const nextInvoiceId = newInvoices.find(i => i.id > invoiceId)?.id -1|| newInvoices[0]?.id -1|| 1;
+      return nextInvoiceId;
     });
     setTimeout(() => navigate('/homecashier'), 2000);
   };
@@ -127,8 +146,9 @@ const HomeForCashier = () => {
       return updatedInvoices.map((inv, index) => ({ ...inv, id: index + 1 }));
     });
     setSelectedInvoice(prev => {
-      const newInvoices = invoices.filter(i => i.id !== invoiceId);
-      return newInvoices.length > 0 ? newInvoices[0].id : 1;
+      const newInvoices = invoices.filter(i => i.id !== invoiceId).sort((a, b) => a.id - b.id);
+      const nextInvoiceId = newInvoices.find(i => i.id > invoiceId)?.id -1|| newInvoices[0]?.id -1|| 1;
+      return nextInvoiceId;
     });
   };
 
@@ -182,9 +202,21 @@ const HomeForCashier = () => {
               onChange={handleSearch}
               style={{ width: '100%' }}
             />
-            <span className="position-absolute top-50 end-0 translate-middle-y pe-2">893001234</span>
           </div>
-          <h6 className="text-center mb-3">Sản phẩm đang search</h6>
+          <div className="mb-3">
+            <button
+              className={`btn btn-sm me-2 ${selectedType === 'Drink' ? 'btn-primary' : 'btn-outline-secondary'}`}
+              onClick={() => handleTypeFilter('Drink')}
+            >
+              Drink
+            </button>
+            <button
+              className={`btn btn-sm ${selectedType === 'Snack' ? 'btn-primary' : 'btn-outline-secondary'}`}
+              onClick={() => handleTypeFilter('Snack')}
+            >
+              Snack
+            </button>
+          </div>
           <div className="d-flex flex-wrap gap-2">
             {products.map((product) => (
               <div key={product.id} className="card" style={{ width: '150px', border: '1px solid #ccc' }}>
@@ -247,7 +279,7 @@ const HomeForCashier = () => {
                 </table>
                 <div className="mt-3">
                   <div className="d-flex justify-content-end">
-                    <strong>Thanh tiền:  </strong>
+                    <strong>Thanh tiền: </strong>
                     <span>{invoice.total.toLocaleString()} VNĐ</span>
                   </div>
                   <div className="d-flex justify-content-end mt-1">
