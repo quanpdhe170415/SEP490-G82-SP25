@@ -15,8 +15,11 @@ const ForgotPassword = () => {
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [otp, setOtp] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [showOtpScreen, setShowOtpScreen] = useState(false);
+  const [showPasswordScreen, setShowPasswordScreen] = useState(false);
   const [generatedOtp, setGeneratedOtp] = useState('');
 
   const handleSubmitUsername = () => {
@@ -25,14 +28,12 @@ const ForgotPassword = () => {
       return;
     }
 
-    // Kiểm tra xem tên đăng nhập có tồn tại trong mảng users
     const foundUser = users.find((user) => user.username === username);
     if (foundUser) {
-      // Tạo mã OTP ngẫu nhiên (6 chữ số)
       const newOtp = Math.floor(100000 + Math.random() * 900000).toString();
       setGeneratedOtp(newOtp);
-      console.log('Mã OTP:', newOtp); // Hiển thị OTP trong console
-      setShowOtpScreen(true); // Chuyển sang màn hình nhập OTP
+      console.log('Mã OTP:', newOtp);
+      setShowOtpScreen(true);
       setError('');
     } else {
       setError('Tên đăng nhập không tồn tại');
@@ -45,23 +46,45 @@ const ForgotPassword = () => {
       return;
     }
 
-    // Kiểm tra mã OTP
     if (otp === generatedOtp) {
-      toast.success('Xác minh OTP thành công! Vui lòng đặt lại mật khẩu.', {
-        position: 'top-right',
-        autoClose: 2000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: false,
-        draggable: false,
-        progress: undefined,
-      });
-      setTimeout(() => {
-        navigate('/login'); // Chuyển hướng về trang đăng nhập
-      }, 2000);
+      setShowOtpScreen(false);
+      setShowPasswordScreen(true);
+      setError('');
     } else {
       setError('Mã OTP không đúng');
     }
+  };
+
+  const handleSubmitPassword = () => {
+    if (!newPassword || !confirmPassword) {
+      setError('Vui lòng nhập đầy đủ mật khẩu');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setError('Mật khẩu xác nhận không khớp');
+      return;
+    }
+
+    // Simulate updating password (in real app, call API to update password)
+    const userIndex = users.findIndex((user) => user.username === username);
+    if (userIndex !== -1) {
+      users[userIndex].password = newPassword; // Update password in array (for demo)
+    }
+
+    toast.success('Đổi mật khẩu thành công!', {
+      position: 'top-right',
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: false,
+      draggable: false,
+      progress: undefined,
+    });
+
+    setTimeout(() => {
+      navigate('/login');
+    }, 2000);
   };
 
   return (
@@ -81,7 +104,7 @@ const ForgotPassword = () => {
         </div>
 
         <h6 className="text-center mb-3">Quên Mật Khẩu</h6>
-        {!showOtpScreen ? (
+        {!showOtpScreen && !showPasswordScreen ? (
           <>
             <p className="text-center mb-4" style={{ fontSize: '14px' }}>
               Nhập tên đăng nhập để hệ thống gửi mã OTP về quản lý cửa hàng
@@ -102,7 +125,7 @@ const ForgotPassword = () => {
               </button>
             </div>
           </>
-        ) : (
+        ) : showOtpScreen ? (
           <>
             <p className="text-center mb-4" style={{ fontSize: '14px' }}>
               Nhập mã OTP đã được gửi đến quản lý cửa hàng
@@ -120,6 +143,36 @@ const ForgotPassword = () => {
             <div className="d-grid mb-3">
               <button className="btn btn-primary w-100" onClick={handleSubmitOtp}>
                 Xác Minh OTP
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="text-center mb-4" style={{ fontSize: '14px' }}>
+              Nhập mật khẩu mới và xác nhận mật khẩu
+            </p>
+            <div className="mb-3">
+              <input
+                type="password"
+                className="form-control"
+                placeholder="Mật khẩu mới"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+            </div>
+            <div className="mb-3">
+              <input
+                type="password"
+                className="form-control"
+                placeholder="Xác nhận mật khẩu"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+            </div>
+            {error && <div className="alert alert-danger py-1">{error}</div>}
+            <div className="d-grid mb-3">
+              <button className="btn btn-primary w-100" onClick={handleSubmitPassword}>
+                Đổi Mật Khẩu
               </button>
             </div>
           </>
