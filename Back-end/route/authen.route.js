@@ -7,9 +7,9 @@ const controller = require('../controller/index');
 // router.post('/google-login', controller.authenController.googleLogin);
 // router.post("/register", controller.authenController.register);
 // router.get("/verify-email", controller.authenController.verifyEmail);
-// router.post('/reset-password', controller.authenController.resetPassword);
+router.post('/reset-password', controller.authenController.resetPassword);
 // router.post('/change-password', controller.authenController.changePassword);
-
+router.get('/products-for-retail', controller.productController.getProductsForRetail);
 // router.post('/logout', controller.authenController.logout);
 
 // các route liên quan đến otp

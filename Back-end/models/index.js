@@ -8,6 +8,7 @@ const ImportBatch = require('./import_batch');
 const ImportDetail = require('./import_detail');
 const Permission = require('./permission');
 const Category = require('./category');
+const Stockmovement = require('./stockmovement');
 
 mongoose.Promise = global.Promise;
 
@@ -18,6 +19,7 @@ const db = {
   ImportBatch,
   ImportDetail,
   Permission,
-  Category
+  Category,
+  Stockmovement
 };
 
