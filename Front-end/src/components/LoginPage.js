@@ -1,8 +1,34 @@
-import React from 'react';
-import background from '../assets/background.jpg';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import background from '../assets/bg.jpg';
 import logo from '../assets/logo.png';
 
+const users = [
+  { username: 'admin', password: '123456' },
+  { username: 'staff', password: 'staff123' },
+  { username: 'guest', password: 'guest' },
+];
+
 const LoginPage = () => {
+  const navigate = useNavigate();
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+
+  const handleLogin = () => {
+    const foundUser = users.find(
+      (user) => user.username === username && user.password === password
+    );
+
+    if (foundUser) {
+      // Đăng nhập thành công
+      navigate('/home');
+    } else {
+      // Sai thông tin
+      setError('Tên đăng nhập hoặc mật khẩu không đúng');
+    }
+  };
+
   return (
     <div
       className="d-flex flex-column justify-content-center align-items-center vh-100"
@@ -13,8 +39,9 @@ const LoginPage = () => {
       }}
     >
       <div className="card p-4 shadow" style={{ width: '360px', borderRadius: '12px' }}>
-        <div className="text-center mb-4">
+        <div className="text-center mb-4 d-flex align-items-center justify-content-center gap-2">
           <img src={logo} alt="Logo" style={{ height: '42px' }} />
+          <h5 className="m-0">Tạp Hóa Hải Chi</h5>
         </div>
 
         <div className="mb-3">
@@ -22,6 +49,8 @@ const LoginPage = () => {
             type="text"
             className="form-control"
             placeholder="Tên đăng nhập"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
           />
         </div>
         <div className="mb-3">
@@ -29,8 +58,12 @@ const LoginPage = () => {
             type="password"
             className="form-control"
             placeholder="Mật khẩu"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
           />
         </div>
+
+        {error && <div className="alert alert-danger py-1">{error}</div>}
 
         <div className="d-flex justify-content-between mb-3">
           <div className="form-check">
@@ -42,15 +75,11 @@ const LoginPage = () => {
           <a href="#" className="text-decoration-none">Quên mật khẩu?</a>
         </div>
 
-        <div className="d-flex gap-2">
-          <button className="btn btn-primary w-50">Đăng nhập</button>
-          <button className="btn btn-success w-50">Đăng ký</button>
+        <div className="d-grid">
+          <button className="btn btn-primary w-100" onClick={handleLogin}>
+            Đăng nhập
+          </button>
         </div>
-      </div>
-
-      <div className="text-white mt-4 d-flex gap-3 small">
-        <span>© 2025 KiotViet</span>
-        <span>Tiếng Việt</span>
       </div>
     </div>
   );
