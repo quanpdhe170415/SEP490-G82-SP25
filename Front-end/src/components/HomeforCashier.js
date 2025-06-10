@@ -16,8 +16,8 @@ const HomeForCashier = () => {
     { id: 2, name: 'Bánh', price: 15000, image: breadImg, type: 'Snack' },
     { id: 3, name: 'Kẹo', price: 10000, image: candyImg, type: 'Snack' },
   ]);
-  const [cart, setCart] = useState([]);
-  const [total, setTotal] = useState(0);
+  const [invoices, setInvoices] = useState([{ id: 1, cart: [], total: 0 }]); // Danh sách hóa đơn
+  const [selectedInvoice, setSelectedInvoice] = useState(1); // Hóa đơn đang chọn
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
@@ -27,17 +27,29 @@ const HomeForCashier = () => {
     setProducts(filteredProducts);
   };
 
-  const addToCart = (product) => {
-    const existingProduct = cart.find(item => item.id === product.id);
-    if (existingProduct) {
-      setCart(cart.map(item =>
-        item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
-      ));
-    } else {
-      setCart([...cart, { ...product, quantity: 1 }]);
-    }
-    setTotal(total + product.price);
-    toast.success(`${product.name} đã được thêm vào hóa đơn!`, {
+  const addToCart = (product, invoiceId) => {
+    setInvoices(invoices.map(invoice => {
+      if (invoice.id === invoiceId) {
+        const existingProduct = invoice.cart.find(item => item.id === product.id);
+        if (existingProduct) {
+          return {
+            ...invoice,
+            cart: invoice.cart.map(item =>
+              item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+            ),
+            total: invoice.total + product.price
+          };
+        } else {
+          return {
+            ...invoice,
+            cart: [...invoice.cart, { ...product, quantity: 1 }],
+            total: invoice.total + product.price
+          };
+        }
+      }
+      return invoice;
+    }));
+    toast.success(`${product.name} đã được thêm vào hóa đơn ${invoiceId}!`, {
       position: 'top-right',
       autoClose: 2000,
       hideProgressBar: false,
@@ -48,18 +60,29 @@ const HomeForCashier = () => {
     });
   };
 
-  const removeFromCart = (product) => {
-    const existingProduct = cart.find(item => item.id === product.id);
-    if (existingProduct.quantity > 1) {
-      setCart(cart.map(item =>
-        item.id === product.id ? { ...item, quantity: item.quantity - 1 } : item
-      ));
-      setTotal(total - product.price);
-    } else {
-      setCart(cart.filter(item => item.id !== product.id));
-      setTotal(total - product.price);
-    }
-    toast.info(`${product.name} đã được giảm số lượng!`, {
+  const removeFromCart = (product, invoiceId) => {
+    setInvoices(invoices.map(invoice => {
+      if (invoice.id === invoiceId) {
+        const existingProduct = invoice.cart.find(item => item.id === product.id);
+        if (existingProduct.quantity > 1) {
+          return {
+            ...invoice,
+            cart: invoice.cart.map(item =>
+              item.id === product.id ? { ...item, quantity: item.quantity - 1 } : item
+            ),
+            total: invoice.total - product.price
+          };
+        } else {
+          return {
+            ...invoice,
+            cart: invoice.cart.filter(item => item.id !== product.id),
+            total: invoice.total - product.price
+          };
+        }
+      }
+      return invoice;
+    }));
+    toast.info(`${product.name} đã được giảm số lượng trong hóa đơn ${invoiceId}!`, {
       position: 'top-right',
       autoClose: 2000,
       hideProgressBar: false,
@@ -70,8 +93,9 @@ const HomeForCashier = () => {
     });
   };
 
-  const handleCheckout = () => {
-    toast.success('Thanh toán thành công! Tổng tiền: ' + total.toLocaleString() + ' VNĐ', {
+  const handleCheckout = (invoiceId) => {
+    const invoice = invoices.find(i => i.id === invoiceId);
+    toast.success(`Thanh toán thành công cho hóa đơn ${invoiceId}! Tổng tiền: ${invoice.total.toLocaleString()} VNĐ`, {
       position: 'top-right',
       autoClose: 2000,
       hideProgressBar: false,
@@ -80,9 +104,38 @@ const HomeForCashier = () => {
       draggable: false,
       progress: undefined,
     });
-    setCart([]);
-    setTotal(0);
-    setTimeout(() => navigate('/'), 2000);
+    setInvoices(prevInvoices => {
+      const updatedInvoices = prevInvoices.filter(i => i.id !== invoiceId);
+      if (updatedInvoices.length === 0) {
+        return [{ id: 1, cart: [], total: 0 }];
+      }
+      return updatedInvoices.map((inv, index) => ({ ...inv, id: index + 1 }));
+    });
+    setSelectedInvoice(prev => {
+      const newInvoices = invoices.filter(i => i.id !== invoiceId);
+      return newInvoices.length > 0 ? newInvoices[0].id : 1;
+    });
+    setTimeout(() => navigate('/homecashier'), 2000);
+  };
+
+  const closeInvoice = (invoiceId) => {
+    setInvoices(prevInvoices => {
+      const updatedInvoices = prevInvoices.filter(i => i.id !== invoiceId);
+      if (updatedInvoices.length === 0) {
+        return [{ id: 1, cart: [], total: 0 }];
+      }
+      return updatedInvoices.map((inv, index) => ({ ...inv, id: index + 1 }));
+    });
+    setSelectedInvoice(prev => {
+      const newInvoices = invoices.filter(i => i.id !== invoiceId);
+      return newInvoices.length > 0 ? newInvoices[0].id : 1;
+    });
+  };
+
+  const addNewInvoice = () => {
+    const newInvoiceId = invoices.length + 1;
+    setInvoices([...invoices, { id: newInvoiceId, cart: [], total: 0 }]);
+    setSelectedInvoice(newInvoiceId);
   };
 
   const navigateToSection = (path) => {
@@ -118,7 +171,7 @@ const HomeForCashier = () => {
           </ul>
         </div>
 
-        {/* Products (4/10) with Search Bar */}
+        {/* Products (4.5/10) with Search Bar */}
         <div className="bg-white shadow-sm" style={{ width: '45%', padding: '10px', overflowY: 'auto' }}>
           <div className="mb-3 position-relative">
             <input
@@ -139,49 +192,71 @@ const HomeForCashier = () => {
                 <div className="card-body p-2 text-center">
                   <h6 className="card-title mb-1">{product.name}</h6>
                   <p className="card-text mb-1">Giá: {product.price.toLocaleString()} VNĐ</p>
-                  <button className="btn btn-primary btn-sm w-100" onClick={() => addToCart(product)}>Thêm</button>
+                  <button className="btn btn-primary btn-sm w-100" onClick={() => addToCart(product, selectedInvoice)}>Thêm</button>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Invoice (4/10) */}
+        {/* Invoice (4.5/10) */}
         <div className="bg-white shadow-sm" style={{ width: '45%', padding: '10px', overflowY: 'auto' }}>
-          <h6 className="text-center mb-3">Hóa đơn 1 +</h6>
-          {cart.length > 0 ? (
-            cart.map((item) => (
-              <div key={item.id} className="d-flex justify-content-between mb-2 align-items-center">
-                <span>{item.name}</span>
-                <div>
-                  <button className="btn btn-sm btn-secondary" onClick={() => removeFromCart(item)}>-</button>
-                  <span className="mx-2">{item.quantity}</span>
-                  <button className="btn btn-sm btn-secondary" onClick={() => addToCart(item)}>+</button>
-                  <span className="ms-2">{(item.price * item.quantity).toLocaleString()} VNĐ</span>
+          <div className="d-flex mb-2" style={{ overflowX: 'auto', whiteSpace: 'nowrap' }}>
+            {invoices.map((invoice) => (
+              <div key={invoice.id} className="d-inline-flex align-items-center me-2">
+                <button
+                  className={`btn btn-sm ${selectedInvoice === invoice.id ? 'btn-primary' : 'btn-outline-secondary'}`}
+                  onClick={() => setSelectedInvoice(invoice.id)}
+                >
+                  Hóa đơn {invoice.id} <span className="ms-1" style={{ cursor: 'pointer' }} onClick={(e) => { e.stopPropagation(); closeInvoice(invoice.id); }}>x</span>
+                </button>
+              </div>
+            ))}
+            <button className="btn btn-sm btn-outline-secondary" onClick={addNewInvoice}>+</button>
+          </div>
+          {invoices.map((invoice) => (
+            invoice.id === selectedInvoice && (
+              <div key={invoice.id}>
+                <table className="table table-bordered mt-2">
+                  <thead>
+                    <tr>
+                      <th>Tên sản phẩm</th>
+                      <th>Số lượng</th>
+                      <th>Giá</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {invoice.cart.length > 0 ? (
+                      invoice.cart.map((item) => (
+                        <tr key={item.id}>
+                          <td>{item.name}</td>
+                          <td>
+                            <button className="btn btn-sm btn-secondary" onClick={() => removeFromCart(item, invoice.id)}>-</button>
+                            <span className="mx-2">{item.quantity}</span>
+                            <button className="btn btn-sm btn-secondary" onClick={() => addToCart(item, invoice.id)}>+</button>
+                          </td>
+                          <td>{(item.price * item.quantity).toLocaleString()} VNĐ</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="3" className="text-center">Chưa có sản phẩm</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+                <div className="mt-3">
+                  <div className="d-flex justify-content-end">
+                    <strong>Thanh tiền:  </strong>
+                    <span>{invoice.total.toLocaleString()} VNĐ</span>
+                  </div>
+                  <div className="d-flex justify-content-end mt-1">
+                    <button className="btn btn-success btn-sm" onClick={() => handleCheckout(invoice.id)}>Thanh toán</button>
+                  </div>
                 </div>
               </div>
-            ))
-          ) : (
-            <p className="text-center">Chưa có sản phẩm</p>
-          )}
-          <hr />
-          <div className="d-flex justify-content-between">
-            <span>Giá gốc</span>
-            <span>{total.toLocaleString()} VNĐ</span>
-          </div>
-          <div className="d-flex justify-content-between">
-            <span>Giảm giá</span>
-            <span>5000 VNĐ <input type="checkbox" /> 0%</span>
-          </div>
-          <div className="d-flex justify-content-between">
-            <span>Giá cuối</span>
-            <span>{(total - 5000).toLocaleString()} VNĐ</span>
-          </div>
-          <div className="d-flex justify-content-between mt-3">
-            <span>Thanh tiền</span>
-            <span>{(total - 5000).toLocaleString()} VNĐ</span>
-          </div>
-          <button className="btn btn-success w-100 mt-3" onClick={handleCheckout}>Thanh toán</button>
+            )
+          ))}
         </div>
       </div>
     </div>
