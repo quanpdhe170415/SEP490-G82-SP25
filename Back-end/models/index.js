@@ -9,6 +9,8 @@ const ImportDetail = require('./import_detail');
 const Permission = require('./permission');
 const Category = require('./category');
 const Stockmovement = require('./stockmovement');
+const Shift = require('./shift');
+const CashDenomination = require('./cashdenomination');
 
 mongoose.Promise = global.Promise;
 
@@ -20,6 +22,8 @@ const db = {
   ImportDetail,
   Permission,
   Category,
-  Stockmovement
+  Stockmovement,
+  Shift,
+  CashDenomination,
 };
 
