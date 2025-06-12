@@ -1,6 +1,6 @@
 const authenController = require('./authen.controller');
-const productController = require('./product.controller');
+const shiftController = require('./shift.controller');
 module.exports = {
     authenController,
-    productController
+    shiftController
 };
