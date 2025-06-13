@@ -181,3 +181,172 @@ exports.getBillWithDetails = async (req, res) => {
     });
   }
 };
+
+
+
+// Search bills by billNumber, customerName, or customerPhone
+exports.searchBills = async (req, res) => {
+    const { searchQuery } = req.body;
+
+    if (!searchQuery) {
+        return res.status(400).json({ message: 'Vui lòng cung cấp từ khóa tìm kiếm.' });
+    }
+
+    try {
+        const bills = await Bill.find({
+            $or: [
+                { billNumber: { $regex: searchQuery, $options: 'i' } },
+                { customerName: { $regex: searchQuery, $options: 'i' } },
+                { customerPhone: { $regex: searchQuery, $options: 'i' } }
+            ]
+        }).populate('statusId', 'name color');
+
+        if (bills.length === 0) {
+            return res.status(404).json({ message: 'Không tìm thấy hóa đơn phù hợp.' });
+        }
+
+        const filteredBills = bills.map(bill => ({
+            billNumber: bill.billNumber,
+            customerId: bill.customerId,
+            customerName: bill.customerName,
+            customerPhone: bill.customerPhone,
+            totalAmount: bill.totalAmount,
+            discount: bill.discount,
+            finalAmount: bill.finalAmount,
+            status: bill.statusId ? { name: bill.statusId.name, color: bill.statusId.color } : null,
+            paymentMethod: bill.paymentMethod,
+            notes: bill.notes,
+            createdBy: bill.createdBy,
+            createdAt: bill.createdAt,
+            updatedAt: bill.updatedAt
+        }));
+
+        res.status(200).json(filteredBills);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: `Lỗi khi tìm kiếm hóa đơn: ${error.message}` });
+    }
+};
+
+// Filter bills by status
+exports.filterBillsByStatus = async (req, res) => {
+    const { statusId } = req.body;
+
+    if (!statusId) {
+        return res.status(400).json({ message: 'Vui lòng cung cấp ID trạng thái.' });
+    }
+
+    try {
+        const bills = await Bill.find({ statusId })
+            .populate('statusId', 'name color');
+
+        if (bills.length === 0) {
+            return res.status(404).json({ message: 'Không tìm thấy hóa đơn với trạng thái này.' });
+        }
+
+        const filteredBills = bills.map(bill => ({
+            billNumber: bill.billNumber,
+            customerId: bill.customerId,
+            customerName: bill.customerName,
+            customerPhone: bill.customerPhone,
+            totalAmount: bill.totalAmount,
+            discount: bill.discount,
+            finalAmount: bill.finalAmount,
+            status: bill.statusId ? { name: bill.statusId.name, color: bill.statusId.color } : null,
+            paymentMethod: bill.paymentMethod,
+            notes: bill.notes,
+            createdBy: bill.createdBy,
+            createdAt: bill.createdAt,
+            updatedAt: bill.updatedAt
+        }));
+
+        res.status(200).json(filteredBills);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: `Lỗi khi lọc hóa đơn theo trạng thái: ${error.message}` });
+    }
+};
+
+// Filter bills by payment method
+exports.filterBillsByPaymentMethod = async (req, res) => {
+    const { paymentMethod } = req.body;
+
+    if (!['cash', 'card', 'transfer', 'other'].includes(paymentMethod)) {
+        return res.status(400).json({ message: 'Phương thức thanh toán không hợp lệ.' });
+    }
+
+    try {
+        const bills = await Bill.find({ paymentMethod })
+            .populate('statusId', 'name color');
+
+        if (bills.length === 0) {
+            return res.status(404).json({ message: 'Không tìm thấy hóa đơn với phương thức thanh toán này.' });
+        }
+
+        const filteredBills = bills.map(bill => ({
+            billNumber: bill.billNumber,
+            customerId: bill.customerId,
+            customerName: bill.customerName,
+            customerPhone: bill.customerPhone,
+            totalAmount: bill.totalAmount,
+            discount: bill.discount,
+            finalAmount: bill.finalAmount,
+            status: bill.statusId ? { name: bill.statusId.name, color: bill.statusId.color } : null,
+            paymentMethod: bill.paymentMethod,
+            notes: bill.notes,
+            createdBy: bill.createdBy,
+            createdAt: bill.createdAt,
+            updatedAt: bill.updatedAt
+        }));
+
+        res.status(200).json(filteredBills);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: `Lỗi khi lọc hóa đơn theo phương thức thanh toán: ${error.message}` });
+    }
+};
+
+// Filter bills by final amount range
+exports.filterBillsByAmountRange = async (req, res) => {
+    let { minAmount, maxAmount } = req.body;
+    minAmount = parseFloat(minAmount);
+    maxAmount = parseFloat(maxAmount);
+
+    if (typeof minAmount !== 'number' || typeof maxAmount !== 'number' || minAmount < 0 || maxAmount < 0 || minAmount > maxAmount) {
+        return res.status(400).json({ message: 'Giá trị minAmount và maxAmount không hợp lệ.' });
+    }
+
+    try {
+        const bills = await Bill.find({
+            finalAmount: {
+                $gte: minAmount,
+                $lte: maxAmount
+            }
+        }).populate('statusId', 'name color');
+
+        if (bills.length === 0) {
+            return res.status(404).json({ message: 'Không tìm thấy hóa đơn trong khoảng giá này.' });
+        }
+
+        const filteredBills = bills.map(bill => ({
+            billNumber: bill.billNumber,
+            customerId: bill.customerId,
+            customerName: bill.customerName,
+            customerPhone: bill.customerPhone,
+            totalAmount: bill.totalAmount,
+            discount: bill.discount,
+            finalAmount: bill.finalAmount,
+            status: bill.statusId ? { name: bill.statusId.name, color: bill.statusId.color } : null,
+            paymentMethod: bill.paymentMethod,
+            notes: bill.notes,
+            createdBy: bill.createdBy,
+            createdAt: bill.createdAt,
+            updatedAt: bill.updatedAt
+        }));
+
+        res.status(200).json(filteredBills);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: `Lỗi khi lọc hóa đơn theo khoảng giá: ${error.message}` });
+    }
+};
