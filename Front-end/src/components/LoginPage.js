@@ -4,6 +4,7 @@ import background from '../assets/bg.jpg';
 import logo from '../assets/logo.png';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { v4 as uuidv4 } from 'uuid'; // Thêm thư viện để tạo UUID
 
 const users = [
   { username: 'admin', password: '123456' },
@@ -18,25 +19,59 @@ const LoginPage = () => {
   const [error, setError] = useState('');
   const [remember, setRemember] = useState(false);
 
+  // Hàm giả lập API để lấy Token và Refresh Token
+  const mockApiLogin = (username, password) => {
+    // Giả lập trả về Token và Refresh Token
+    if (username === 'admin' && password === '123456') {
+      return {
+        token: 'fakeToken123',
+        refreshToken: 'fakeRefreshToken123',
+      };
+    } else if (username === 'staff' && password === 'staff123') {
+      return {
+        token: 'fakeToken456',
+        refreshToken: 'fakeRefreshToken456',
+      };
+    }
+    return null; // Trả về null nếu không tìm thấy tài khoản
+  };
+
   const handleLogin = () => {
+    // Kiểm tra người dùng
     const foundUser = users.find(
       (user) => user.username === username && user.password === password
     );
 
     if (foundUser) {
-      localStorage.setItem('loginSuccess', 'true');
-      toast.success('Đăng nhập thành công!', {
-        position: 'top-right',
-        autoClose: 2000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: false,
-        draggable: false,
-        progress: undefined,
-      });
-      setTimeout(() => {
-        navigate('/home');
-      }, 1000); // Chờ cho toast hiển thị xong
+      // Lấy Token và Refresh Token từ API giả lập
+      const { token, refreshToken } = mockApiLogin(username, password);
+
+      if (token && refreshToken) {
+        // Tạo deviceId bằng UUID
+        const deviceId = uuidv4();
+
+        // Lưu thông tin vào localStorage
+        localStorage.setItem('loginSuccess', 'true');
+        localStorage.setItem('token', token);
+        localStorage.setItem('refreshToken', refreshToken);
+        localStorage.setItem('deviceId', deviceId);
+
+        toast.success('Đăng nhập thành công!', {
+          position: 'top-right',
+          autoClose: 2000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: false,
+          draggable: false,
+          progress: undefined,
+        });
+
+        setTimeout(() => {
+          navigate('/home');
+        }, 1000); // Chờ cho toast hiển thị xong
+      } else {
+        setError('Tên đăng nhập hoặc mật khẩu không đúng');
+      }
     } else {
       setError('Tên đăng nhập hoặc mật khẩu không đúng');
     }
