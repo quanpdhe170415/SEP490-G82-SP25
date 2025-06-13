@@ -1,37 +1,556 @@
-/* Điều chỉnh cho sidebar */
-.sidebar {
-  transition: transform 0.3s ease-in-out;
+/* ===============================================
+   BILL HISTORY PAGE - MODERN SCIENTIFIC DESIGN
+   Light Green Theme
+   =============================================== */
+
+/* Reset và Base Styles */
+* {
+  box-sizing: border-box;
 }
 
-.sidebar.collapsed {
-  transform: translateX(-100%);
+.bill-history-page {
+  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #f0f9f0 0%, #c8e6c9 100%);
+  min-height: 100vh;
+  color: #1b5e20;
 }
 
-/* Điều chỉnh cho ô tìm kiếm */
+/* ===============================================
+   MAIN CONTENT LAYOUT
+   =============================================== */
+
+.main-content {
+  padding: 0;
+  background-color: transparent;
+}
+
+.content-area {
+  padding: 2rem !important;
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  margin: 1rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.page-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #1b5e20;
+  margin-bottom: 2rem;
+  text-align: center;
+  position: relative;
+  letter-spacing: -0.02em;
+}
+
+.page-title::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 4px;
+  background: linear-gradient(90deg, #4caf50 0%, #66bb6a 100%);
+  border-radius: 2px;
+}
+
+/* ===============================================
+   SEARCH PANEL DESIGN
+   =============================================== */
+
 .search-panel {
-  transition: max-height 0.3s ease-in-out;
+  background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+  border: none;
+  border-radius: 16px;
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
-  max-height: 1000px; /* Đảm bảo có thể mở rộng đầy đủ */
+  position: sticky;
+  top: 20px;
 }
 
-.search-panel.collapsed {
-  max-height: 0;
+.search-panel .card-body {
+  padding: 1.75rem;
 }
 
-.toggle-search-btn {
+.search-panel h5 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1b5e20;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.search-panel h5::before {
+  content: '🔍';
+  font-size: 1.1rem;
+}
+
+/* Form Styling */
+.search-panel .form-group {
+  margin-bottom: 1.5rem;
+}
+
+.search-panel .form-label {
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.search-panel .form-control {
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+  background-color: #f8fafc;
+}
+
+.search-panel .form-control:focus {
+  border-color: #4caf50;
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+  background-color: #ffffff;
+  outline: none;
+}
+
+/* Checkbox Styling */
+.search-panel .form-check {
+  margin-bottom: 0.75rem;
+  padding-left: 0;
+}
+
+.search-panel .form-check-input {
+  width: 18px;
+  height: 18px;
+  margin-right: 0.75rem;
+  border: 2px solid #cbd5e0;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.search-panel .form-check-input:checked {
+  background-color: #4caf50;
+  border-color: #4caf50;
+  box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);
+}
+
+.search-panel .form-check-label {
+  font-size: 0.875rem;
+  color: #4a5568;
+  font-weight: 500;
   cursor: pointer;
-  color: #007bff;
-  font-weight: bold;
+  transition: color 0.2s ease;
 }
 
-/* Đảm bảo bảng hóa đơn có thể cuộn ngang trên màn hình nhỏ */
+.search-panel .form-check-input:checked + .form-check-label {
+  color: #2d3748;
+}
+
+/* ===============================================
+   TABLE DESIGN
+   =============================================== */
+
 .bill-table-wrapper {
-  overflow-x: auto;
+  background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  margin-top: 0;
 }
 
-/* Đảm bảo responsive cho trang */
-@media (max-width: 768px) {
-  .bill-table th, .bill-table td {
-    padding: 8px;
+.bill-table {
+  width: 100%;
+  margin-bottom: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.875rem;
+}
+
+.bill-table thead th {
+  background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+  color: #ffffff;
+  font-weight: 600;
+  padding: 1rem 1.25rem;
+  text-align: left;
+  border: none;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.bill-table thead th:first-child {
+  border-top-left-radius: 0;
+}
+
+.bill-table thead th:last-child {
+  border-top-right-radius: 0;
+}
+
+.bill-table tbody td {
+  padding: 1rem 1.25rem;
+  border: none;
+  border-bottom: 1px solid #e2e8f0;
+  background-color: #ffffff;
+  color: #2d3748;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.bill-table tbody tr {
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ===============================================
+   BILL SELECTION HIGHLIGHT
+   =============================================== */
+
+.bill-table tbody tr.selected {
+  background: linear-gradient(90deg, #c8e6c9 0%, #a5d6a7 100%) !important;
+  transform: translateX(6px);
+  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.3);
+  border-left: 4px solid #4caf50;
+  position: relative;
+}
+
+.bill-table tbody tr.selected::before {
+  content: '📋';
+  position: absolute;
+  left: -2px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.2rem;
+  z-index: 5;
+}
+
+.bill-table tbody tr.selected td {
+  color: #1b5e20;
+  font-weight: 600;
+  border-bottom-color: #81c784;
+}
+
+/* ===============================================
+   BILL DETAILS SECTION
+   =============================================== */
+
+.bill-details {
+  background: linear-gradient(145deg, #f8fafc 0%, #e2e8f0 100%);
+  border-radius: 12px;
+  padding: 2rem;
+  margin: 1rem 0;
+  border: 1px solid #e2e8f0;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+.bill-details h5 {
+  color: #1b5e20;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.bill-details h5::before {
+  content: '📄';
+  font-size: 1.1rem;
+}
+
+/* Bill Info Grid */
+.bill-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.info-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-value {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+/* Items Table in Details */
+.bill-details .table {
+  background-color: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  margin-bottom: 1.5rem;
+}
+
+.bill-details .table thead th {
+  background: linear-gradient(135deg, #388e3c 0%, #4caf50 100%);
+  color: #ffffff;
+  font-weight: 600;
+  padding: 0.875rem 1rem;
+  border: none;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.bill-details .table tbody td {
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid #f3f4f6;
+  color: #374151;
+  font-weight: 500;
+}
+
+.bill-details .table tbody tr:nth-child(even) {
+  background-color: #f9fafb;
+}
+
+/* ===============================================
+   TOTAL SUMMARY
+   =============================================== */
+
+.total-summary {
+  background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+  color: #ffffff;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
+  margin-top: 1.5rem;
+}
+
+.total-summary p {
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.25rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.total-summary p:last-child {
+  border-bottom: none;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-top: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+/* ===============================================
+   STATUS BADGES
+   =============================================== */
+
+.status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-completed {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.status-pending {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.status-cancelled {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+/* ===============================================
+   RESPONSIVE DESIGN
+   =============================================== */
+
+@media (max-width: 1200px) {
+  .content-area {
+    margin: 0.5rem;
+    padding: 1.5rem !important;
   }
+  
+  .page-title {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .content-area {
+    margin: 0.25rem;
+    padding: 1rem !important;
+    border-radius: 12px;
+  }
+  
+  .page-title {
+    font-size: 1.75rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .search-panel {
+    margin-bottom: 1.5rem;
+    position: static;
+  }
+  
+  .search-panel .card-body {
+    padding: 1.25rem;
+  }
+  
+  .bill-info {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    padding: 1rem;
+  }
+  
+  .bill-table thead th,
+  .bill-table tbody td {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.8rem;
+  }
+  
+  .bill-details {
+    padding: 1.25rem;
+  }
+  
+  .total-summary {
+    padding: 1rem;
+  }
+  
+  .total-summary p {
+    font-size: 0.8rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .bill-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .bill-table {
+    min-width: 600px;
+  }
+  
+  .bill-info {
+    padding: 0.75rem;
+  }
+  
+  .info-item {
+    padding: 0.5rem;
+    background-color: #f9fafb;
+    border-radius: 6px;
+  }
+}
+
+/* ===============================================
+   ANIMATIONS & TRANSITIONS
+   =============================================== */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.bill-details {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+.search-panel,
+.bill-table-wrapper {
+  animation: fadeInUp 0.4s ease-out;
+}
+
+/* ===============================================
+   SCROLLBAR STYLING
+   =============================================== */
+
+.bill-table-wrapper::-webkit-scrollbar {
+  height: 8px;
+}
+
+.bill-table-wrapper::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.bill-table-wrapper::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, #4caf50, #66bb6a);
+  border-radius: 4px;
+}
+
+
+/* ===============================================
+   PRINT STYLES
+   =============================================== */
+
+@media print {
+  .search-panel {
+    display: none;
+  }
+  
+  .bill-history-page {
+    background: white;
+  }
+  
+  .content-area {
+    box-shadow: none;
+    background: white;
+  }
+  
+  .bill-table thead th {
+    background: #f8fafc !important;
+    color: #2d3748 !important;
+  }
+}
+
+
+.selected-row {
+    background-color: #e3f2fd !important;
+    border-left: 4px solid #2196f3 !important;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+    font-weight: 500 !important;
 }
