@@ -4,25 +4,23 @@ const billDetailSchema = new mongoose.Schema({
   bill_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Bill',
-    required: true,
+
   },
   goods_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Goods',
-    required: true,
+
   },
   quantity: {
     type: Number,
-    required: true,
-    min: 1,
   },
   unit_price: {
     type: Number,
-    required: true,
+
   },
   total_amount: {
     type: Number,
-    required: true,
+
   },
   createdAt: {
     type: Date,

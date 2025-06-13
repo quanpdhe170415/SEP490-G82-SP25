@@ -16,7 +16,6 @@ const billSchema = new mongoose.Schema({
   },
   totalAmount: {
     type: Number,
-    required: true,
   },
   discount: {
     type: Number,
@@ -24,25 +23,17 @@ const billSchema = new mongoose.Schema({
   },
   finalAmount: {
     type: Number,
-    required: true,
   },
   statusId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Status',
-    required: true,
   },
   paymentMethod: {
     type: String,
-    required: true,
   },
   notes: {
     type: String,
     default: null,
-  },
-  createdBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Account',
-    required: true,
   },
   createdAt: {
     type: Date,
