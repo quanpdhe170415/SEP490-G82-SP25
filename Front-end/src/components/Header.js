@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import logo from "../assets/LOGOBIG.png";
-import { FaUserCircle } from "react-icons/fa"; // Icon user
+import logo from "../assets/logo.png";
+import { FaUserCircle } from "react-icons"; // Icon user
 
 function Header() {
   const [token, setToken] = useState(localStorage.getItem("token"));

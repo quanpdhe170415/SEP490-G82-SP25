@@ -1,0 +1,37 @@
+/* Điều chỉnh cho sidebar */
+.sidebar {
+  transition: transform 0.3s ease-in-out;
+}
+
+.sidebar.collapsed {
+  transform: translateX(-100%);
+}
+
+/* Điều chỉnh cho ô tìm kiếm */
+.search-panel {
+  transition: max-height 0.3s ease-in-out;
+  overflow: hidden;
+  max-height: 1000px; /* Đảm bảo có thể mở rộng đầy đủ */
+}
+
+.search-panel.collapsed {
+  max-height: 0;
+}
+
+.toggle-search-btn {
+  cursor: pointer;
+  color: #007bff;
+  font-weight: bold;
+}
+
+/* Đảm bảo bảng hóa đơn có thể cuộn ngang trên màn hình nhỏ */
+.bill-table-wrapper {
+  overflow-x: auto;
+}
+
+/* Đảm bảo responsive cho trang */
+@media (max-width: 768px) {
+  .bill-table th, .bill-table td {
+    padding: 8px;
+  }
+}
