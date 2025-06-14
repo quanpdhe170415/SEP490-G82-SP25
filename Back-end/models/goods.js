@@ -40,8 +40,7 @@ const goodsSchema = new mongoose.Schema({
         required: true
     },
     stock_quantity: {
-        type: Number,
-        required: true,        
+        type: Number,     
     },
     selling_price: {
         type: Number,
@@ -66,7 +65,6 @@ const goodsSchema = new mongoose.Schema({
     },
     display_quantity: {
         type: Number,
-        default: 0
     },
     minimum_stock_quantity: {
         type: Number,

@@ -20,6 +20,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 
+app.use('/api', routes);
 //Connect to MongoDB
 // mongoose.connect(process.env.MONGODB_URL, {
 //   // useNewUrlParser: true,

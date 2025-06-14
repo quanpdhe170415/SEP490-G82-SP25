@@ -30,9 +30,7 @@ const db = {
   Stockmovement,
   Shift,
   CashDenomination,
-  Bill,
-  Status,
-  BillDetail
+  Bill, Status, BillDetail
 };
   
 
