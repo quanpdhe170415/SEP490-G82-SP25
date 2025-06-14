@@ -13,6 +13,7 @@ router.use('/goods', goodsRoute);
 router.use('/auth', authenRouter);
 router.use('/shift', shiftRouter); 
 router.use('/payment', paymentRouter);
+router.use('/invoice', require('./invoice.route'));
 router.use('/bill', billRoute);
 
 module.exports = router;
