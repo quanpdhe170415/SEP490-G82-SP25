@@ -75,21 +75,20 @@ const LoginPage = () => {
 
       // Điều hướng người dùng đến trang chính sau khi đăng nhập thành công
       setTimeout(() => {
-        // Điều hướng tùy thuộc vào vai trò của người dùng
-        if (foundUser.role === 'ADMIN') {
-          navigate('/admin');
-        } else if (foundUser.role === 'STAFF') {
-          navigate('/staff-order');
-        } else {
-          navigate('/');
-        }
+          navigate('/home');
       }, 1000); // Chờ để toast hiển thị trước khi điều hướng
     } else {
       toast.error('Tên đăng nhập hoặc mật khẩu không đúng');
       setError('Tên đăng nhập hoặc mật khẩu không đúng');
     }
+
+
   };
 
+
+    const handleForgotPassword = () => {
+    navigate('/forgotpassword'); // Chuyển hướng đến trang quên mật khẩu
+  };
   return (
     <div
       className="d-flex flex-column justify-content-center align-items-center vh-100"
@@ -143,6 +142,14 @@ const LoginPage = () => {
             </label>
           </div>
           <a href="#" className="text-decoration-none">Quên mật khẩu?</a>
+
+          <span
+            className="text-decoration-none text-primary"
+            style={{ cursor: 'pointer' }}
+            onClick={handleForgotPassword}
+          >
+            Quên mật khẩu?
+          </span>
         </div>
 
         <div className="d-grid">
