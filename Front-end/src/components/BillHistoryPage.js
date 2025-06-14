@@ -1,6 +1,7 @@
 import { useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { Container, Row, Col, Form, Table, Card } from "react-bootstrap";
+import { Container, Row, Col, Form, Table, Card, Button } from "react-bootstrap";
+import { Link } from "react-router-dom";
 import "./Css/BillHistory.css";
 import Header from "./Header";
 
@@ -235,14 +236,15 @@ const BillHistory = () => {
                                                     <tr
                                                         key={bill.id}
                                                         onClick={() => toggleBillDetails(bill.id)}
+
                                                     >
-                                                        <td style={{backgroundColor: selectedBillId === bill.id ? '#e3f2fd' : 'transparent'}}>{bill.id}</td>
-                                                        <td style={{backgroundColor: selectedBillId === bill.id ? '#e3f2fd' : 'transparent'}}>{bill.time}</td>
-                                                        <td style={{backgroundColor: selectedBillId === bill.id ? '#e3f2fd' : 'transparent'}}>{bill.seller}</td>
-                                                        <td style={{backgroundColor: selectedBillId === bill.id ? '#e3f2fd' : 'transparent'}}>{bill.totalAmount}</td>
-                                                        <td style={{backgroundColor: selectedBillId === bill.id ? '#e3f2fd' : 'transparent'}}>{bill.paymentAmount}</td>
-                                                        <td style={{backgroundColor: selectedBillId === bill.id ? '#e3f2fd' : 'transparent'}}>{bill.paymentMethod === "cash" ? "Tiền mặt" : "Chuyển khoản"}</td>
-                                                        <td style={{backgroundColor: selectedBillId === bill.id ? '#e3f2fd' : 'transparent'}}>
+                                                        <td style={{ backgroundColor: selectedBillId === bill.id ? '#e3f2fd' : 'transparent' }}>{bill.id}</td>
+                                                        <td style={{ backgroundColor: selectedBillId === bill.id ? '#e3f2fd' : 'transparent' }}>{bill.time}</td>
+                                                        <td style={{ backgroundColor: selectedBillId === bill.id ? '#e3f2fd' : 'transparent' }}>{bill.seller}</td>
+                                                        <td style={{ backgroundColor: selectedBillId === bill.id ? '#e3f2fd' : 'transparent' }}>{bill.totalAmount}</td>
+                                                        <td style={{ backgroundColor: selectedBillId === bill.id ? '#e3f2fd' : 'transparent' }}>{bill.paymentAmount}</td>
+                                                        <td style={{ backgroundColor: selectedBillId === bill.id ? '#e3f2fd' : 'transparent' }}>{bill.paymentMethod === "cash" ? "Tiền mặt" : "Chuyển khoản"}</td>
+                                                        <td style={{ backgroundColor: selectedBillId === bill.id ? '#e3f2fd' : 'transparent' }}>
                                                             {bill.status === "pending" ? "Chờ xử lý" :
                                                                 bill.status === "confirmed" ? "Đã xác nhận" :
                                                                     bill.status === "processing" ? "Đang xử lý" :
@@ -261,21 +263,23 @@ const BillHistory = () => {
                                                                             <span className="info-label">Mã hóa đơn:</span>
                                                                             <span className="info-value">{bill.id}</span>
                                                                         </div>
-                                                                        <div className="info-item">
-                                                                            <span className="info-label">Thời gian:</span>
-                                                                            <span className="info-value">{bill.time}</span>
-                                                                        </div>
+
                                                                         <div className="info-item">
                                                                             <span className="info-label">Người bán:</span>
                                                                             <span className="info-value">{bill.seller}</span>
                                                                         </div>
                                                                         <div className="info-item">
-                                                                            <span className="info-label">Người tạo:</span>
-                                                                            <span className="info-value">{bill.creator}</span>
-                                                                        </div>
-                                                                        <div className="info-item">
                                                                             <span className="info-label">Phương thức thanh toán:</span>
                                                                             <span className="info-value">{bill.paymentMethod === "cash" ? "Tiền mặt" : "Chuyển khoản"}</span>
+                                                                        </div>
+
+                                                                        <div className="info-item">
+                                                                            <span className="info-label">Thời gian:</span>
+                                                                            <span className="info-value">{bill.time}</span>
+                                                                        </div>
+                                                                        <div className="info-item">
+                                                                            <span className="info-label">Người tạo:</span>
+                                                                            <span className="info-value">{bill.creator}</span>
                                                                         </div>
                                                                         <div className="info-item">
                                                                             <span className="info-label">Trạng thái:</span>
@@ -290,7 +294,7 @@ const BillHistory = () => {
                                                                             </span>
                                                                         </div>
                                                                     </div>
-                                                                    <Table bordered>
+                                                                    <Table bordered className="bill-table">
                                                                         <thead>
                                                                             <tr>
                                                                                 <th>Mã hàng</th>
@@ -314,11 +318,35 @@ const BillHistory = () => {
                                                                     </Table>
 
                                                                     {/* Total Summary */}
-                                                                    <div className="total-summary d-flex flex-column align-items-end">
-                                                                        <p>Tổng số lượng hàng: {bill.items.reduce((acc, item) => acc + item.quantity, 0)}</p>
-                                                                        <p>Tổng số tiền: {bill.totalAmount}</p>
-                                                                        <p>Số tiền khách cần trả: {bill.totalAmount}</p>
-                                                                        <p>Số tiền khách đã trả: {bill.paymentAmount}</p>
+                                                                    <div className="total-summary">
+                                                                        <p>
+                                                                            <span>Tổng số lượng hàng:</span>
+                                                                            <span>{bill.items.reduce((acc, item) => acc + item.quantity, 0)}</span>
+                                                                        </p>
+                                                                        <p>
+                                                                            <span>Tổng số tiền:</span>
+                                                                            <span>{bill.totalAmount.toLocaleString('vi-VN')} đ</span>
+                                                                        </p>
+                                                                        <p>
+                                                                            <span>Số tiền khách cần trả:</span>
+                                                                            <span>{bill.totalAmount.toLocaleString('vi-VN')} đ</span>
+                                                                        </p>
+                                                                        <p>
+                                                                            <span>Số tiền khách đã trả:</span>
+                                                                            <span>{bill.paymentAmount.toLocaleString('vi-VN')} đ</span>
+                                                                        </p>
+
+                                                                        {/* Buttons Container */}
+                                                                        <div className="button-container">
+                                                                            <Link to="/return-goods">
+                                                                                <Button variant="danger" className="btn-return">
+                                                                                    Trả hàng
+                                                                                </Button>
+                                                                            </Link>
+                                                                            {/* <Button variant="primary" className="btn-print">
+                                                                                In hóa đơn
+                                                                            </Button> */}
+                                                                        </div>
                                                                     </div>
                                                                 </div>
 

@@ -338,32 +338,106 @@
    =============================================== */
 
 .total-summary {
-  background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
-  color: #ffffff;
+  background: #ffffff;
+  color: #333333;
   padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   margin-top: 1.5rem;
+  position: relative;
 }
 
 .total-summary p {
-  margin-bottom: 0.5rem;
-  font-weight: 600;
-  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
+  font-weight: 500;
+  font-size: 0.95rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.25rem 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #f0f0f0;
 }
 
-.total-summary p:last-child {
-  border-bottom: none;
+.total-summary p:hover {
+  background-color: #f8f9fa;
+}
+
+.total-summary p:last-of-type {
+  border-bottom: 2px solid #e0e0e0;
   font-size: 1.1rem;
-  font-weight: 700;
+  font-weight: 600;
   margin-top: 0.5rem;
+  margin-bottom: 1.5rem;
   padding-top: 0.75rem;
-  border-top: 2px solid rgba(255, 255, 255, 0.3);
+  color: #333333;
+}
+
+.total-summary p:last-of-type::after {
+  content: '';
+}
+
+/* Button Container */
+.total-summary .button-container {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+/* Button Styling */
+.total-summary .btn {
+  font-weight: 500;
+  font-size: 0.875rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  transition: all 0.2s ease;
+  min-width: 120px;
+  background-color: #ffffff;
+  color: #333333;
+}
+
+.total-summary .btn:hover {
+  background-color: #f8f9fa;
+  border-color: #ccc;
+}
+
+.total-summary .btn-danger {
+  background-color: #dc3545;
+  color: #ffffff;
+  border-color: #dc3545;
+}
+
+.total-summary .btn-danger:hover {
+  background-color: #c82333;
+  border-color: #bd2130;
+  color: #ffffff;
+}
+
+.total-summary .btn-primary {
+  background-color: #007bff;
+  color: #ffffff;
+  border-color: #007bff;
+}
+
+.total-summary .btn-primary:hover {
+  background-color: #0056b3;
+  border-color: #004085;
+  color: #ffffff;
+}
+
+/* Remove icons */
+.total-summary .btn-danger::after {
+  content: '';
+}
+
+.total-summary .btn-primary::after {
+  content: '';
 }
 
 /* ===============================================
@@ -435,11 +509,11 @@
     gap: 0.75rem;
     padding: 1rem;
   }
-  
   .bill-table thead th,
   .bill-table tbody td {
     padding: 0.75rem 0.5rem;
     font-size: 0.8rem;
+    background-color: #5cc2f1;
   }
   
   .bill-details {
@@ -447,14 +521,31 @@
   }
   
   .total-summary {
-    padding: 1rem;
+    padding: 1.25rem;
   }
   
   .total-summary p {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     flex-direction: column;
     align-items: flex-start;
     gap: 0.25rem;
+    text-align: left;
+  }
+  
+  .total-summary p:last-of-type {
+    font-size: 1rem;
+  }
+  
+  .total-summary .button-container {
+    justify-content: center;
+    gap: 0.5rem;
+  }
+  
+  .total-summary .btn {
+    flex: 1;
+    min-width: auto;
+    font-size: 0.8rem;
+    padding: 0.5rem 0.75rem;
   }
 }
 
@@ -476,6 +567,15 @@
     padding: 0.5rem;
     background-color: #f9fafb;
     border-radius: 6px;
+  }
+  .total-summary .button-container {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .total-summary .btn {
+    width: 100%;
+    flex: none;
   }
 }
 
