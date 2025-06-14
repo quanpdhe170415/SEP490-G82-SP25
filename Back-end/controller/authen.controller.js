@@ -15,7 +15,6 @@ exports.login = async (req, res) => {
       return res.status(404).json({ message: "Email không tồn tại trong hệ thống!" });
     }
 
-    // Kiểm tra mật khẩu
     const isMatch = await bcrypt.compare(password, account.password);
     console.log('Input password:', password); // Log mật khẩu nhập
     console.log('Stored hash:', account.password); // Log hash trong DB
@@ -41,7 +40,7 @@ exports.login = async (req, res) => {
       userId: account._id
     });
   } catch (err) {
-    console.error(err.message);
+    console.error('Reset Password Error:', err.message);
     res.status(500).send("Server error");
   }
 };
