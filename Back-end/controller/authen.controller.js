@@ -3,25 +3,71 @@ const bcrypt = require("bcryptjs");
 // const { OAuth2Client } = require("google-auth-library");
 // const nodemailer = require("nodemailer");
 const { Account } = require("../models");
-exports.resetPassword = async (req, res) => {
+const jwt = require('jsonwebtoken');
+
+exports.login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const account = await Account.findOne({ user_name: email });
+    // Tìm tài khoản dựa trên email
+    const account = await Account.findOne({ email }).populate('role_id'); // Lấy thông tin role
     if (!account) {
       return res.status(404).json({ message: "Email không tồn tại trong hệ thống!" });
     }
 
-    const salt = await bcrypt.genSalt(10);
-    account.password = await bcrypt.hash(password, salt);
-    await account.save();
+    const isMatch = await bcrypt.compare(password, account.password);
+    console.log('Input password:', password); // Log mật khẩu nhập
+    console.log('Stored hash:', account.password); // Log hash trong DB
+    console.log('Password match:', isMatch);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Mật khẩu không đúng!" });
+    }
 
-    res.status(200).json({ message: "Đổi mật khẩu thành công." });
+    // Tạo token JWT
+    const payload = {
+      userId: account._id,
+      role: account.role_id.name, // Lấy tên vai trò (Chủ cửa hàng, Thủ kho, Thu ngân)
+      email: account.email
+    };
+
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' }); // Token hết hạn sau 1 giờ
+
+    // Trả về token và thông tin vai trò
+    res.status(200).json({
+      message: "Đăng nhập thành công!",
+      token,
+      role: account.role_id.name,
+      userId: account._id
+    });
   } catch (err) {
-    console.error(err.message);
+    console.error('Reset Password Error:', err.message);
     res.status(500).send("Server error");
   }
 };
+
+// Sửa lại resetPassword như sau:
+exports.resetPassword = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const account = await Account.findOne({ email });
+    if (!account) {
+      return res.status(404).json({ message: "Email không tồn tại trong hệ thống!" });
+    }
+
+    account.password = password; // Gán plain password
+    const savedAccount = await account.save(); // pre('save') sẽ tự động hash
+
+    res.status(200).json({
+      message: "Đổi mật khẩu thành công.",
+      password: savedAccount.password
+    });
+  } catch (err) {
+    console.error('Reset Password Error:', err.message);
+    res.status(500).send("Server error");
+  }
+};
+
 
 exports.logout = async (req, res) => {
   const { refreshToken } = req.body;
