@@ -6,73 +6,86 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { v4 as uuidv4 } from 'uuid'; // Thêm thư viện để tạo UUID
 
-const users = [
-  { username: 'admin', password: '123456' },
-  { username: 'staff', password: 'staff123' },
-  { username: 'guest', password: 'guest' },
-];
-
 const LoginPage = () => {
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [remember, setRemember] = useState(false);
+  const [errors, setErrors] = useState({});
 
-  // Hàm giả lập API để lấy Token và Refresh Token
-  const mockApiLogin = (username, password) => {
-    // Giả lập trả về Token và Refresh Token
-    if (username === 'admin' && password === '123456') {
-      return {
-        token: 'fakeToken123',
-        refreshToken: 'fakeRefreshToken123',
-      };
-    } else if (username === 'staff' && password === 'staff123') {
-      return {
-        token: 'fakeToken456',
-        refreshToken: 'fakeRefreshToken456',
-      };
+  const fakeUsers = [
+    { username: 'admin@example.com', password: 'admin123', role: 'ADMIN' },
+    { username: 'staff@example.com', password: 'staff123', role: 'STAFF' },
+    { username: 'user@example.com', password: 'user123', role: 'USER' }
+  ];
+
+  const validate = () => {
+    const newErrors = {};
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!username.trim()) {
+      newErrors.username = "Địa chỉ Email là bắt buộc";
+    } else if (!emailRegex.test(username)) {
+      newErrors.username = "Địa chỉ Email không hợp lệ";
     }
-    return null; // Trả về null nếu không tìm thấy tài khoản
+
+    if (!password) {
+      newErrors.password = "Mật khẩu là bắt buộc";
+    }
+
+    return newErrors;
   };
 
-  const handleLogin = () => {
-    // Kiểm tra người dùng
-    const foundUser = users.find(
-      (user) => user.username === username && user.password === password
-    );
+  const handleLogin = (e) => {
+    e.preventDefault(); // Ngăn không cho form refresh trang
+
+    // Kiểm tra input hợp lệ
+    const newErrors = validate();
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length > 0) {
+      Object.values(newErrors).forEach((error) => toast.error(error));
+      return;
+    }
+
+    // Kiểm tra đăng nhập với dữ liệu giả lập
+    const foundUser = fakeUsers.find(user => user.username === username && user.password === password);
 
     if (foundUser) {
-      // Lấy Token và Refresh Token từ API giả lập
-      const { token, refreshToken } = mockApiLogin(username, password);
+      // Tạo deviceId bằng UUID (để lưu vào localStorage)
+      const deviceId = uuidv4();
 
-      if (token && refreshToken) {
-        // Tạo deviceId bằng UUID
-        const deviceId = uuidv4();
+      // Lưu các thông tin cần thiết vào localStorage
+      localStorage.setItem('token', 'fakeToken123');
+      localStorage.setItem('refreshToken', 'fakeRefreshToken123');
+      localStorage.setItem('accountDetail', JSON.stringify(foundUser));
+      localStorage.setItem('deviceId', deviceId); // Lưu deviceId vào localStorage
 
-        // Lưu thông tin vào localStorage
-        localStorage.setItem('loginSuccess', 'true');
-        localStorage.setItem('token', token);
-        localStorage.setItem('refreshToken', refreshToken);
-        localStorage.setItem('deviceId', deviceId);
+      // Hiển thị thông báo thành công
+      toast.success('Đăng nhập thành công!', {
+        position: 'top-right',
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: false,
+        progress: undefined,
+      });
 
-        toast.success('Đăng nhập thành công!', {
-          position: 'top-right',
-          autoClose: 2000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: false,
-          draggable: false,
-          progress: undefined,
-        });
-
-        setTimeout(() => {
-          navigate('/home');
-        }, 1000); // Chờ cho toast hiển thị xong
-      } else {
-        setError('Tên đăng nhập hoặc mật khẩu không đúng');
-      }
+      // Điều hướng người dùng đến trang chính sau khi đăng nhập thành công
+      setTimeout(() => {
+        // Điều hướng tùy thuộc vào vai trò của người dùng
+        if (foundUser.role === 'ADMIN') {
+          navigate('/admin');
+        } else if (foundUser.role === 'STAFF') {
+          navigate('/staff-order');
+        } else {
+          navigate('/');
+        }
+      }, 1000); // Chờ để toast hiển thị trước khi điều hướng
     } else {
+      toast.error('Tên đăng nhập hoặc mật khẩu không đúng');
       setError('Tên đăng nhập hoặc mật khẩu không đúng');
     }
   };
@@ -101,6 +114,7 @@ const LoginPage = () => {
             value={username}
             onChange={(e) => setUsername(e.target.value)}
           />
+          {errors.username && <div className="text-danger">{errors.username}</div>}
         </div>
         <div className="mb-3">
           <input
@@ -110,6 +124,7 @@ const LoginPage = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
+          {errors.password && <div className="text-danger">{errors.password}</div>}
         </div>
 
         {error && <div className="alert alert-danger py-1">{error}</div>}
