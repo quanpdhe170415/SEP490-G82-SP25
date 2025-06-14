@@ -6,17 +6,21 @@ const app = express();
 require('dotenv').config();
 const router = require('./route/index');
 const port = process.env.PORT || 9999;
+const { Server } = require('socket.io');
 
 app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+
 app.use(bodyParser.json());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 
+app.use('/api', routes);
 //Connect to MongoDB
 // mongoose.connect(process.env.MONGODB_URL, {
 //   // useNewUrlParser: true,
@@ -36,3 +40,4 @@ app.use('/api',router);
   app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
   });
+
