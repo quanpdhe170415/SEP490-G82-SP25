@@ -17,7 +17,7 @@ const ImportBatchSchema = new mongoose.Schema({
     },
     imported_by: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
+        ref: 'Account',
         required: true
     },
     total_value: {
