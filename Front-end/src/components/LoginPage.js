@@ -37,6 +37,7 @@ const LoginPage = () => {
       setTimeout(() => {
         navigate('/home');
       }, 1000);
+
     } else {
       setError('Tên đăng nhập hoặc mật khẩu không đúng');
     }
@@ -46,6 +47,7 @@ const LoginPage = () => {
   const handleForgotPassword = () => {
     navigate('/forgotpassword'); // Chuyển hướng đến trang quên mật khẩu
   };
+
 
   return (
     <div
@@ -97,6 +99,9 @@ const LoginPage = () => {
               Ghi nhớ đăng nhập
             </label>
           </div>
+
+          <a href="#" className="text-decoration-none">Quên mật khẩu?</a>
+
           <span
             className="text-decoration-none text-primary"
             style={{ cursor: 'pointer' }}
@@ -104,6 +109,7 @@ const LoginPage = () => {
           >
             Quên mật khẩu?
           </span>
+
         </div>
 
         <div className="d-grid">
@@ -115,5 +121,6 @@ const LoginPage = () => {
     </div>
   );
 };
+
 
 export default LoginPage;
