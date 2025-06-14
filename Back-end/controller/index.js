@@ -6,6 +6,5 @@ module.exports = {
     authenController,
     shiftController,
     paymentController
-    authenController,
     productController
 };
