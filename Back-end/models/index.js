@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
-require('dotenv').config();
-
 const Account = require('./account');
 const Role = require('./role');
+const UserDetail = require('./userDetail');
+const Permission = require('./permission');
 const Goods = require('./goods');
 const ImportBatch = require('./import_batch');
 const ImportDetail = require('./import_detail');
