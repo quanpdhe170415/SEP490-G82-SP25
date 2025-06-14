@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const roleSchema = new mongoose.Schema({
+const permissionSchema = new mongoose.Schema({
   code: {
     type: String,
     required: true,
@@ -15,13 +15,9 @@ const roleSchema = new mongoose.Schema({
   description: {
     type: String,
     trim: true
-  },
-  permission_ids: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Permission'
-  }]
+  }
 }, {
   timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
 });
 
-module.exports = mongoose.model('Role', roleSchema);
+module.exports = mongoose.model('Permission', permissionSchema);
