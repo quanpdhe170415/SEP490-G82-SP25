@@ -5,12 +5,15 @@ const mongoose = require('mongoose'); // Import mongoose
 const bodyParser = require('body-parser'); // Import body-parser
 const app = express();
 const port = process.env.PORT || 9999;
+const { Server } = require('socket.io');
 
 app.use(cors({
   origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+
 app.use(bodyParser.json());
 app.use(express.json());
 
