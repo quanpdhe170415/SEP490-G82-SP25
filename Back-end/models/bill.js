@@ -23,6 +23,7 @@ const billSchema = new mongoose.Schema({
   },
   finalAmount: {
     type: Number,
+
   },
   statusId: {
     type: mongoose.Schema.Types.ObjectId,

@@ -29,5 +29,6 @@ const db = {
   Shift,
   CashDenomination,
   Bill, Status, BillDetail
+
 };
 
