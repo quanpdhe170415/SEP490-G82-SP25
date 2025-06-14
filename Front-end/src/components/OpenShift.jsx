@@ -13,9 +13,21 @@ const denominations = [
   { value: 500000, label: "500.000" },
 ];
 
+const previousShiftCash = {
+  1000: 5,
+  2000: 10,
+  5000: 8,
+  10000: 12,
+  20000: 7,
+  50000: 4,
+  100000: 3,
+  200000: 2,
+  500000: 1,
+};
+
 // Giả lập dữ liệu ca làm việc
 const shiftData = {
-  employeeName: "Mạnh Beo",
+  employeeName: "Nguyễn Văn A",
   receivedCash: 2000000,
   openTime: "2025-06-14 08:00",
   expectedCloseTime: "2025-06-14 17:00",
@@ -24,9 +36,7 @@ const shiftData = {
 };
 
 export default function OpenShift() {
-  const [cashDetail, setCashDetail] = useState(
-    denominations.reduce((acc, d) => ({ ...acc, [d.value]: 0 }), {})
-  );
+  const [cashDetail, setCashDetail] = useState({ ...previousShiftCash });
 
   const totalCash = Object.entries(cashDetail).reduce(
     (sum, [denom, qty]) => sum + Number(denom) * Number(qty),
@@ -41,7 +51,7 @@ export default function OpenShift() {
   };
 
   const handleReset = () => {
-    setCashDetail(denominations.reduce((acc, d) => ({ ...acc, [d.value]: 0 }), {}));
+    setCashDetail({ ...previousShiftCash });
   };
 
   return (
@@ -57,7 +67,12 @@ export default function OpenShift() {
                 <span className="fw-semibold text-black">{shiftData.employeeName}</span>
               </li>
               <li className="list-group-item bg-white">
-                <div className="mb-2 text-secondary">Số lượng tiền mặt từng mệnh giá:</div>
+                <div className="mb-2 text-secondary d-flex justify-content-between align-items-center">
+                  <span>Số lượng tiền mặt từng mệnh giá:</span>
+                  <button className="btn btn-sm btn-outline-secondary fw-bold px-3 py-1" type="button" onClick={handleReset}>
+                    Reset
+                  </button>
+                </div>
                 <div className="row g-2">
                   {denominations.map((d) => (
                     <div className="col-6" key={d.value}>
@@ -97,9 +112,6 @@ export default function OpenShift() {
             <div className="d-flex gap-2">
               <button className="btn w-100 text-white fw-bold py-2" style={{ background: '#0070f4' }}>
                 Xác nhận mở ca
-              </button>
-              <button className="btn w-100 btn-secondary fw-bold py-2" type="button" onClick={handleReset}>
-                Reset
               </button>
             </div>
           </div>
