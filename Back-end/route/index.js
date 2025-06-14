@@ -1,7 +1,5 @@
 const express = require('express');
 const router = express.Router();
-
-
 const authenRouter = require('./authen.route');
 const billRoute = require('./bill.route');
 const authenRouter = require('./authen.route');
@@ -18,4 +16,3 @@ router.use('/payment', paymentRouter);
 router.use('/bill', billRoute);
 
 module.exports = router;
-
