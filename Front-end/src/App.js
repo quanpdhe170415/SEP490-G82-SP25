@@ -8,7 +8,6 @@ import ForgotPassword from './components/ForgotPassword';
 import HomeForCashier from './components/HomeforCashier';
 import OpenShift from './components/OpenShift';
 
-
 function App() {
   return (
     <Router>
