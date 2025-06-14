@@ -31,3 +31,4 @@ const db = {
   Bill, Status, BillDetail
 };
 
+module.exports = db;

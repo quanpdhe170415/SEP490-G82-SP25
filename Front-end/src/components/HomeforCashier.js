@@ -1,25 +1,36 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import background from '../assets/bg.jpg';
 import logo from '../assets/logo.png';
-import waterImg from '../assets/bg.jpg';
-import breadImg from '../assets/bg.jpg';
-import candyImg from '../assets/bg.jpg';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
+const API_URL = process.env.REACT_URL_SERVER || 'http://localhost:9999/api/';
 
 const HomeForCashier = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedType, setSelectedType] = useState(null); // State để lưu loại sản phẩm được chọn
-  const [products, setProducts] = useState([
-    { id: 1, name: 'Nước', price: 20000, image: waterImg, type: 'Drink' },
-    { id: 2, name: 'Bánh', price: 15000, image: breadImg, type: 'Snack' },
-    { id: 3, name: 'Kẹo', price: 10000, image: candyImg, type: 'Snack' },
-  ]);
-  const [originalProducts] = useState([...products]); // Lưu bản gốc của products
-  const [invoices, setInvoices] = useState([{ id: 1, cart: [], total: 0 }]); // Danh sách hóa đơn
-  const [selectedInvoice, setSelectedInvoice] = useState(1); // Hóa đơn đang chọn
+  const [selectedType, setSelectedType] = useState(null);
+  const [products, setProducts] = useState([]);
+  const [originalProducts, setOriginalProducts] = useState([]);
+  const [invoices, setInvoices] = useState([{ id: 1, cart: [], total: 0 }]);
+  const [selectedInvoice, setSelectedInvoice] = useState(1);
+
+  // Fetch products from API
+  useEffect(() => {
+    fetch(`${API_URL}product/products-for-retail`)
+      .then(res => res.json())
+      .then(data => {
+        setProducts(data);
+        setOriginalProducts(data);
+      })
+      .catch(() => {
+        toast.error('Không thể tải sản phẩm từ server!', {
+          position: 'top-right',
+          autoClose: 2000,
+        });
+      });
+  }, []);
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
@@ -27,7 +38,7 @@ const HomeForCashier = () => {
   };
 
   const filterProducts = (searchTerm, type) => {
-    let filtered = [...originalProducts]; // Sử dụng bản gốc để lọc lại
+    let filtered = [...originalProducts];
     if (searchTerm) {
       filtered = filtered.filter(product =>
         product.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -40,7 +51,7 @@ const HomeForCashier = () => {
   };
 
   const handleTypeFilter = (type) => {
-    const newSelectedType = type === selectedType ? null : type; // Bỏ chọn nếu nhấn lại cùng type
+    const newSelectedType = type === selectedType ? null : type;
     setSelectedType(newSelectedType);
     filterProducts(searchTerm, newSelectedType);
   };
@@ -70,11 +81,6 @@ const HomeForCashier = () => {
     toast.success(`${product.name} đã được thêm vào hóa đơn ${invoiceId}!`, {
       position: 'top-right',
       autoClose: 2000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: false,
-      draggable: false,
-      progress: undefined,
     });
   };
 
@@ -103,11 +109,6 @@ const HomeForCashier = () => {
     toast.info(`${product.name} đã được giảm số lượng trong hóa đơn ${invoiceId}!`, {
       position: 'top-right',
       autoClose: 2000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: false,
-      draggable: false,
-      progress: undefined,
     });
   };
 
@@ -116,11 +117,6 @@ const HomeForCashier = () => {
     toast.success(`Thanh toán thành công cho hóa đơn ${invoiceId}! Tổng tiền: ${invoice.total.toLocaleString()} VNĐ`, {
       position: 'top-right',
       autoClose: 2000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: false,
-      draggable: false,
-      progress: undefined,
     });
     setInvoices(prevInvoices => {
       const updatedInvoices = prevInvoices.filter(i => i.id !== invoiceId);
@@ -131,7 +127,7 @@ const HomeForCashier = () => {
     });
     setSelectedInvoice(prev => {
       const newInvoices = invoices.filter(i => i.id !== invoiceId).sort((a, b) => a.id - b.id);
-      const nextInvoiceId = newInvoices.find(i => i.id > invoiceId)?.id -1|| newInvoices[0]?.id -1|| 1;
+      const nextInvoiceId = newInvoices.find(i => i.id > invoiceId)?.id - 1 || newInvoices[0]?.id - 1 || 1;
       return nextInvoiceId;
     });
     setTimeout(() => navigate('/homecashier'), 2000);
@@ -147,7 +143,7 @@ const HomeForCashier = () => {
     });
     setSelectedInvoice(prev => {
       const newInvoices = invoices.filter(i => i.id !== invoiceId).sort((a, b) => a.id - b.id);
-      const nextInvoiceId = newInvoices.find(i => i.id > invoiceId)?.id -1|| newInvoices[0]?.id -1|| 1;
+      const nextInvoiceId = newInvoices.find(i => i.id > invoiceId)?.id - 1 || newInvoices[0]?.id - 1 || 1;
       return nextInvoiceId;
     });
   };
@@ -159,8 +155,11 @@ const HomeForCashier = () => {
   };
 
   const navigateToSection = (path) => {
-    navigate(path); // Điều hướng đến các section tương ứng (cần định nghĩa route)
+    navigate(path);
   };
+
+  // Lấy danh sách loại sản phẩm duy nhất từ dữ liệu API
+  const productTypes = Array.from(new Set(originalProducts.map(p => p.type)));
 
   return (
     <div
@@ -204,18 +203,15 @@ const HomeForCashier = () => {
             />
           </div>
           <div className="mb-3">
-            <button
-              className={`btn btn-sm me-2 ${selectedType === 'Drink' ? 'btn-primary' : 'btn-outline-secondary'}`}
-              onClick={() => handleTypeFilter('Drink')}
-            >
-              Drink
-            </button>
-            <button
-              className={`btn btn-sm ${selectedType === 'Snack' ? 'btn-primary' : 'btn-outline-secondary'}`}
-              onClick={() => handleTypeFilter('Snack')}
-            >
-              Snack
-            </button>
+            {productTypes.map(type => (
+              <button
+                key={type}
+                className={`btn btn-sm me-2 ${selectedType === type ? 'btn-primary' : 'btn-outline-secondary'}`}
+                onClick={() => handleTypeFilter(type)}
+              >
+                {type}
+              </button>
+            ))}
           </div>
           <div className="d-flex flex-wrap gap-2">
             {products.map((product) => (
