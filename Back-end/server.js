@@ -49,6 +49,8 @@ io.on('connection', (socket) => {
     console.log('🔴 Client disconnected:', socket.id);
   });
 });
+app.use('/api', routes);
+
 
 app.use('/api',router);
  connectDB();
