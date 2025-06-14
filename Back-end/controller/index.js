@@ -5,7 +5,7 @@ const paymentController = require('./pay.controller');
 module.exports = {
     authenController,
     shiftController,
-    paymentController
+    paymentController,
     authenController,
     productController
 };

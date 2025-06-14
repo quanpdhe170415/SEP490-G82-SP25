@@ -14,10 +14,6 @@ exports.changePassword = async (req, res) => {
         if (!isMatch) {
             return res.status(400).json({ message: 'Mật khẩu không khớp!' });
         }
-        const account = await Account.findOne({ username });
-        if (!account) {
-            return res.status(404).json({ message: 'Tài khoản không tồn tại trong hệ thống!' });
-        }
         const salt = await bcrypt.genSalt(10);
         account.password = await bcrypt.hash(newPassword, salt);
         await account.save();
