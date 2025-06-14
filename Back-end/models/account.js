@@ -1,20 +1,47 @@
-// filepath: /C:/Users/i-quanpd/Desktop/wdp/WDP301_Group1_SE1761-NJ/back-end/models/Account.js
 const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+const bcrypt = require('bcryptjs');
 
-const AccountSchema = new Schema({
-  user_name: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  role_id: { type: Schema.Types.ObjectId, ref: 'Role' },
-  start_working: { type: Date, default: Date.now },
-  loginAttempts: { type: Number, required: true, default: 0 },
-  lockUntil: { type: Number },
-  isVerified: { type: Boolean, default: false },
+
+const accountSchema = new mongoose.Schema({
+  username: {
+    type: String,
+  },
+  password: {
+    type: String,
+    required: true
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true
+  },
+  role_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Role',
+    required: true
+  },
+  is_active: {
+    type: Boolean,
+    default: true
+  },
+  created_at: {
+    type: Date,
+    default: Date.now
+  },
+  updated_at: {
+    type: Date,
+    default: Date.now
+  }
 });
 
-AccountSchema.virtual('isLocked').get(function() {
-  return !!(this.lockUntil && this.lockUntil > Date.now());
+// Hash password before saving
+accountSchema.pre('save', async function(next) {
+  if (this.isModified('password')) {
+    this.password = await bcrypt.hash(this.password, 10);
+  }
+  this.updated_at = Date.now();
+  next();
 });
 
-const Account = mongoose.model('Account', AccountSchema);
-module.exports = Account;
+module.exports = mongoose.model('Account', accountSchema);

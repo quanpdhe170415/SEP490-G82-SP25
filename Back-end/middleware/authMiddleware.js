@@ -1,7 +1,8 @@
 const jwt = require('jsonwebtoken');
-const Account = require('../models/account');
+const Account = require('../models/account.model'); // Đảm bảo đường dẫn đúng
 
 const authMiddleware = async (req, res, next) => {
+  // Lấy token từ header
   const token = req.header('Authorization')?.replace('Bearer ', '');
 
   if (!token) {
@@ -9,22 +10,24 @@ const authMiddleware = async (req, res, next) => {
   }
 
   try {
+    // Xác thực token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await Account.findById(decoded.accountId).populate('role_id'); // decoded._id -> decoded.accountId
+    const user = await Account.findById(decoded.userId).populate('role_id'); // Sử dụng userId
 
     if (!user) {
       return res.status(401).json({ message: 'User not found, authorization denied' });
     }
 
+    // Gán user vào request để sử dụng ở các route khác
     req.user = user;
 
-    if (req.path === '/admin' && role !== 'ADMIN') {
-      return res.status(403).json({ message: 'Access denied' });
-    }
+    // Hàm kiểm tra vai trò
+    const userRole = user.role_id?.name; // Lấy tên vai trò từ role_id
 
-    if (req.path === '/staffOrders' && req.user.role_id.name !== 'STAFF') {
-      return res.status(403).json({ message: 'Access denied' });
-    }
+    // Định nghĩa các hàm kiểm tra vai trò
+    req.isOwner = () => userRole === 'Chủ cửa hàng';
+    req.isWarehouse = () => userRole === 'Thủ kho';
+    req.isCashier = () => userRole === 'Thu ngân';
 
     next();
   } catch (err) {
