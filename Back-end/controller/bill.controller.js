@@ -2,7 +2,7 @@
 const {Bill} = require('../models');
 
 //Check bill status for Bank Transfer payment
-exports.isBillPaid = async (req, res) => {
+exports. isBillPaid = async (req, res) => {
     try {
         const { bill_id } = req.body;
 
@@ -42,3 +42,44 @@ exports.isBillPaid = async (req, res) => {
     }
 };
 
+
+
+// Lấy danh sách tất cả hóa đơn
+exports.getAllBills = async (req, res) => {
+    try {
+      const bills = await Bill.find().populate('statusId', 'status_name');
+      res.status(200).json({
+        success: true,
+        data: bills,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: 'Lỗi khi lấy danh sách hóa đơn',
+        error: error.message,
+      });
+    }
+  };
+  
+  // Lấy thông tin một hóa đơn theo ID
+  exports.getBillById = async (req, res) => {
+    try {
+      const bill = await Bill.findById(req.params.id).populate('statusId', 'status_name');
+      if (!bill) {
+        return res.status(404).json({
+          success: false,
+          message: 'Không tìm thấy hóa đơn',
+        });
+      }
+      res.status(200).json({
+        success: true,
+        data: bill,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: 'Lỗi khi lấy thông tin hóa đơn',
+        error: error.message,
+      });
+    }
+  };
