@@ -76,6 +76,10 @@ const goodsSchema = new mongoose.Schema({
         required: true,
         default: true
     },
+    image_url: {
+        type: String,
+        required: false
+    }
 },{
     timestamps: true,
 });
