@@ -3,9 +3,10 @@ require('dotenv').config();
 
 const Account = require('./account');
 const Role = require('./role');
-const Good = require('./goods');
+const Goods = require('./goods');
 const ImportBatch = require('./import_batch');
 const ImportDetail = require('./import_detail');
+const PriceHistory = require('./price_history');
 const Permission = require('./permission');
 const Category = require('./category');
 const Stockmovement = require('./stockmovement');
@@ -20,15 +21,16 @@ mongoose.Promise = global.Promise;
 const db = {
   Account,
   Role,
-  Good,
+  Goods,
   ImportBatch,
   ImportDetail,
+  PriceHistory,
   Permission,
   Category,
   Stockmovement,
   Shift,
   CashDenomination,
   Bill, Status, BillDetail
-
 };
+  
 
