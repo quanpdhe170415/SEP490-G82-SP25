@@ -6,14 +6,6 @@ const { Account } = require('../models');
 exports.changePassword = async (req, res) => {
     const { username, oldPassword, newPassword } = req.body;
     try {
-        const account = await Account.findOne ({ username });
-        if (!account) {
-            return res.status(404).json({ message: 'Tài khoản không tồn tại trong hệ thống!' });
-        }
-        const isMatch = await bcrypt.compare(oldPassword, account.password);
-        if (!isMatch) {
-            return res.status(400).json({ message: 'Mật khẩu không khớp!' });
-        }
         const account = await Account.findOne({ username });
         if (!account) {
             return res.status(404).json({ message: 'Tài khoản không tồn tại trong hệ thống!' });
