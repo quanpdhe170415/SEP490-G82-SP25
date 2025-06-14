@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const authenRouter = require('./authen.route');
 const billRoute = require('./bill.route');
-const authenRouter = require('./authen.route');
 const productRouter = require('./product.route');
 const shiftRouter = require('./shift.route');
 const goodsRoute = require('./goods.route');

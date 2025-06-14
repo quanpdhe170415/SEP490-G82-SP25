@@ -14,7 +14,7 @@ const connectDB = async () => {
         await Promise.all([
             db.Account.createCollection(),
             db.Role.createCollection(),
-            db.Good.createCollection(),
+            db.Goods.createCollection(),
             db.ImportBatch.createCollection(),
             db.ImportDetail.createCollection(),
             db.Permission.createCollection(),
@@ -42,7 +42,7 @@ const connectDB = async () => {
         }
 
         // Seed dữ liệu cho Goods nếu chưa có
-        const goodsCount = await db.Good.countDocuments();
+        const goodsCount = await db.Goods.countDocuments();
         if (goodsCount === 0 && categories.length > 0) {
             await db.Good.insertMany([
                 {

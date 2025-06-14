@@ -229,7 +229,7 @@ exports.processPayment = async (req, res) => {
           shift.cash_transactions += 1;
           shift.cash_change_given += change;
           // Cập nhật final_cash_amount: initial_cash_amount + finalAmount - change
-          shift.final_cash_amount = (shift.initial_cash_amount || 0) + bill.finalAmount - change;
+          // shift.final_cash_amount = (shift.initial_cash_amount || 0) + bill.finalAmount - change;
         }
         await shift.save();
       }
