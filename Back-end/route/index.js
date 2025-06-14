@@ -10,5 +10,7 @@ router.use('/product', productRouter);
 router.use('/auth', authenRouter);
 router.use('/shift', shiftRouter); 
 router.use('/payment', paymentRouter);
+router.use('/invoice', require('./invoice.route'));
+
 
 module.exports = router;
