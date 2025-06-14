@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
+
 const accountSchema = new mongoose.Schema({
   username: {
     type: String,
@@ -37,7 +38,7 @@ const accountSchema = new mongoose.Schema({
 // Hash password before saving
 accountSchema.pre('save', async function(next) {
   if (this.isModified('password')) {
-    this.password = await bcrypt.genSalt(10).then(salt => bcrypt.hash(this.password, salt));
+    this.password = await bcrypt.hash(this.password, 10);
   }
   this.updated_at = Date.now();
   next();
