@@ -9,7 +9,6 @@ const connectDB = async () => {
       dbName: process.env.DB_NAME,
     });
     console.log("MongoDB connected successfully");
-
     // Đảm bảo các collection được tạo ra
     await Promise.all([
       db.Account.createCollection(),

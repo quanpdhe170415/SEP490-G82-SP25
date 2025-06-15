@@ -7,7 +7,6 @@ const Goods = require('./goods');
 const ImportBatch = require('./import_batch');
 const ImportDetail = require('./import_detail');
 const PriceHistory = require('./price_history');
-
 const Category = require('./category');
 const Stockmovement = require('./stockmovement');
 const Shift = require('./shift');
