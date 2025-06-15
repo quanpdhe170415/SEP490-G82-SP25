@@ -99,7 +99,7 @@ const LoginPage = () => {
           </div>
 
 
-          <a href="#" className="text-decoration-none">Quên mật khẩu?</a>
+
 
 
           <span
@@ -121,7 +121,6 @@ const LoginPage = () => {
     </div>
   );
 };
-
 
 
 export default LoginPage;
