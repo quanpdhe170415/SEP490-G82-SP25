@@ -1,6 +1,7 @@
 
 const {Bill} = require('../models');
 const { BillDetail } = require("../models");
+const { UserDetail } = require("../models");
 //Check bill status for Bank Transfer payment
 exports. isBillPaid = async (req, res) => {
     try {
@@ -46,20 +47,51 @@ exports. isBillPaid = async (req, res) => {
 
 // Lấy danh sách tất cả hóa đơn
 exports.getAllBills = async (req, res) => {
-    try {
-      const bills = await Bill.find().populate('statusId', 'name');
-      res.status(200).json({
-        success: true,
-        data: bills,
+  try {
+    // Lấy tất cả hóa đơn, populate statusId và account_id từ shift_id
+    const bills = await Bill.find()
+      .populate("statusId", "name")
+      .populate({
+        path: "shift_id",
+        select: "account_id",
+        populate: {
+          path: "account_id",
+          select: "_id",
+        },
       });
-    } catch (error) {
-      res.status(500).json({
-        success: false,
-        message: 'Lỗi khi lấy danh sách hóa đơn',
-        error: error.message,
-      });
-    }
-  };
+
+    // Lấy full_name từ UserDetail cho từng hóa đơn
+    const formattedBills = await Promise.all(
+      bills.map(async (bill) => {
+        const userDetail = await UserDetail.findOne({
+          user_id: bill.shift_id?.account_id?._id,
+        }).select("full_name");
+        return {
+          ...bill.toObject(),
+          shift_id: {
+            account_id: {
+              _id: bill.shift_id?.account_id?._id,
+              full_name: userDetail?.full_name || "Không có thông tin",
+            },
+          },
+        };
+      })
+    );
+
+    // Trả về danh sách hóa đơn với trạng thái thành công
+    res.status(200).json({
+      success: true,
+      data: formattedBills,
+    });
+  } catch (error) {
+    // Xử lý lỗi khi lấy danh sách hóa đơn
+    res.status(500).json({
+      success: false,
+      message: "Lỗi khi lấy danh sách hóa đơn",
+      error: error.message,
+    });
+  }
+};
   
   // Lấy thông tin một hóa đơn theo ID
   exports.getBillById = async (req, res) => {

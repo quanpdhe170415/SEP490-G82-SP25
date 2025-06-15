@@ -9,6 +9,7 @@ const connectDB = async () => {
       dbName: process.env.DB_NAME,
     });
     console.log("MongoDB connected successfully");
+
     // Đảm bảo các collection được tạo ra
     await Promise.all([
       db.Account.createCollection(),
@@ -29,9 +30,125 @@ const connectDB = async () => {
     ]);
     console.log("All collections ensured!");
 
+    // Seed dữ liệu cho Role nếu chưa có
+    let roles = [];
+    const roleCount = await db.Role.countDocuments();
+    console.log(`Role count: ${roleCount}`);
+    if (roleCount === 0) {
+      roles = await db.Role.insertMany([
+        {
+          name: "Admin",
+          code: "ADMIN",
+        },
+        {
+          name: "Staff",
+          code: "STAFF",
+        },
+      ]);
+      console.log(
+        "Seeded roles:",
+        roles.map((r) => ({ name: r.name, code: r.code }))
+      );
+    } else {
+      roles = await db.Role.find();
+      console.log(
+        "Existing roles:",
+        roles.map((r) => ({ name: r.name, code: r.code }))
+      );
+    }
+
+    if (!roles.length) {
+      throw new Error("No roles available for seeding Account");
+    }
+
+    // Seed dữ liệu cho Account nếu chưa có
+    let accounts = [];
+    const accountCount = await db.Account.countDocuments();
+    console.log(`Account count: ${accountCount}`);
+    if (accountCount === 0) {
+      accounts = await db.Account.insertMany([
+        {
+          username: "admin1",
+          password: "hashed_password_1", // Thay bằng mật khẩu đã mã hóa
+          full_name: "Nguyễn Văn A",
+          email: "admin1@example.com",
+          phone: "0901234567",
+          is_active: true,
+          role_id: roles.find((r) => r.name === "Admin")._id,
+        },
+        {
+          username: "admin2",
+          password: "hashed_password_2", // Thay bằng mật khẩu đã mã hóa
+          full_name: "Trần Thị B",
+          email: "admin2@example.com",
+          phone: "0912345678",
+          is_active: true,
+          role_id: roles.find((r) => r.name === "Staff")._id,
+        },
+      ]);
+      console.log(
+        "Seeded accounts:",
+        accounts.map((a) => a.username)
+      );
+    } else {
+      accounts = await db.Account.find();
+      console.log(
+        "Existing accounts:",
+        accounts.map((a) => a.username)
+      );
+    }
+
+    // Seed dữ liệu cho Shift nếu chưa có
+    let shifts = [];
+    const shiftCount = await db.Shift.countDocuments();
+    console.log(`Shift count: ${shiftCount}`);
+    if (shiftCount === 0 && accounts.length > 0) {
+      shifts = await db.Shift.insertMany([
+        {
+          account_id: accounts[0]._id, // Nguyễn Văn A
+          shift_start_time: new Date("2025-06-14T08:00:00Z"),
+          shift_end_time: new Date("2025-06-14T14:00:00Z"),
+          initial_cash_amount: 500000,
+          final_cash_amount: 520000,
+          cash_transactions: 10,
+          transfer_transactions: 5,
+          cash_change_given: 20000,
+          total_transactions: 15,
+          cash_surplus: 0,
+          status: "closed",
+          notes: "Ca sáng ngày 14/06/2025",
+        },
+        {
+          account_id: accounts[1]._id, // Trần Thị B
+          shift_start_time: new Date("2025-06-14T14:00:00Z"),
+          shift_end_time: new Date("2025-06-14T20:00:00Z"),
+          initial_cash_amount: 500000,
+          final_cash_amount: 510000,
+          cash_transactions: 8,
+          transfer_transactions: 3,
+          cash_change_given: 15000,
+          total_transactions: 11,
+          cash_surplus: 0,
+          status: "closed",
+          notes: "Ca chiều ngày 14/06/2025",
+        },
+      ]);
+      console.log(
+        "Seeded shifts:",
+        shifts.map((s) => s.notes)
+      );
+    } else {
+      shifts = await db.Shift.find();
+      console.log(
+        "Existing shifts:",
+        shifts.map((s) => s.notes)
+      );
+    }
+
     // Seed dữ liệu cho Category nếu chưa có
-    const categoryCount = await db.Category.countDocuments();
     let categories = [];
+    const categoryCount = await db.Category.countDocuments();
+    console.log(`Category count: ${categoryCount}`);
     if (categoryCount === 0) {
       categories = await db.Category.insertMany([
         { category_name: "Đồ uống", description: "Các loại nước giải khát" },
@@ -43,8 +160,9 @@ const connectDB = async () => {
     }
 
     // Seed dữ liệu cho Goods nếu chưa có
-    const goodsCount = await db.Goods.countDocuments();
     let goods = [];
+    const goodsCount = await db.Goods.countDocuments();
+    console.log(`Goods count: ${goodsCount}`);
     if (goodsCount === 0 && categories.length > 0) {
       goods = await db.Goods.insertMany([
         {
@@ -87,38 +205,12 @@ const connectDB = async () => {
       goods = await db.Goods.find();
     }
 
-    // Seed dữ liệu cho Account nếu chưa có (cho trường imported_by)
-    const accountCount = await db.Account.countDocuments();
-    let accounts = [];
-    if (accountCount === 0) {
-      accounts = await db.Account.insertMany([
-        {
-          username: "admin1",
-          password: "hashed_password_1", // Thay bằng mật khẩu đã mã hóa trong thực tế
-          full_name: "Nguyễn Văn A",
-          email: "admin1@example.com",
-          phone: "0901234567",
-          is_active: true,
-        },
-        {
-          username: "admin2",
-          password: "hashed_password_2", // Thay bằng mật khẩu đã mã hóa trong thực tế
-          full_name: "Trần Thị B",
-          email: "admin2@example.com",
-          phone: "0912345678",
-          is_active: true,
-        },
-      ]);
-      console.log("Seeded accounts!");
-    } else {
-      accounts = await db.Account.find();
-    }
-
     // Seed dữ liệu cho ImportBatch
-    const importBatchCount = await db.ImportBatch.countDocuments();
     let importBatches = [];
+    const importBatchCount = await db.ImportBatch.countDocuments();
+    console.log(`ImportBatch count: ${importBatchCount}`);
     if (importBatchCount > 0) {
-      await db.ImportBatch.deleteMany({}); // Xóa tất cả dữ liệu hiện có
+      await db.ImportBatch.deleteMany({});
       console.log("Cleared existing import batches!");
     }
     if (goods.length >= 2 && accounts.length > 0) {
@@ -151,6 +243,7 @@ const connectDB = async () => {
 
     // Seed dữ liệu cho ImportDetail
     const importDetailCount = await db.ImportDetail.countDocuments();
+    console.log(`ImportDetail count: ${importDetailCount}`);
     if (importDetailCount > 0) {
       await db.ImportDetail.deleteMany({});
       console.log("Cleared existing import details!");
@@ -188,16 +281,19 @@ const connectDB = async () => {
     }
 
     // Seed dữ liệu cho Status nếu chưa có
-    // Loại bỏ seeding Status vì ImportBatch sử dụng enum trực tiếp
-    const statusCount = await db.Status.countDocuments();
     let statuses = [];
+    const statusCount = await db.Status.countDocuments();
+    console.log(`Status count: ${statusCount}`);
     if (statusCount === 0) {
       statuses = await db.Status.insertMany([
         {
           name: "Đã thanh toán",
           description: "Hóa đơn đã được thanh toán đầy đủ",
         },
-        { name: "Đã trả hàng", description: "Hóa đơn đã bị trả hàng" },
+        {
+          name: "Đã trả hàng",
+          description: "Hóa đơn đã bị trả hàng",
+        },
       ]);
       console.log("Seeded statuses!");
     } else {
@@ -205,13 +301,14 @@ const connectDB = async () => {
     }
 
     // Seed dữ liệu cho Bill
-    const billCount = await db.Bill.countDocuments();
     let bills = [];
+    const billCount = await db.Bill.countDocuments();
+    console.log(`Bill count: ${billCount}`);
     if (billCount > 0) {
-      await db.Bill.deleteMany({}); // Xóa tất cả dữ liệu hiện có
+      await db.Bill.deleteMany({});
       console.log("Cleared existing bills!");
     }
-    if (statuses.length > 0) {
+    if (statuses.length > 0 && shifts.length > 0) {
       bills = await db.Bill.insertMany([
         {
           billNumber: "HD001",
@@ -220,6 +317,8 @@ const connectDB = async () => {
           finalAmount: 22000,
           paymentMethod: "Tiền mặt",
           statusId: statuses.find((s) => s.name === "Đã thanh toán")._id,
+          shift_id: shifts.find((s) => s.notes === "Ca sáng ngày 14/06/2025")
+            ._id,
         },
         {
           billNumber: "HD002",
@@ -228,6 +327,8 @@ const connectDB = async () => {
           finalAmount: 15000,
           paymentMethod: "Chuyển khoản ngân hàng",
           statusId: statuses.find((s) => s.name === "Đã trả hàng")._id,
+          shift_id: shifts.find((s) => s.notes === "Ca chiều ngày 14/06/2025")
+            ._id,
         },
       ]);
       console.log("Seeded bills!");
@@ -237,6 +338,7 @@ const connectDB = async () => {
 
     // Seed dữ liệu cho BillDetail
     const billDetailCount = await db.BillDetail.countDocuments();
+    console.log(`BillDetail count: ${billDetailCount}`);
     if (billDetailCount > 0) {
       await db.BillDetail.deleteMany({});
       console.log("Cleared existing bill details!");
@@ -249,6 +351,7 @@ const connectDB = async () => {
           goods_name: goods[0].goods_name,
           quantity: 2,
           unit_price: 5000,
+          total_amount: 2 * 5000,
         },
         {
           bill_id: bills[0]._id, // HD001
@@ -256,6 +359,7 @@ const connectDB = async () => {
           goods_name: goods[1].goods_name,
           quantity: 1,
           unit_price: 12000,
+          total_amount: 1 * 12000,
         },
         {
           bill_id: bills[1]._id, // HD002
@@ -263,21 +367,15 @@ const connectDB = async () => {
           goods_name: goods[1].goods_name,
           quantity: 1,
           unit_price: 15000,
+          total_amount: 1 * 15000,
         },
       ];
-
-      // Tính và thêm total_amount cho từng item
-      billDetails.forEach((item) => {
-        item.total_amount = item.quantity * item.unit_price;
-        item.createdAt = new Date();
-        item.updatedAt = new Date();
-      });
 
       await db.BillDetail.insertMany(billDetails);
       console.log("Seeded bill details!");
     }
   } catch (error) {
-    console.error("MongoDB in-memory connection failed: ", error);
+    console.error("MongoDB connection failed: ", error);
     process.exit(1);
   }
 };

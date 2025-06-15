@@ -13,7 +13,7 @@ import {
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 
-const PurchaseHistory = () => {
+const ImportHistory = () => {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -700,4 +700,4 @@ const PurchaseHistory = () => {
   );
 };
 
-export default PurchaseHistory;
+export default ImportHistory;
