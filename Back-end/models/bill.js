@@ -6,14 +6,6 @@ const billSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
-  customerName: {
-    type: String,
-    required: true,
-  },
-  customerPhone: {
-    type: String,
-    required: true,
-  },
   totalAmount: {
     type: Number,
   },
