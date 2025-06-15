@@ -1,13 +1,14 @@
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { Container, Row, Col, Form, Table, Card, Button } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import "./Css/BillHistory.css";
+import { Container, Row, Col, Form, Table, Card, Button } from "react-bootstrap";
 import Header from "./Header";
+import Sidebar from "./Sidebar";
 
 const BillHistory = () => {
     const [fromDate, setFromDate] = useState("");
     const [toDate, setToDate] = useState("");
+    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [statusSearch, setStatusSearch] = useState({
         pending: false,
         confirmed: false,
@@ -20,88 +21,249 @@ const BillHistory = () => {
         cash: false,
         transfer: false,
     });
-    const [selectedBillId, setSelectedBillId] = useState(null); // Track selected bill
+    const [selectedBillId, setSelectedBillId] = useState(null);
+    const [billData, setBillData] = useState([]);
+    const [billDetails, setBillDetails] = useState({});
+    const [loading, setLoading] = useState(true);
+    const [loadingDetails, setLoadingDetails] = useState({});
 
-    // Sample data for the bill table with items
-    const billData = [
-        {
-            id: "HD001",
-            time: "20/05/2025 10:28",
-            employee: "Thu ngân 1",
-            totalAmount: 20000,
-            paymentAmount: 20000,
-            paymentMethod: "cash",
-            status: "cancelled",
-            creator: "Phạm Văn Thanh",
-            seller: "Phạm Văn Thanh",
-            items: [
-                {
-                    productId: "10131420895",
-                    name: "Vít đầu bàng răng thưa, thân ôm M4, màu đen-VG420B23T",
-                    quantity: 5,
-                    unitPrice: 3000,
-                    totalPrice: 15000,
-                },
-                {
-                    productId: "10135091592",
-                    name: "Sữa rửa mặt Kose Nhật 220g xanh nhạt chứa collagen",
-                    quantity: 20,
-                    unitPrice: 250,
-                    totalPrice: 5000,
-                },
-            ],
-        }, {
-            id: "HD002",
-            time: "20/05/2025 10:28",
-            employee: "Thu ngân 1",
-            totalAmount: 20000,
-            paymentAmount: 20000,
-            paymentMethod: "cash",
-            status: "completed",
-            creator: "Phạm Văn Thanh",
-            seller: "Phạm Văn Thanh",
-            items: [
-                {
-                    productId: "10131420895",
-                    name: "Vít đầu bàng răng thưa, thân ôm M4, màu đen-VG420B23T",
-                    quantity: 5,
-                    unitPrice: 3000,
-                    totalPrice: 15000,
-                },
-                {
-                    productId: "10135091592",
-                    name: "Sữa rửa mặt Kose Nhật 220g xanh nhạt chứa collagen",
-                    quantity: 20,
-                    unitPrice: 250,
-                    totalPrice: 5000,
-                },
-            ],
+    // Fetch bills from API
+    useEffect(() => {
+        fetchBills();
+    }, []);
+
+    const fetchBills = async () => {
+        try {
+            setLoading(true);
+            const response = await fetch('http://localhost:9999/api/bill/');
+            const result = await response.json();
+            
+            if (result.success) {
+                setBillData(result.data);
+            }
+        } catch (error) {
+            console.error('Error fetching bills:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchBillDetails = async (billId) => {
+        try {
+            setLoadingDetails(prev => ({ ...prev, [billId]: true }));
+            const response = await fetch(`http://localhost:9999/api/bill/${billId}`);
+            const result = await response.json();
+            
+            if (result.success) {
+                setBillDetails(prev => ({
+                    ...prev,
+                    [billId]: result.data
+                }));
+            }
+        } catch (error) {
+            console.error('Error fetching bill details:', error);
+        } finally {
+            setLoadingDetails(prev => ({ ...prev, [billId]: false }));
+        }
+    };
+
+    // Styles for the page
+    const pageStyles = {
+        billHistoryPage: {
+            fontFamily: 'Inter, sans-serif',
+            background: 'linear-gradient(135deg, #f0f9f0 0%, #e8f5e8 100%)',
+            minHeight: '100vh',
+            color: '#2e7d32'
         },
-        // Add more sample data here
-    ];
+        mainContent: {
+            padding: '1rem'
+        },
+        pageRow: {
+            margin: 0,
+            display: 'flex',
+            gap: '1rem',
+            alignItems: 'flex-start'
+        },
+        searchPanel: {
+            background: 'white',
+            border: 'none',
+            borderRadius: '12px',
+            boxShadow: '0 2px 10px rgba(0, 0, 0, 0.05)',
+            position: 'sticky',
+            top: '20px',
+            height: 'fit-content',
+            width: '280px',
+            flexShrink: 0
+        },
+        searchPanelBody: {
+            padding: '1.5rem'
+        },
+        searchTitle: {
+            color: '#2e7d32',
+            fontWeight: '600',
+            marginBottom: '1.5rem',
+            fontSize: '1.25rem'
+        },
+        formLabel: {
+            fontWeight: '500',
+            color: '#555',
+            marginBottom: '0.5rem'
+        },
+        formControl: {
+            border: '1px solid #ddd',
+            borderRadius: '6px',
+            padding: '0.6rem 0.8rem',
+            transition: 'border-color 0.2s ease',
+            width: '100%',
+            marginBottom: '1rem'
+        },
+        contentArea: {
+            background: 'rgba(255, 255, 255, 0.95)',
+            borderRadius: '12px',
+            padding: '2rem',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+            flex: 1
+        },
+        pageTitle: {
+            fontSize: '2rem',
+            fontWeight: '600',
+            color: '#2e7d32',
+            marginBottom: '2rem',
+            textAlign: 'center'
+        },
+        billTableWrapper: {
+            background: 'white',
+            borderRadius: '12px',
+            overflow: 'hidden',
+            boxShadow: '0 2px 10px rgba(0, 0, 0, 0.05)'
+        },
+        tableHeader: {
+            background: '#4caf50',
+            color: 'white',
+            fontWeight: '600',
+            padding: '1rem',
+            border: 'none',
+            textTransform: 'uppercase',
+            fontSize: '0.8rem',
+            letterSpacing: '0.5px'
+        },
+        tableCell: {
+            padding: '1rem',
+            borderBottom: '1px solid #f0f0f0',
+            transition: 'background-color 0.2s ease'
+        },
+        billDetails: {
+            background: '#f8f9fa',
+            borderRadius: '8px',
+            padding: '1.5rem',
+            margin: '1rem 0',
+            border: '1px solid #e9ecef'
+        },
+        billInfo: {
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: '1rem',
+            marginBottom: '1.5rem',
+            padding: '1rem',
+            background: 'white',
+            borderRadius: '6px'
+        },
+        infoItem: {
+            display: 'flex',
+            flexDirection: 'column'
+        },
+        infoLabel: {
+            fontSize: '0.75rem',
+            fontWeight: '600',
+            color: '#666',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
+            marginBottom: '0.25rem'
+        },
+        infoValue: {
+            fontWeight: '500',
+            color: '#333'
+        },
+        totalSummary: {
+            background: '#4caf50',
+            color: 'white',
+            padding: '1rem',
+            borderRadius: '8px',
+            marginTop: '1rem',
+            marginLeft: 'auto',
+            width: '400px',
+            maxWidth: '100%'
+        },
+        summaryItem: {
+            marginBottom: '0.5rem',
+            fontWeight: '500',
+            display: 'flex',
+            justifyContent: 'space-between',
+            padding: '0.25rem 0'
+        },
+        summaryButtonContainer: {
+            display: 'flex',
+            justifyContent: 'flex-end',
+            marginTop: '1rem'
+        },
+        btnReturn: {
+            background: '#f44336',
+            border: 'none',
+            padding: '0.6rem 1.2rem',
+            borderRadius: '6px',
+            fontWeight: '500',
+            color: 'white',
+            textDecoration: 'none',
+            display: 'inline-block',
+            marginTop: '1rem'
+        },
+        loadingText: {
+            textAlign: 'center',
+            color: '#666',
+            fontStyle: 'italic',
+            padding: '2rem'
+        }
+    };
+
+    // Helper function to format date
+    const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('vi-VN') + ' ' + date.toLocaleTimeString('vi-VN');
+    };
+
+    // Helper function to normalize payment method for filtering
+    const normalizePaymentMethod = (method) => {
+        if (method === "Tiền mặt") return "cash";
+        if (method === "Chuyển khoản ngân hàng") return "transfer";
+        return method.toLowerCase();
+    };
 
     // Filter bills based on selected filters
     const filterBills = () => {
         let filteredBills = billData;
 
-        // Filter by time range
         if (fromDate) {
-            filteredBills = filteredBills.filter(bill => new Date(bill.time) >= new Date(fromDate));
+            filteredBills = filteredBills.filter(bill => new Date(bill.createdAt) >= new Date(fromDate));
         }
         if (toDate) {
-            filteredBills = filteredBills.filter(bill => new Date(bill.time) <= new Date(toDate));
+            filteredBills = filteredBills.filter(bill => new Date(bill.createdAt) <= new Date(toDate));
         }
 
-        // Filter by status
         const activeStatuses = Object.keys(statusSearch).filter(status => statusSearch[status]);
         if (activeStatuses.length > 0) {
-            filteredBills = filteredBills.filter(bill => activeStatuses.includes(bill.status));
+            // Note: You'll need to map statusId to actual status names
+            // This is a placeholder - adjust based on your status mapping
+            filteredBills = filteredBills.filter(bill => {
+                // You may need to fetch status details or maintain a status mapping
+                return true; // Placeholder
+            });
         }
 
-        // Filter by payment method
         const activeMethods = Object.keys(paymentMethodSearch).filter(method => paymentMethodSearch[method]);
         if (activeMethods.length > 0) {
-            filteredBills = filteredBills.filter(bill => activeMethods.includes(bill.paymentMethod.toLowerCase()));
+            filteredBills = filteredBills.filter(bill => 
+                activeMethods.includes(normalizePaymentMethod(bill.paymentMethod))
+            );
         }
 
         return filteredBills;
@@ -121,249 +283,298 @@ const BillHistory = () => {
         });
     };
 
-    // Toggle the selected bill for viewing its items
-    const toggleBillDetails = (billId) => {
-        setSelectedBillId(selectedBillId === billId ? null : billId);
+    const toggleBillDetails = async (billId) => {
+        if (selectedBillId === billId) {
+            setSelectedBillId(null);
+        } else {
+            setSelectedBillId(billId);
+            // Fetch bill details if not already loaded
+            if (!billDetails[billId]) {
+                await fetchBillDetails(billId);
+            }
+        }
     };
 
-    // Get the filtered bills based on the search criteria
+    const getStatusLabel = (status) => {
+        const statusMap = {
+            pending: "Chờ xử lý",
+            confirmed: "Đã xác nhận", 
+            processing: "Đang xử lý",
+            completed: "Hoàn thành",
+            cancelled: "Đã hủy",
+            refunded: "Hoàn trả"
+        };
+        return statusMap[status] || "Khác";
+    };
+
     const filteredBills = filterBills();
 
+    if (loading) {
+        return (
+            <div style={pageStyles.billHistoryPage}>
+                <Header />
+                <Container fluid style={pageStyles.mainContent}>
+                    <div style={pageStyles.loadingText}>Đang tải dữ liệu...</div>
+                </Container>
+            </div>
+        );
+    }
+
     return (
-        <div className="bill-history-page">
-            {/* Header */}
+        <div style={pageStyles.billHistoryPage}>
             <Header />
 
-            <Container fluid className="main-content">
-                <Row>
-                    {/* Main Content */}
-                    <Col md={12} className="content-area p-4">
-                        <h2 className="page-title">Lịch sử hóa đơn</h2>
+            <Container fluid style={pageStyles.mainContent}>
+                <div style={pageStyles.pageRow}>
+                    {/* Sidebar */}
+                    <Sidebar 
+                        activeItem="bill-history" 
+                        isCollapsed={sidebarCollapsed}
+                        onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+                    />
+                    
+                    {/* Search Panel */}
+                    <div style={pageStyles.searchPanel}>
+                        <div style={pageStyles.searchPanelBody}>
+                            <h5 style={pageStyles.searchTitle}>Tìm kiếm</h5>
+                            
+                            {/* Time Range */}
+                            <div style={{ marginBottom: '1rem' }}>
+                                <label style={pageStyles.formLabel}>Thời gian từ</label>
+                                <input
+                                    type="datetime-local"
+                                    style={pageStyles.formControl}
+                                    value={fromDate}
+                                    onChange={(e) => setFromDate(e.target.value)}
+                                />
+                            </div>
+                            
+                            <div style={{ marginBottom: '1rem' }}>
+                                <label style={pageStyles.formLabel}>Đến</label>
+                                <input
+                                    type="datetime-local"
+                                    style={pageStyles.formControl}
+                                    value={toDate}
+                                    onChange={(e) => setToDate(e.target.value)}
+                                />
+                            </div>
 
-                        <Row>
-                            {/* Search Panel */}
-                            <Col md={3}>
-                                <Card className="search-panel shadow-sm mb-4">
-                                    <Card.Body>
-                                        <h5>Tìm kiếm</h5>
-                                        <Form>
-                                            {/* Time Range */}
-                                            <Form.Group className="mb-3">
-                                                <Form.Label>Thời gian từ</Form.Label>
-                                                <Form.Control
-                                                    type="datetime-local"
-                                                    value={fromDate}
-                                                    onChange={(e) => setFromDate(e.target.value)}
+                            {/* Status Filter */}
+                            <div style={{ marginBottom: '1rem' }}>
+                                <label style={pageStyles.formLabel}>Trạng thái</label>
+                                <div>
+                                    {["pending", "confirmed", "processing", "completed", "cancelled", "refunded"].map((status) => (
+                                        <div key={status} style={{ marginBottom: '0.5rem' }}>
+                                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={statusSearch[status]}
+                                                    onChange={() => handleStatusChange(status)}
                                                 />
-                                            </Form.Group>
-                                            <Form.Group className="mb-3">
-                                                <Form.Label>Đến</Form.Label>
-                                                <Form.Control
-                                                    type="datetime-local"
-                                                    value={toDate}
-                                                    onChange={(e) => setToDate(e.target.value)}
+                                                <span>{getStatusLabel(status)}</span>
+                                            </label>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Payment Method Filter */}
+                            <div>
+                                <label style={pageStyles.formLabel}>Phương thức thanh toán</label>
+                                <div>
+                                    {["cash", "transfer"].map((method) => (
+                                        <div key={method} style={{ marginBottom: '0.5rem' }}>
+                                            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={paymentMethodSearch[method]}
+                                                    onChange={() => handlePaymentMethodChange(method)}
                                                 />
-                                            </Form.Group>
+                                                <span>{method === "cash" ? "Tiền mặt" : "Chuyển khoản"}</span>
+                                            </label>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-                                            {/* Status Filter */}
-                                            <Form.Group className="mb-3">
-                                                <Form.Label>Trạng thái</Form.Label>
-                                                <div>
-                                                    {["pending", "confirmed", "processing", "completed", "cancelled", "refunded"].map(
-                                                        (status) => (
-                                                            <Form.Check
-                                                                key={status}
-                                                                type="checkbox"
-                                                                label={
-                                                                    status === "pending"
-                                                                        ? "Chờ xử lý"
-                                                                        : status === "confirmed"
-                                                                            ? "Đã xác nhận"
-                                                                            : status === "processing"
-                                                                                ? "Đang xử lý"
-                                                                                : status === "completed"
-                                                                                    ? "Hoàn thành"
-                                                                                    : status === "cancelled"
-                                                                                        ? "Đã hủy"
-                                                                                        : "Hoàn trả"
-                                                                }
-                                                                checked={statusSearch[status]}
-                                                                onChange={() => handleStatusChange(status)}
-                                                            />
-                                                        )
-                                                    )}
-                                                </div>
-                                            </Form.Group>
-
-                                            {/* Payment Method Filter */}
-                                            <Form.Group className="mb-3">
-                                                <Form.Label>Phương thức thanh toán</Form.Label>
-                                                <div>
-                                                    {["cash", "transfer"].map((method) => (
-                                                        <Form.Check
-                                                            key={method}
-                                                            type="checkbox"
-                                                            label={method === "cash" ? "Tiền mặt" : "Chuyển khoản"}
-                                                            checked={paymentMethodSearch[method]}
-                                                            onChange={() => handlePaymentMethodChange(method)}
-                                                        />
-                                                    ))}
-                                                </div>
-                                            </Form.Group>
-                                        </Form>
-                                    </Card.Body>
-                                </Card>
-                            </Col>
-
-                            {/* Bill Table */}
-                            <Col md={9}>
-                                <div className="bill-table-wrapper">
-                                    <Table bordered hover className="bill-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Mã hóa đơn</th>
-                                                <th>Thời gian</th>
-                                                <th>Người bán</th>
-                                                <th>Tổng tiền hóa đơn</th>
-                                                <th>Thanh toán thực tế</th>
-                                                <th>Phương thức thanh toán</th>
-                                                <th>Trạng thái</th>
+                    {/* Main Content Area */}
+                    <div style={pageStyles.contentArea}>
+                        <h2 style={pageStyles.pageTitle}>Lịch sử hóa đơn</h2>
+                        
+                        {/* Bill Table */}
+                        <div style={pageStyles.billTableWrapper}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                                <thead>
+                                    <tr>
+                                        <th style={pageStyles.tableHeader}>Mã hóa đơn</th>
+                                        <th style={pageStyles.tableHeader}>Thời gian</th>
+                                        <th style={pageStyles.tableHeader}>Người bán</th>
+                                        <th style={pageStyles.tableHeader}>Tổng tiền</th>
+                                        <th style={pageStyles.tableHeader}>Thanh toán</th>
+                                        <th style={pageStyles.tableHeader}>Phương thức</th>
+                                        <th style={pageStyles.tableHeader}>Trạng thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredBills.map((bill) => (
+                                        <React.Fragment key={bill._id}>
+                                            <tr
+                                                onClick={() => toggleBillDetails(bill._id)}
+                                                style={{ 
+                                                    cursor: 'pointer',
+                                                    backgroundColor: selectedBillId === bill._id ? '#e8f5e8' : 'transparent'
+                                                }}
+                                                onMouseEnter={(e) => {
+                                                    if (selectedBillId !== bill._id) {
+                                                        e.currentTarget.style.backgroundColor = '#f8f9fa';
+                                                    }
+                                                }}
+                                                onMouseLeave={(e) => {
+                                                    if (selectedBillId !== bill._id) {
+                                                        e.currentTarget.style.backgroundColor = 'transparent';
+                                                    }
+                                                }}
+                                            >
+                                                <td style={pageStyles.tableCell}>{bill.billNumber}</td>
+                                                <td style={pageStyles.tableCell}>{formatDate(bill.createdAt)}</td>
+                                                <td style={pageStyles.tableCell}>{bill.seller}</td>
+                                                <td style={pageStyles.tableCell}>{bill.totalAmount.toLocaleString()} VND</td>
+                                                <td style={pageStyles.tableCell}>{bill.finalAmount.toLocaleString()} VND</td>
+                                                <td style={pageStyles.tableCell}>{bill.paymentMethod}</td>
+                                                <td style={pageStyles.tableCell}>
+                                                    {/* You may need to map statusId to actual status name */}
+                                                    Hoàn thành
+                                                </td>
                                             </tr>
-                                        </thead>
-                                        <tbody>
-                                            {filteredBills.map((bill, index) => (
-                                                <>
-                                                    <tr
-                                                        key={bill.id}
-                                                        onClick={() => toggleBillDetails(bill.id)}
-
-                                                    >
-                                                        <td style={{ backgroundColor: selectedBillId === bill.id ? '#e3f2fd' : 'transparent' }}>{bill.id}</td>
-                                                        <td style={{ backgroundColor: selectedBillId === bill.id ? '#e3f2fd' : 'transparent' }}>{bill.time}</td>
-                                                        <td style={{ backgroundColor: selectedBillId === bill.id ? '#e3f2fd' : 'transparent' }}>{bill.seller}</td>
-                                                        <td style={{ backgroundColor: selectedBillId === bill.id ? '#e3f2fd' : 'transparent' }}>{bill.totalAmount}</td>
-                                                        <td style={{ backgroundColor: selectedBillId === bill.id ? '#e3f2fd' : 'transparent' }}>{bill.paymentAmount}</td>
-                                                        <td style={{ backgroundColor: selectedBillId === bill.id ? '#e3f2fd' : 'transparent' }}>{bill.paymentMethod === "cash" ? "Tiền mặt" : "Chuyển khoản"}</td>
-                                                        <td style={{ backgroundColor: selectedBillId === bill.id ? '#e3f2fd' : 'transparent' }}>
-                                                            {bill.status === "pending" ? "Chờ xử lý" :
-                                                                bill.status === "confirmed" ? "Đã xác nhận" :
-                                                                    bill.status === "processing" ? "Đang xử lý" :
-                                                                        bill.status === "completed" ? "Hoàn thành" :
-                                                                            bill.status === "cancelled" ? "Đã hủy" :
-                                                                                bill.status === "refunded" ? "Hoàn trả" : "Khác"}
-                                                        </td>
-                                                    </tr >
-                                                    {selectedBillId === bill.id && (
-                                                        <tr>
-                                                            <td colSpan="7">
-                                                                <div className="bill-details">
-                                                                    <h5>Chi tiết hóa đơn</h5>
-                                                                    <div className="bill-info">
-                                                                        <div className="info-item">
-                                                                            <span className="info-label">Mã hóa đơn:</span>
-                                                                            <span className="info-value">{bill.id}</span>
-                                                                        </div>
-
-                                                                        <div className="info-item">
-                                                                            <span className="info-label">Người bán:</span>
-                                                                            <span className="info-value">{bill.seller}</span>
-                                                                        </div>
-                                                                        <div className="info-item">
-                                                                            <span className="info-label">Phương thức thanh toán:</span>
-                                                                            <span className="info-value">{bill.paymentMethod === "cash" ? "Tiền mặt" : "Chuyển khoản"}</span>
-                                                                        </div>
-
-                                                                        <div className="info-item">
-                                                                            <span className="info-label">Thời gian:</span>
-                                                                            <span className="info-value">{bill.time}</span>
-                                                                        </div>
-                                                                        <div className="info-item">
-                                                                            <span className="info-label">Người tạo:</span>
-                                                                            <span className="info-value">{bill.creator}</span>
-                                                                        </div>
-                                                                        <div className="info-item">
-                                                                            <span className="info-label">Trạng thái:</span>
-                                                                            <span className="info-value">
-                                                                                {bill.status === "pending" ? "Chờ xử lý" :
-                                                                                    bill.status === "confirmed" ? "Đã xác nhận" :
-                                                                                        bill.status === "processing" ? "Đang xử lý" :
-                                                                                            bill.status === "completed" ? "Hoàn thành" :
-                                                                                                bill.status === "cancelled" ? "Đã hủy" :
-                                                                                                    bill.status === "refunded" ? "Hoàn trả" : "Khác"}
-
-                                                                            </span>
-                                                                        </div>
-                                                                    </div>
-                                                                    <Table bordered className="bill-table">
+                                            {selectedBillId === bill._id && (
+                                                <tr>
+                                                    <td colSpan="7" style={{ padding: 0, border: 'none' }}>
+                                                        <div style={pageStyles.billDetails}>
+                                                            <h5 style={{ color: '#2e7d32', fontWeight: '600', marginBottom: '1.5rem' }}>
+                                                                Chi tiết hóa đơn
+                                                            </h5>
+                                                            
+                                                            <div style={pageStyles.billInfo}>
+                                                                <div style={pageStyles.infoItem}>
+                                                                    <span style={pageStyles.infoLabel}>Mã hóa đơn:</span>
+                                                                    <span style={pageStyles.infoValue}>{bill.billNumber}</span>
+                                                                </div>
+                                                                <div style={pageStyles.infoItem}>
+                                                                    <span style={pageStyles.infoLabel}>Thời gian:</span>
+                                                                    <span style={pageStyles.infoValue}>{formatDate(bill.createdAt)}</span>
+                                                                </div>
+                                                                <div style={pageStyles.infoItem}>
+                                                                    <span style={pageStyles.infoLabel}>Người bán:</span>
+                                                                    <span style={pageStyles.infoValue}>{bill.seller}</span>
+                                                                </div>
+                                                                <div style={pageStyles.infoItem}>
+                                                                    <span style={pageStyles.infoLabel}>Phương thức:</span>
+                                                                    <span style={pageStyles.infoValue}>{bill.paymentMethod}</span>
+                                                                </div>
+                                                                <div style={pageStyles.infoItem}>
+                                                                    <span style={pageStyles.infoLabel}>Trạng thái:</span>
+                                                                    <span style={pageStyles.infoValue}>Hoàn thành</span>
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            {/* Items Table */}
+                                                            {loadingDetails[bill._id] ? (
+                                                                <div style={pageStyles.loadingText}>Đang tải chi tiết...</div>
+                                                            ) : billDetails[bill._id] ? (
+                                                                <div style={{ 
+                                                                    background: 'white', 
+                                                                    borderRadius: '6px', 
+                                                                    overflow: 'hidden',
+                                                                    marginBottom: '1rem'
+                                                                }}>
+                                                                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                                                                         <thead>
                                                                             <tr>
-                                                                                <th>Mã hàng</th>
-                                                                                <th>Tên hàng</th>
-                                                                                <th>Số lượng</th>
-                                                                                <th>Đơn giá</th>
-                                                                                <th>Thành tiền</th>
+                                                                                <th style={{ ...pageStyles.tableHeader, background: '#388e3c' }}>Mã hàng</th>
+                                                                                <th style={{ ...pageStyles.tableHeader, background: '#388e3c' }}>Tên hàng</th>
+                                                                                <th style={{ ...pageStyles.tableHeader, background: '#388e3c' }}>Số lượng</th>
+                                                                                <th style={{ ...pageStyles.tableHeader, background: '#388e3c' }}>Đơn giá</th>
+                                                                                <th style={{ ...pageStyles.tableHeader, background: '#388e3c' }}>Thành tiền</th>
                                                                             </tr>
                                                                         </thead>
                                                                         <tbody>
-                                                                            {bill.items.map((item) => (
-                                                                                <tr key={item.productId}>
-                                                                                    <td>{item.productId}</td>
-                                                                                    <td>{item.name}</td>
-                                                                                    <td>{item.quantity}</td>
-                                                                                    <td>{item.unitPrice}</td>
-                                                                                    <td>{item.totalPrice}</td>
+                                                                            {billDetails[bill._id].map((item, index) => (
+                                                                                <tr key={item._id} style={{ 
+                                                                                    backgroundColor: index % 2 === 1 ? '#f8f9fa' : 'white' 
+                                                                                }}>
+                                                                                    <td style={{ ...pageStyles.tableCell, padding: '0.75rem' }}>
+                                                                                        {item.goods_id?._id || 'N/A'}
+                                                                                    </td>
+                                                                                    <td style={{ ...pageStyles.tableCell, padding: '0.75rem' }}>
+                                                                                        {item.goods_name}
+                                                                                    </td>
+                                                                                    <td style={{ ...pageStyles.tableCell, padding: '0.75rem' }}>
+                                                                                        {item.quantity}
+                                                                                    </td>
+                                                                                    <td style={{ ...pageStyles.tableCell, padding: '0.75rem' }}>
+                                                                                        {item.unit_price.toLocaleString()} VND
+                                                                                    </td>
+                                                                                    <td style={{ ...pageStyles.tableCell, padding: '0.75rem' }}>
+                                                                                        {item.total_amount.toLocaleString()} VND
+                                                                                    </td>
                                                                                 </tr>
                                                                             ))}
                                                                         </tbody>
-                                                                    </Table>
+                                                                    </table>
+                                                                </div>
+                                                            ) : null}
 
-                                                                    {/* Total Summary */}
-                                                                    <div className="total-summary">
-                                                                        <p>
-                                                                            <span>Tổng số lượng hàng:</span>
-                                                                            <span>{bill.items.reduce((acc, item) => acc + item.quantity, 0)}</span>
-                                                                        </p>
-                                                                        <p>
-                                                                            <span>Tổng số tiền:</span>
-                                                                            <span>{bill.totalAmount.toLocaleString('vi-VN')} đ</span>
-                                                                        </p>
-                                                                        <p>
-                                                                            <span>Số tiền khách cần trả:</span>
-                                                                            <span>{bill.totalAmount.toLocaleString('vi-VN')} đ</span>
-                                                                        </p>
-                                                                        <p>
-                                                                            <span>Số tiền khách đã trả:</span>
-                                                                            <span>{bill.paymentAmount.toLocaleString('vi-VN')} đ</span>
-                                                                        </p>
-
-                                                                        {/* Buttons Container */}
-                                                                        <div className="button-container">
-                                                                            <Link to="/return-goods">
-                                                                                <Button variant="danger" className="btn-return">
-                                                                                    Trả hàng
-                                                                                </Button>
-                                                                            </Link>
-                                                                            {/* <Button variant="primary" className="btn-print">
-                                                                                In hóa đơn
-                                                                            </Button> */}
-                                                                        </div>
+                                                            {/* Total Summary */}
+                                                            {billDetails[bill._id] && (
+                                                                <div style={pageStyles.totalSummary}>
+                                                                    <div style={pageStyles.summaryItem}>
+                                                                        <span>Tổng số lượng hàng:</span>
+                                                                        <span>
+                                                                            {billDetails[bill._id].reduce((acc, item) => acc + item.quantity, 0)}
+                                                                        </span>
+                                                                    </div>
+                                                                    <div style={pageStyles.summaryItem}>
+                                                                        <span>Tổng số tiền:</span>
+                                                                        <span>{bill.totalAmount.toLocaleString()} VND</span>
+                                                                    </div>
+                                                                    <div style={pageStyles.summaryItem}>
+                                                                        <span>Số tiền khách cần trả:</span>
+                                                                        <span>{bill.totalAmount.toLocaleString()} VND</span>
+                                                                    </div>
+                                                                    <div style={{ 
+                                                                        ...pageStyles.summaryItem, 
+                                                                        fontWeight: '600',
+                                                                        fontSize: '1.1rem',
+                                                                        borderTop: '1px solid rgba(255, 255, 255, 0.3)',
+                                                                        paddingTop: '0.5rem',
+                                                                        marginTop: '0.5rem'
+                                                                    }}>
+                                                                        <span>Số tiền khách đã trả:</span>
+                                                                        <span>{bill.finalAmount.toLocaleString()} VND</span>
                                                                     </div>
                                                                 </div>
-
-                                                            </td>
-                                                        </tr>
-                                                    )}
-                                                </>
-                                            ))}
-                                        </tbody>
-                                    </Table>
-                                </div>
-                            </Col>
-                        </Row>
-                    </Col>
-                </Row>
-            </Container >
-        </div >
+                                                            )}
+                                                            
+                                                            <div style={pageStyles.summaryButtonContainer}>
+                                                                <Link to="/return-goods" style={pageStyles.btnReturn}>
+                                                                    Trả hàng
+                                                                </Link>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </React.Fragment>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </Container>
+        </div>
     );
 };
 

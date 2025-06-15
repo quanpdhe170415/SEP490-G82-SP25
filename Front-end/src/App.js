@@ -6,9 +6,9 @@ import HomePage from './components/HomePage';
 import 'react-toastify/dist/ReactToastify.css';
 import BillHistoryPage from './components/BillHistoryPage';
 import ReturnGoods from './components/ReturnGoods';
-
 import ForgotPassword from './components/ForgotPassword';
 import HomeForCashier from './components/HomeforCashier';
+
 
 
 function App() {
@@ -21,6 +21,7 @@ function App() {
         <Route path="/return-goods" element={<ReturnGoods/>} />
         <Route path="/forgotpassword" element={<ForgotPassword />} />
         <Route path="/homecashier" element={<HomeForCashier />} />
+          <Route path="/bill-history" element={<BillHistoryPage />} />
       </Routes>
     </Router>
   );
