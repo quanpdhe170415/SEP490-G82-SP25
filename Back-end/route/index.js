@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const authenRouter = require("./authen.route");
 const billRoute = require("./bill.route");
+const returnOrderRoute = require("./returnorder.route");
 
 const productRouter = require("./product.route");
 const shiftRouter = require("./shift.route");
@@ -15,5 +16,6 @@ router.use("/shift", shiftRouter);
 router.use("/payment", paymentRouter);
 router.use("/invoice", require("./invoice.route"));
 router.use("/bill", billRoute);
+router.use("/return", returnOrderRoute);
 
 module.exports = router;
