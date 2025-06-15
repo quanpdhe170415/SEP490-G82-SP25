@@ -1,336 +1,225 @@
 /* ===============================================
-   BILL HISTORY PAGE - MODERN SCIENTIFIC DESIGN
-   Light Green Theme
+   BILL HISTORY PAGE - UPDATED CSS
    =============================================== */
 
-/* Reset và Base Styles */
-* {
-  box-sizing: border-box;
-}
-
+/* Base Styles */
 .bill-history-page {
-  font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, #f0f9f0 0%, #c8e6c9 100%);
+  font-family: 'Inter', sans-serif;
+  background: linear-gradient(135deg, #f0f9f0 0%, #e8f5e8 100%);
   min-height: 100vh;
-  color: #1b5e20;
+  color: #2e7d32;
 }
 
 /* ===============================================
-   MAIN CONTENT LAYOUT
+   LAYOUT - NEW STRUCTURE
    =============================================== */
 
 .main-content {
+  padding: 1rem;
+}
+
+.page-row {
+  margin: 0;
+  gap: 1rem;
+}
+
+.sidebar-col {
   padding: 0;
-  background-color: transparent;
+}
+
+.search-col {
+  padding: 0;
+}
+
+.content-col {
+  padding: 0;
 }
 
 .content-area {
-  padding: 2rem !important;
-  background-color: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
-  margin: 1rem;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  height: fit-content;
 }
 
 .page-title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #1b5e20;
+  font-size: 2rem;
+  font-weight: 600;
+  color: #2e7d32;
   margin-bottom: 2rem;
   text-align: center;
-  position: relative;
-  letter-spacing: -0.02em;
-}
-
-.page-title::after {
-  content: '';
-  position: absolute;
-  bottom: -10px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 80px;
-  height: 4px;
-  background: linear-gradient(90deg, #4caf50 0%, #66bb6a 100%);
-  border-radius: 2px;
 }
 
 /* ===============================================
-   SEARCH PANEL DESIGN
+   SEARCH PANEL
    =============================================== */
 
 .search-panel {
-  background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+  background: white;
   border: none;
-  border-radius: 16px;
-  box-shadow: 
-    0 10px 30px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   position: sticky;
   top: 20px;
+  height: fit-content;
 }
 
 .search-panel .card-body {
-  padding: 1.75rem;
+  padding: 1.5rem;
 }
 
 .search-panel h5 {
-  font-size: 1.25rem;
+  color: #2e7d32;
   font-weight: 600;
-  color: #1b5e20;
-  margin-bottom: 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.search-panel h5::before {
-  content: '🔍';
-  font-size: 1.1rem;
-}
-
-/* Form Styling */
-.search-panel .form-group {
   margin-bottom: 1.5rem;
 }
 
 .search-panel .form-label {
-  font-weight: 600;
-  color: #374151;
+  font-weight: 500;
+  color: #555;
   margin-bottom: 0.5rem;
-  font-size: 0.875rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
 }
 
 .search-panel .form-control {
-  border: 2px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 0.75rem 1rem;
-  font-size: 0.875rem;
-  transition: all 0.2s ease;
-  background-color: #f8fafc;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 0.6rem 0.8rem;
+  transition: border-color 0.2s ease;
 }
 
 .search-panel .form-control:focus {
   border-color: #4caf50;
-  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
-  background-color: #ffffff;
-  outline: none;
-}
-
-/* Checkbox Styling */
-.search-panel .form-check {
-  margin-bottom: 0.75rem;
-  padding-left: 0;
-}
-
-.search-panel .form-check-input {
-  width: 18px;
-  height: 18px;
-  margin-right: 0.75rem;
-  border: 2px solid #cbd5e0;
-  border-radius: 4px;
-  transition: all 0.2s ease;
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
 }
 
 .search-panel .form-check-input:checked {
   background-color: #4caf50;
   border-color: #4caf50;
-  box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);
 }
 
 .search-panel .form-check-label {
-  font-size: 0.875rem;
-  color: #4a5568;
+  color: #555;
   font-weight: 500;
-  cursor: pointer;
-  transition: color 0.2s ease;
-}
-
-.search-panel .form-check-input:checked + .form-check-label {
-  color: #2d3748;
 }
 
 /* ===============================================
-   TABLE DESIGN
+   TABLE
    =============================================== */
 
 .bill-table-wrapper {
-  background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
-  border-radius: 16px;
+  background: white;
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 
-    0 10px 30px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
-  margin-top: 0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
 .bill-table {
-  width: 100%;
   margin-bottom: 0;
-  border-collapse: separate;
-  border-spacing: 0;
-  font-size: 0.875rem;
 }
 
 .bill-table thead th {
-  background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
-  color: #ffffff;
+  background: #4caf50;
+  color: white;
   font-weight: 600;
-  padding: 1rem 1.25rem;
-  text-align: left;
+  padding: 1rem;
   border: none;
-  font-size: 0.8rem;
   text-transform: uppercase;
+  font-size: 0.8rem;
   letter-spacing: 0.5px;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-
-.bill-table thead th:first-child {
-  border-top-left-radius: 0;
-}
-
-.bill-table thead th:last-child {
-  border-top-right-radius: 0;
 }
 
 .bill-table tbody td {
-  padding: 1rem 1.25rem;
-  border: none;
-  border-bottom: 1px solid #e2e8f0;
-  background-color: #ffffff;
-  color: #2d3748;
-  font-weight: 500;
-  transition: all 0.2s ease;
+  padding: 1rem;
+  border-bottom: 1px solid #f0f0f0;
+  transition: background-color 0.2s ease;
 }
 
 .bill-table tbody tr {
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bill-table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+/* Selected row styling */
+.bill-table tbody tr td[style*="background-color: rgb(227, 242, 253)"] {
+  background-color: #e8f5e8 !important;
+  color: #2e7d32;
+  font-weight: 500;
 }
 
 /* ===============================================
-   BILL SELECTION HIGHLIGHT
-   =============================================== */
-
-.bill-table tbody tr.selected {
-  background: linear-gradient(90deg, #c8e6c9 0%, #a5d6a7 100%) !important;
-  transform: translateX(6px);
-  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.3);
-  border-left: 4px solid #4caf50;
-  position: relative;
-}
-
-.bill-table tbody tr.selected::before {
-  content: '📋';
-  position: absolute;
-  left: -2px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 1.2rem;
-  z-index: 5;
-}
-
-.bill-table tbody tr.selected td {
-  color: #1b5e20;
-  font-weight: 600;
-  border-bottom-color: #81c784;
-}
-
-/* ===============================================
-   BILL DETAILS SECTION
+   BILL DETAILS
    =============================================== */
 
 .bill-details {
-  background: linear-gradient(145deg, #f8fafc 0%, #e2e8f0 100%);
-  border-radius: 12px;
-  padding: 2rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 1.5rem;
   margin: 1rem 0;
-  border: 1px solid #e2e8f0;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e9ecef;
 }
 
 .bill-details h5 {
-  color: #1b5e20;
-  font-weight: 700;
+  color: #2e7d32;
+  font-weight: 600;
   margin-bottom: 1.5rem;
-  font-size: 1.25rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
 }
 
-.bill-details h5::before {
-  content: '📄';
-  font-size: 1.1rem;
-}
-
-/* Bill Info Grid */
 .bill-info {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1rem;
-  margin-bottom: 2rem;
-  padding: 1.5rem;
-  background-color: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: white;
+  border-radius: 6px;
 }
 
 .info-item {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
 }
 
 .info-label {
   font-size: 0.75rem;
   font-weight: 600;
-  color: #6b7280;
+  color: #666;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  margin-bottom: 0.25rem;
 }
 
 .info-value {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #1f2937;
+  font-weight: 500;
+  color: #333;
 }
 
-/* Items Table in Details */
 .bill-details .table {
-  background-color: #ffffff;
-  border-radius: 8px;
+  background: white;
+  border-radius: 6px;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
 }
 
 .bill-details .table thead th {
-  background: linear-gradient(135deg, #388e3c 0%, #4caf50 100%);
-  color: #ffffff;
+  background: #388e3c;
+  color: white;
   font-weight: 600;
-  padding: 0.875rem 1rem;
+  padding: 0.75rem;
   border: none;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-size: 0.8rem;
 }
 
 .bill-details .table tbody td {
-  padding: 0.875rem 1rem;
-  border-bottom: 1px solid #f3f4f6;
-  color: #374151;
-  font-weight: 500;
+  padding: 0.75rem;
+  border-bottom: 1px solid #f0f0f0;
 }
 
 .bill-details .table tbody tr:nth-child(even) {
-  background-color: #f9fafb;
+  background: #f8f9fa;
 }
 
 /* ===============================================
@@ -338,700 +227,94 @@
    =============================================== */
 
 .total-summary {
-  background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
-  color: #ffffff;
-  padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
-  margin-top: 1.5rem;
+  background: #4caf50;
+  color: white;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-top: 1rem;
 }
 
 .total-summary p {
   margin-bottom: 0.5rem;
-  font-weight: 600;
-  font-size: 0.9rem;
+  font-weight: 500;
   display: flex;
   justify-content: space-between;
-  align-items: center;
   padding: 0.25rem 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .total-summary p:last-child {
-  border-bottom: none;
-  font-size: 1.1rem;
-  font-weight: 700;
-  margin-top: 0.5rem;
-  padding-top: 0.75rem;
-  border-top: 2px solid rgba(255, 255, 255, 0.3);
-}
-
-/* ===============================================
-   STATUS BADGES
-   =============================================== */
-
-.status-badge {
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.75rem;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.status-completed {
-  background-color: #d1fae5;
-  color: #065f46;
-}
-
-.status-pending {
-  background-color: #fef3c7;
-  color: #92400e;
-}
-
-.status-cancelled {
-  background-color: #fee2e2;
-  color: #991b1b;
+  font-size: 1.1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+  padding-top: 0.5rem;
+  margin-top: 0.5rem;
 }
 
 /* ===============================================
-   RESPONSIVE DESIGN
+   BUTTONS
    =============================================== */
 
-@media (max-width: 1200px) {
+.button-container {
+  margin-top: 1rem;
+}
+
+.btn-return {
+  background: #f44336;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.btn-return:hover {
+  background: #d32f2f;
+}
+
+/* ===============================================
+   RESPONSIVE
+   =============================================== */
+
+@media (max-width: 992px) {
+  .page-row {
+    flex-direction: column;
+  }
+  
+  .main-content {
+    padding: 0.5rem;
+  }
+  
   .content-area {
-    margin: 0.5rem;
-    padding: 1.5rem !important;
+    padding: 1rem;
   }
   
   .page-title {
-    font-size: 2rem;
+    font-size: 1.5rem;
   }
 }
 
 @media (max-width: 768px) {
-  .content-area {
-    margin: 0.25rem;
-    padding: 1rem !important;
-    border-radius: 12px;
-  }
-  
-  .page-title {
-    font-size: 1.75rem;
-    margin-bottom: 1.5rem;
-  }
-  
-  .search-panel {
-    margin-bottom: 1.5rem;
-    position: static;
-  }
-  
-  .search-panel .card-body {
-    padding: 1.25rem;
-  }
-  
   .bill-info {
     grid-template-columns: 1fr;
-    gap: 0.75rem;
-    padding: 1rem;
   }
   
   .bill-table thead th,
   .bill-table tbody td {
     padding: 0.75rem 0.5rem;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
   }
   
-  .bill-details {
-    padding: 1.25rem;
-  }
-  
-  .total-summary {
-    padding: 1rem;
-  }
-  
-  .total-summary p {
-    font-size: 0.8rem;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.25rem;
-  }
-}
-
-@media (max-width: 576px) {
   .bill-table-wrapper {
     overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
   }
   
   .bill-table {
     min-width: 600px;
   }
-  
-  .bill-info {
-    padding: 0.75rem;
-  }
-  
-  .info-item {
-    padding: 0.5rem;
-    background-color: #f9fafb;
-    border-radius: 6px;
-  }
-}
-
-/* ===============================================
-   ANIMATIONS & TRANSITIONS
-   =============================================== */
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.bill-details {
-  animation: fadeInUp 0.3s ease-out;
-}
-
-.search-panel,
-.bill-table-wrapper {
-  animation: fadeInUp 0.4s ease-out;
-}
-
-/* ===============================================
-   SCROLLBAR STYLING
-   =============================================== */
-
-.bill-table-wrapper::-webkit-scrollbar {
-  height: 8px;
-}
-
-.bill-table-wrapper::-webkit-scrollbar-track {
-  background: #f1f5f9;
-  border-radius: 4px;
-}
-
-.bill-table-wrapper::-webkit-scrollbar-thumb {
-  background: linear-gradient(90deg, #4caf50, #66bb6a);
-  border-radius: 4px;
-}
-
-
-/* ===============================================
-   PRINT STYLES
-   =============================================== */
-
-@media print {
-  .search-panel {
-    display: none;
-  }
-  
-  .bill-history-page {
-    background: white;
-  }
-  
-  .content-area {
-    box-shadow: none;
-    background: white;
-  }
-  
-  .bill-table thead th {
-    background: #f8fafc !important;
-    color: #2d3748 !important;
-  }
-}
-
-
-.selected-row {
-    background-color: #e3f2fd !important;
-    border-left: 4px solid #2196f3 !important;
-    transition: all 0.3s ease !important;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
-    font-weight: 500 !important;
-}
-
-/* Sidebar styling */
-.sidebar {
-  background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
-  border-radius: 16px;
-  box-shadow: 
-    0 10px 30px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
-  padding: 1.5rem;
-  height: fit-content;
-  position: sticky;
-  top: 20px;
-  display: flex;
-  flex-direction: column;
-  min-width: 200px;
-  max-width: 250px;
-}
-
-/* Sidebar Navigation */
-.sidebar-nav {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-bottom: 2rem;
-}
-
-.sidebar-nav-item {
-  display: block;
-  padding: 0.875rem 1rem;
-  text-decoration: none;
-  color: #4a5568;
-  font-weight: 500;
-  font-size: 0.875rem;
-  border-radius: 8px;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid transparent;
-  background-color: transparent;
-  position: relative;
-  overflow: hidden;
-}
-
-.sidebar-nav-item::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(76, 175, 80, 0.1), transparent);
-  transition: left 0.5s ease;
-}
-
-.sidebar-nav-item:hover {
-  color: #1b5e20;
-  background-color: #f0f9f0;
-  border-color: #c8e6c9;
-  transform: translateX(4px);
-  text-decoration: none;
-}
-
-.sidebar-nav-item:hover::before {
-  left: 100%;
-}
-
-.sidebar-nav-item.active {
-  background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
-  color: #ffffff;
-  font-weight: 600;
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
-  border-color: #4caf50;
-}
-
-.sidebar-nav-item.active::after {
-  content: '✓';
-  position: absolute;
-  right: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 0.875rem;
-  font-weight: bold;
-}
-
-/* Sidebar Avatar */
-.sidebar-avatar {
-  width: 48px;
-  height: 48px;
-  background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
-  color: #ffffff;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 1.25rem;
-  margin-top: auto;
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
-  transition: all 0.2s ease;
-  cursor: pointer;
-}
-
-.sidebar-avatar:hover {
-  transform: scale(1.05);
-  box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
-}
-
-/* ===============================================
-   LAYOUT ADJUSTMENTS
-   =============================================== */
-
-/* Content area adjustments */
-.content-area {
-  flex: 1;
-  min-width: 0; /* Để cho phép flex shrink */
-}
-
-/* Search và Table layout */
-.content-area .row {
-  display: flex;
-  gap: 1.5rem;
-  align-items: flex-start;
-}
-
-/* Search panel adjustments */
-.content-area .row .col-md-3 {
-  flex: 0 0 300px;
-  max-width: 300px;
-}
-
-/* Table wrapper adjustments */
-.content-area .row .col-md-9 {
-  flex: 1;
-  min-width: 0;
-}
-
-/* ===============================================
-   RESPONSIVE DESIGN FOR SIDEBAR
-   =============================================== */
-
-@media (max-width: 1200px) {
-  .sidebar {
-    min-width: 180px;
-    max-width: 200px;
-    padding: 1.25rem;
-  }
-  
-  .sidebar-nav-item {
-    padding: 0.75rem 0.875rem;
-    font-size: 0.8rem;
-  }
-  
-  .sidebar-avatar {
-    width: 42px;
-    height: 42px;
-    font-size: 1.1rem;
-  }
-}
-
-@media (max-width: 992px) {
-  .main-content .row {
-    flex-direction: column;
-    gap: 1rem;
-  }
-  
-  .sidebar {
-    position: static;
-    max-width: 100%;
-    min-width: auto;
-    margin-bottom: 1rem;
-  }
-  
-  .sidebar-nav {
-    flex-direction: row;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-    flex-wrap: wrap;
-  }
-  
-  .sidebar-nav-item {
-    flex: 1;
-    text-align: center;
-    min-width: 140px;
-  }
-  
-  .sidebar-avatar {
-    align-self: center;
-    margin-top: 0;
-  }
-}
-
-/* ===============================================
-   SIDEBAR NAVIGATION LAYOUT
-   =============================================== */
-
-/* Container chính để sắp xếp layout */
-.main-content .row {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 1rem;
-}
-
-/* Sidebar styling */
-.sidebar {
-  background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
-  border-radius: 16px;
-  box-shadow: 
-    0 10px 30px rgba(0, 0, 0, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
-  padding: 1.5rem;
-  height: fit-content;
-  position: sticky;
-  top: 20px;
-  display: flex;
-  flex-direction: column;
-  min-width: 200px;
-  max-width: 250px;
-}
-
-/* Sidebar Navigation */
-.sidebar-nav {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-bottom: 2rem;
-}
-
-.sidebar-nav-item {
-  display: block;
-  padding: 0.875rem 1rem;
-  text-decoration: none;
-  color: #4a5568;
-  font-weight: 500;
-  font-size: 0.875rem;
-  border-radius: 8px;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid transparent;
-  background-color: transparent;
-  position: relative;
-  overflow: hidden;
-}
-
-.sidebar-nav-item::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(76, 175, 80, 0.1), transparent);
-  transition: left 0.5s ease;
-}
-
-.sidebar-nav-item:hover {
-  color: #1b5e20;
-  background-color: #f0f9f0;
-  border-color: #c8e6c9;
-  transform: translateX(4px);
-  text-decoration: none;
-}
-
-.sidebar-nav-item:hover::before {
-  left: 100%;
-}
-
-.sidebar-nav-item.active {
-  background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
-  color: #ffffff;
-  font-weight: 600;
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
-  border-color: #4caf50;
-}
-
-.sidebar-nav-item.active::after {
-  content: '✓';
-  position: absolute;
-  right: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 0.875rem;
-  font-weight: bold;
-}
-
-/* Sidebar Avatar */
-.sidebar-avatar {
-  width: 48px;
-  height: 48px;
-  background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
-  color: #ffffff;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 1.25rem;
-  margin-top: auto;
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
-  transition: all 0.2s ease;
-  cursor: pointer;
-}
-
-.sidebar-avatar:hover {
-  transform: scale(1.05);
-  box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
-}
-
-/* ===============================================
-   LAYOUT ADJUSTMENTS
-   =============================================== */
-
-/* Content area adjustments */
-.content-area {
-  flex: 1;
-  min-width: 0; /* Để cho phép flex shrink */
-}
-
-/* Search và Table layout */
-.content-area .row {
-  display: flex;
-  gap: 1.5rem;
-  align-items: flex-start;
-}
-
-/* Search panel adjustments */
-.content-area .row .col-md-3 {
-  flex: 0 0 300px;
-  max-width: 300px;
-}
-
-/* Table wrapper adjustments */
-.content-area .row .col-md-9 {
-  flex: 1;
-  min-width: 0;
-}
-
-/* ===============================================
-   RESPONSIVE DESIGN FOR SIDEBAR
-   =============================================== */
-
-@media (max-width: 1200px) {
-  .sidebar {
-    min-width: 180px;
-    max-width: 200px;
-    padding: 1.25rem;
-  }
-  
-  .sidebar-nav-item {
-    padding: 0.75rem 0.875rem;
-    font-size: 0.8rem;
-  }
-  
-  .sidebar-avatar {
-    width: 42px;
-    height: 42px;
-    font-size: 1.1rem;
-  }
-}
-
-@media (max-width: 992px) {
-  .main-content .row {
-    flex-direction: column;
-    gap: 1rem;
-  }
-  
-  .sidebar {
-    position: static;
-    max-width: 100%;
-    min-width: auto;
-    margin-bottom: 1rem;
-  }
-  
-  .sidebar-nav {
-    flex-direction: row;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-    flex-wrap: wrap;
-  }
-  
-  .sidebar-nav-item {
-    flex: 1;
-    text-align: center;
-    min-width: 140px;
-  }
-  
-  .sidebar-avatar {
-    align-self: center;
-    margin-top: 0;
-  }
-  
-  .content-area .row {
-    flex-direction: column;
-  }
-  
-  .content-area .row .col-md-3,
-  .content-area .row .col-md-9 {
-    flex: none;
-    max-width: 100%;
-  }
-}
-
-@media (max-width: 768px) {
-  .sidebar {
-    padding: 1rem;
-    border-radius: 12px;
-  }
-  
-  .sidebar-nav {
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-  
-  .sidebar-nav-item {
-    padding: 0.625rem 0.75rem;
-    font-size: 0.75rem;
-    min-width: auto;
-  }
-  
-  .sidebar-avatar {
-    width: 36px;
-    height: 36px;
-    font-size: 1rem;
-    margin-top: 1rem;
-  }
 }
 
 @media (max-width: 576px) {
-  .sidebar-nav {
-    gap: 0.25rem;
-  }
-  
-  .sidebar-nav-item {
-    padding: 0.5rem 0.625rem;
-    font-size: 0.7rem;
-  }
-  
-  .sidebar-avatar {
-    width: 32px;
-    height: 32px;
-    font-size: 0.9rem;
+  .total-summary p {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
-
-/* ===============================================
-   MAIN CONTAINER LAYOUT FIX
-   =============================================== */
-
-/* Đảm bảo container chính có layout đúng */
-.bill-history-page .container-fluid {
-  padding-left: 1rem;
-  padding-right: 1rem;
-}
-
-.bill-history-page .main-content .row {
-  margin-left: 0;
-  margin-right: 0;
-}
-
-/* ===============================================
-   ANIMATION ENHANCEMENTS
-   =============================================== */
-
-@keyframes slideInLeft {
-  from {
-    opacity: 0;
-    transform: translateX(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-.sidebar {
-  animation: slideInLeft 0.4s ease-out;
-}
-
-.sidebar-nav-item {
-  animation: slideInLeft 0.4s ease-out;
-}
-
-.sidebar-nav-item:nth-child(1) { animation-delay: 0.1s; }
-.sidebar-nav-item:nth-child(2) { animation-delay: 0.2s; }
-.sidebar-nav-item:nth-child(3) { animation-delay: 0.3s; }
