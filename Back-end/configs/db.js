@@ -25,6 +25,8 @@ const connectDB = async () => {
       db.Bill.createCollection(),
       db.Status.createCollection(),
       db.BillDetail.createCollection(),
+      db.ReturnOrder.createCollection(),
+      db.ReturnDetail.createCollection(),
     ]);
     console.log("All collections ensured!");
 
