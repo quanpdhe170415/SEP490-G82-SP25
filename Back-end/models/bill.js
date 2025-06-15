@@ -6,35 +6,27 @@ const billSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
-  customerName: {
-    type: String,
-    required: true,
-  },
-  customerPhone: {
+  seller: {
     type: String,
     required: true,
   },
   totalAmount: {
     type: Number,
-  },
-  discount: {
-    type: Number,
-    default: 0,
+    required: true,
   },
   finalAmount: {
     type: Number,
-
+    required: true,
+  },
+  paymentMethod: {
+    type: String,
+    enum: ['Tiền mặt', 'Chuyển khoản ngân hàng'],
+    required: true,
   },
   statusId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Status',
-  },
-  paymentMethod: {
-    type: String,
-  },
-  notes: {
-    type: String,
-    default: null,
+    required: true,
   },
   createdAt: {
     type: Date,
@@ -44,11 +36,11 @@ const billSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  shift_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Shift',
-    required: true,
-  },
+});
+
+billSchema.pre('save', function(next) {
+  this.updatedAt = Date.now();
+  next();
 });
 
 const Bill = mongoose.model('Bill', billSchema);
