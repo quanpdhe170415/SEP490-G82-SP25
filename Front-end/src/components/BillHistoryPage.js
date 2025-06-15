@@ -135,6 +135,15 @@ const BillHistory = () => {
 
             <Container fluid className="main-content">
                 <Row>
+                     {/* Sidebar Navigation */}
+                <div className="col-2 sidebar">
+                    <nav className="sidebar-nav">
+                        <a className="sidebar-nav-item active" href="#">Yêu cầu trả hàng</a>
+                        <a className="sidebar-nav-item" href="#">Yêu cầu xuất hàng</a>
+                        <a className="sidebar-nav-item" href="#">Thanh toán</a>
+                    </nav>
+                    <div className="sidebar-avatar">A</div>
+                </div>
                     {/* Main Content */}
                     <Col md={12} className="content-area p-4">
                         <h2 className="page-title">Lịch sử hóa đơn</h2>
