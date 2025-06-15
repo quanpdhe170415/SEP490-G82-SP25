@@ -37,7 +37,7 @@ const BillHistory = () => {
             setLoading(true);
             const response = await fetch('http://localhost:9999/api/bill/');
             const result = await response.json();
-            
+
             if (result.success) {
                 setBillData(result.data);
             }
@@ -53,7 +53,7 @@ const BillHistory = () => {
             setLoadingDetails(prev => ({ ...prev, [billId]: true }));
             const response = await fetch(`http://localhost:9999/api/bill/${billId}`);
             const result = await response.json();
-            
+
             if (result.success) {
                 setBillDetails(prev => ({
                     ...prev,
@@ -261,7 +261,7 @@ const BillHistory = () => {
 
         const activeMethods = Object.keys(paymentMethodSearch).filter(method => paymentMethodSearch[method]);
         if (activeMethods.length > 0) {
-            filteredBills = filteredBills.filter(bill => 
+            filteredBills = filteredBills.filter(bill =>
                 activeMethods.includes(normalizePaymentMethod(bill.paymentMethod))
             );
         }
@@ -298,7 +298,7 @@ const BillHistory = () => {
     const getStatusLabel = (status) => {
         const statusMap = {
             pending: "Chờ xử lý",
-            confirmed: "Đã xác nhận", 
+            confirmed: "Đã xác nhận",
             processing: "Đang xử lý",
             completed: "Hoàn thành",
             cancelled: "Đã hủy",
@@ -327,17 +327,17 @@ const BillHistory = () => {
             <Container fluid style={pageStyles.mainContent}>
                 <div style={pageStyles.pageRow}>
                     {/* Sidebar */}
-                    <Sidebar 
-                        activeItem="bill-history" 
+                    <Sidebar
+                        activeItem="bill-history"
                         isCollapsed={sidebarCollapsed}
                         onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
                     />
-                    
+
                     {/* Search Panel */}
                     <div style={pageStyles.searchPanel}>
                         <div style={pageStyles.searchPanelBody}>
                             <h5 style={pageStyles.searchTitle}>Tìm kiếm</h5>
-                            
+
                             {/* Time Range */}
                             <div style={{ marginBottom: '1rem' }}>
                                 <label style={pageStyles.formLabel}>Thời gian từ</label>
@@ -348,7 +348,7 @@ const BillHistory = () => {
                                     onChange={(e) => setFromDate(e.target.value)}
                                 />
                             </div>
-                            
+
                             <div style={{ marginBottom: '1rem' }}>
                                 <label style={pageStyles.formLabel}>Đến</label>
                                 <input
@@ -402,7 +402,7 @@ const BillHistory = () => {
                     {/* Main Content Area */}
                     <div style={pageStyles.contentArea}>
                         <h2 style={pageStyles.pageTitle}>Lịch sử hóa đơn</h2>
-                        
+
                         {/* Bill Table */}
                         <div style={pageStyles.billTableWrapper}>
                             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -422,7 +422,7 @@ const BillHistory = () => {
                                         <React.Fragment key={bill._id}>
                                             <tr
                                                 onClick={() => toggleBillDetails(bill._id)}
-                                                style={{ 
+                                                style={{
                                                     cursor: 'pointer',
                                                     backgroundColor: selectedBillId === bill._id ? '#e8f5e8' : 'transparent'
                                                 }}
@@ -455,7 +455,7 @@ const BillHistory = () => {
                                                             <h5 style={{ color: '#2e7d32', fontWeight: '600', marginBottom: '1.5rem' }}>
                                                                 Chi tiết hóa đơn
                                                             </h5>
-                                                            
+
                                                             <div style={pageStyles.billInfo}>
                                                                 <div style={pageStyles.infoItem}>
                                                                     <span style={pageStyles.infoLabel}>Mã hóa đơn:</span>
@@ -478,14 +478,14 @@ const BillHistory = () => {
                                                                     <span style={pageStyles.infoValue}>Hoàn thành</span>
                                                                 </div>
                                                             </div>
-                                                            
+
                                                             {/* Items Table */}
                                                             {loadingDetails[bill._id] ? (
                                                                 <div style={pageStyles.loadingText}>Đang tải chi tiết...</div>
                                                             ) : billDetails[bill._id] ? (
-                                                                <div style={{ 
-                                                                    background: 'white', 
-                                                                    borderRadius: '6px', 
+                                                                <div style={{
+                                                                    background: 'white',
+                                                                    borderRadius: '6px',
                                                                     overflow: 'hidden',
                                                                     marginBottom: '1rem'
                                                                 }}>
@@ -501,8 +501,8 @@ const BillHistory = () => {
                                                                         </thead>
                                                                         <tbody>
                                                                             {billDetails[bill._id].map((item, index) => (
-                                                                                <tr key={item._id} style={{ 
-                                                                                    backgroundColor: index % 2 === 1 ? '#f8f9fa' : 'white' 
+                                                                                <tr key={item._id} style={{
+                                                                                    backgroundColor: index % 2 === 1 ? '#f8f9fa' : 'white'
                                                                                 }}>
                                                                                     <td style={{ ...pageStyles.tableCell, padding: '0.75rem' }}>
                                                                                         {item.goods_id?._id || 'N/A'}
@@ -543,8 +543,8 @@ const BillHistory = () => {
                                                                         <span>Số tiền khách cần trả:</span>
                                                                         <span>{bill.totalAmount.toLocaleString()} VND</span>
                                                                     </div>
-                                                                    <div style={{ 
-                                                                        ...pageStyles.summaryItem, 
+                                                                    <div style={{
+                                                                        ...pageStyles.summaryItem,
                                                                         fontWeight: '600',
                                                                         fontSize: '1.1rem',
                                                                         borderTop: '1px solid rgba(255, 255, 255, 0.3)',
@@ -556,9 +556,15 @@ const BillHistory = () => {
                                                                     </div>
                                                                 </div>
                                                             )}
-                                                            
+
                                                             <div style={pageStyles.summaryButtonContainer}>
-                                                                <Link to="/return-goods" style={pageStyles.btnReturn}>
+                                                                <Link
+                                                                    to={{
+                                                                        pathname: "/return-goods",
+                                                                        search: `?billId=${bill._id}`, // Pass the billId as a query parameter
+                                                                    }}
+                                                                    style={pageStyles.btnReturn}
+                                                                >
                                                                     Trả hàng
                                                                 </Link>
                                                             </div>
