@@ -7,7 +7,7 @@ const Goods = require('./goods');
 const ImportBatch = require('./import_batch');
 const ImportDetail = require('./import_detail');
 const PriceHistory = require('./price_history');
-const Permission = require('./permission');
+
 const Category = require('./category');
 const Stockmovement = require('./stockmovement');
 const Shift = require('./shift');
@@ -15,7 +15,8 @@ const CashDenomination = require('./cashdenomination');
 const Bill = require('./bill');
 const Status = require('./statusBill');
 const BillDetail = require('./billDetail');
-
+const ReturnOrder = require("./returnOrder"); 
+const ReturnDetail = require("./returndetail");
 mongoose.Promise = global.Promise;
 
 const db = {
@@ -30,7 +31,11 @@ const db = {
   Stockmovement,
   Shift,
   CashDenomination,
-  Bill, Status, BillDetail
+  Bill,
+  Status,
+  BillDetail,
+  ReturnOrder,
+  ReturnDetail,
 };
   
 
