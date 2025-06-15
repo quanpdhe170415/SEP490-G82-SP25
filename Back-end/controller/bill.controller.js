@@ -47,7 +47,7 @@ exports. isBillPaid = async (req, res) => {
 // Lấy danh sách tất cả hóa đơn
 exports.getAllBills = async (req, res) => {
     try {
-      const bills = await Bill.find().populate('statusId', 'status_name');
+      const bills = await Bill.find().populate('statusId', 'name');
       res.status(200).json({
         success: true,
         data: bills,
