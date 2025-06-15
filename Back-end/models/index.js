@@ -15,6 +15,7 @@ const CashDenomination = require('./cashdenomination');
 const Bill = require('./bill');
 const Status = require('./statusBill');
 const BillDetail = require('./billDetail');
+const ReturnOrder = require("./returnOrder");
 
 mongoose.Promise = global.Promise;
 
@@ -30,7 +31,10 @@ const db = {
   Stockmovement,
   Shift,
   CashDenomination,
-  Bill, Status, BillDetail
+  Bill,
+  Status,
+  BillDetail,
+  ReturnOrder,
 };
   
 
