@@ -100,7 +100,7 @@ const LoginPage = () => {
             </label>
           </div>
 
-          <a href="#" className="text-decoration-none">Quên mật khẩu?</a>
+
 
           <span
             className="text-decoration-none text-primary"
