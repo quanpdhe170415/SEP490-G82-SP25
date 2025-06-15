@@ -82,10 +82,30 @@ const connectDB = async () => {
       ]);
       console.log("Seeded goods!");
     }
-    // Trong connectDB.js, sau phần seed Status
+
+    // Seed dữ liệu cho Status nếu chưa có
+    const statusCount = await db.Status.countDocuments();
+    if (statusCount === 0) {
+      statuses = await db.Status.insertMany([
+        {
+          name: "Đã thanh toán",
+          description: "Hóa đơn đã được thanh toán đầy đủ",
+        },
+        { name: "Đã trả hàng", description: "Hóa đơn đã bị trả hàng" },
+      ]);
+      console.log("Seeded statuses!");
+    } else {
+      statuses = await db.Status.find();
+    }
+
+    // Seed dữ liệu cho Bill
     const billCount = await db.Bill.countDocuments();
-    if (billCount === 0) {
-      await db.Bill.insertMany([
+    if (billCount > 0) {
+      await db.Bill.deleteMany({}); // Xóa tất cả dữ liệu hiện có
+      console.log("Cleared existing bills!");
+    }
+    if (statuses.length > 0) {
+      bills = await db.Bill.insertMany([
         {
           billNumber: "HD001",
           seller: "Nguyễn Văn A",
@@ -104,11 +124,61 @@ const connectDB = async () => {
         },
       ]);
       console.log("Seeded bills!");
+    } else {
+      bills = await db.Bill.find();
+    }
+
+    // Seed dữ liệu cho BillDetail
+    const billDetailCount = await db.BillDetail.countDocuments();
+    if (billDetailCount > 0) {
+      await db.BillDetail.deleteMany({});
+      console.log("Cleared existing bill details!");
+    }
+
+    const goods = await db.Goods.find();
+    if (bills.length > 0 && goods.length >= 2) {
+      const billDetails = [
+        {
+          bill_id: bills[0]._id, // HD001
+          goods_id: goods[0]._id, // Coca Cola
+          goods_name: goods[0].goods_name,
+          quantity: 2,
+          unit_price: 5000,
+        },
+        {
+          bill_id: bills[0]._id, // HD001
+          goods_id: goods[1]._id, // Snack Oishi
+          goods_name: goods[1].goods_name,
+          quantity: 1,
+          unit_price: 12000,
+        },
+        {
+          bill_id: bills[1]._id, // HD002
+          goods_id: goods[1]._id, // Snack Oishi
+          goods_name: goods[1].goods_name,
+          quantity: 1,
+          unit_price: 15000,
+        },
+      ];
+
+      // Tính và thêm total_amount cho từng item
+      billDetails.forEach((item) => {
+        item.total_amount = item.quantity * item.unit_price;
+        item.createdAt = new Date();
+        item.updatedAt = new Date();
+      });
+
+      await db.BillDetail.insertMany(billDetails);
+      console.log("Seeded bill details!");
     }
   } catch (error) {
-    console.error("MongoDB connection failed: ", error);
+    console.error("MongoDB in-memory connection failed: ", error);
     process.exit(1);
   }
+
+  
 };
+
+
 
 module.exports = connectDB;

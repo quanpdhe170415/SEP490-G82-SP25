@@ -7,6 +7,6 @@ Router.get('/checkStatus', billController.isBillPaid);
 Router.get("/", billController.getAllBills);
 
 // GET: Lấy thông tin một hóa đơn theo ID
-Router.get("/:id", billController.getBillById);
+Router.get("/:id", billController.getBillDetailById);
 
 module.exports = Router;
