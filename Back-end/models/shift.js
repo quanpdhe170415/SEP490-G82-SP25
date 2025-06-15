@@ -50,16 +50,8 @@ const shiftSchema = new mongoose.Schema({
   notes: {
     type: String,
     default: null,
-  },
-  created_at: {
-    type: Date,
-    default: Date.now,
-  },
-  updated_at: {
-    type: Date,
-    default: Date.now,
-  },
-});
+  }
+},{timestamps: true});
 
 const Shift = mongoose.model('Shift', shiftSchema);
 module.exports = Shift;
