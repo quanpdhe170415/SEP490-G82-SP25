@@ -4,23 +4,28 @@ const billDetailSchema = new mongoose.Schema({
   bill_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Bill',
-
+    required: true,
   },
   goods_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Goods',
-
+    required: true,
+  },
+  goods_name: {
+    type: String,
+    required: true,
   },
   quantity: {
     type: Number,
+    required: true,
   },
   unit_price: {
     type: Number,
-
+    required: true,
   },
   total_amount: {
     type: Number,
-
+    required: true,
   },
   createdAt: {
     type: Date,
@@ -32,7 +37,7 @@ const billDetailSchema = new mongoose.Schema({
   },
 });
 
-// Tự động tính total_amount trước khi lưu
+// Tự động tính total_amount và cập nhật updatedAt trước khi lưu
 billDetailSchema.pre('save', function(next) {
   this.total_amount = this.quantity * this.unit_price;
   this.updatedAt = Date.now();

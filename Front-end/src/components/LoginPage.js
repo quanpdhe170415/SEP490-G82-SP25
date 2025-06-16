@@ -97,6 +97,11 @@ const LoginPage = () => {
               Ghi nhớ đăng nhập
             </label>
           </div>
+
+
+
+
+
           <span
             className="text-decoration-none text-primary"
             style={{ cursor: 'pointer' }}
@@ -104,6 +109,7 @@ const LoginPage = () => {
           >
             Quên mật khẩu?
           </span>
+
         </div>
 
         <div className="d-grid">
@@ -116,4 +122,6 @@ const LoginPage = () => {
   );
 };
 
+
 export default LoginPage;
+
