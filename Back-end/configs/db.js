@@ -297,12 +297,7 @@ const connectDB = async () => {
     }
 
     // Seed dữ liệu cho BillDetail
-    const billDetailCount = await db.BillDetail.countDocuments();
-    if (billDetailCount > 0) {
-      await db.BillDetail.deleteMany({});
-      console.log("Cleared existing bill details!");
-    }
-    if (bills.length > 0 && goods.length >= 2) {
+    if (bills.length >= 4 && goods.length >= 2) {
       const billDetails = [
         // Chi tiết cho HD001
         {
@@ -354,6 +349,8 @@ const connectDB = async () => {
 
       await db.BillDetail.insertMany(billDetails);
       console.log("Seeded bill details with new data!");
+    } else {
+      console.warn("Not enough bills or goods to seed bill details. Skipping bill details seeding.");
     }
   } catch (error) {
     console.error("MongoDB in-memory connection failed: ", error);

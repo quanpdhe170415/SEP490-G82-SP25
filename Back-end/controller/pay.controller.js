@@ -319,6 +319,7 @@ exports.manageBill = async (req, res) => {
   try {
     const { shift_id, notes, items, billId, paymentMethod } = req.body;
 
+    console.log('Request body:', req.body);
     // Kiểm tra trạng thái của ca
     if (!shift_id) return res.status(400).json({ message: 'shift_id is required' });
     const shift = await Shift.findById(shift_id);
