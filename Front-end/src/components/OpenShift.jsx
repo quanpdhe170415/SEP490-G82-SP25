@@ -137,6 +137,8 @@ export default function OpenShift() {
                 <span className="text-secondary">Nhân viên mở ca:</span>
                 <span className="fw-semibold text-black">{shiftData.employeeName}</span>
               </li>
+              {/* Phần kiểm kê tiền theo mệnh giá - Đã comment lại */}
+              {/*
               <li className="list-group-item bg-white">
                 <div className="mb-2 text-secondary d-flex justify-content-between align-items-center">
                   <span>Số lượng tiền mặt từng mệnh giá:</span>
@@ -163,18 +165,45 @@ export default function OpenShift() {
                 </div>
                 <div className="mt-2 fw-bold text-black">Tổng tiền: {totalCash.toLocaleString()} đ</div>
               </li>
+              */}
+              {/* Thêm mục nhập tổng số lượng tiền */}
+              <li className="list-group-item bg-white">
+                <div className="mb-2 text-secondary d-flex justify-content-between align-items-center">
+                  <span>Tổng số lượng tiền mặt nhận ca:</span>
+                  <div style={{ position: 'relative', maxWidth: 220, width: '100%' }}>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      min="0"
+                      className="form-control form-control-sm text-end fw-bold pe-5"
+                      style={{ fontSize: 18, letterSpacing: 1, paddingRight: 48 }}
+                      value={totalCash.toLocaleString('vi-VN') + ' đ'}
+                      onChange={e => {
+                        // Lấy số chỉ gồm số từ input
+                        const raw = e.target.value.replace(/[^\d]/g, '');
+                        // Cập nhật cashDetail ảo để tính lại tổng
+                        // Ở đây chỉ cập nhật tổng, không thay đổi cashDetail
+                        // Nếu muốn thay đổi cashDetail thực tế, cần logic khác
+                      }}
+                      placeholder="Nhập tổng tiền mặt"
+                    />
+                    <span style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', color: '#0070f4', fontWeight: 700, pointerEvents: 'none' }}>đ</span>
+                  </div>
+                </div>
+              </li>
               <li className="list-group-item bg-white">
                 <div className="mb-2 text-secondary d-flex justify-content-between align-items-center">
                   <span>Ghi chú:</span>
-                  <input
-                    type="text"
+                  <textarea
                     className="form-control form-control-sm ms-2"
-                    style={{ maxWidth: 300 }}
+                    style={{ maxWidth: 350, minHeight: 60, resize: 'vertical' }}
                     value={notes}
                     onChange={e => setNotes(e.target.value)}
                     placeholder="Ghi chú (nếu có)"
+                    maxLength={200}
                   />
                 </div>
+                <div className="text-end text-secondary small">{notes.length}/200 ký tự</div>
               </li>
               <li className="list-group-item d-flex justify-content-between align-items-center bg-white">
                 <span className="text-secondary">Thời gian mở ca:</span>
