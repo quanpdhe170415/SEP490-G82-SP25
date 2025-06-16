@@ -37,7 +37,6 @@ const LoginPage = () => {
       setTimeout(() => {
         navigate('/home');
       }, 1000);
-
     } else {
       setError('Tên đăng nhập hoặc mật khẩu không đúng');
     }
@@ -47,7 +46,6 @@ const LoginPage = () => {
   const handleForgotPassword = () => {
     navigate('/forgotpassword'); // Chuyển hướng đến trang quên mật khẩu
   };
-
 
   return (
     <div
@@ -102,6 +100,8 @@ const LoginPage = () => {
 
 
 
+
+
           <span
             className="text-decoration-none text-primary"
             style={{ cursor: 'pointer' }}
@@ -122,4 +122,6 @@ const LoginPage = () => {
   );
 };
 
+
 export default LoginPage;
+
