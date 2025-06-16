@@ -310,29 +310,44 @@ const connectDB = async () => {
     }
 
     if (statuses.length > 0 && shifts.length > 0) {
-      bills = await db.Bill.insertMany([
-        {
+      const statusPaid = statuses.find((s) => s.name === "Đã thanh toán");
+      const statusReturned = statuses.find((s) => s.name === "Đã trả hàng");
+      const shiftMorning = shifts.find((s) => s.notes === "Ca sáng ngày 14/06/2025");
+      const shiftAfternoon = shifts.find((s) => s.notes === "Ca chiều ngày 14/06/2025");
+      const billsToInsert = [];
+      if (statusPaid && shiftMorning) {
+        billsToInsert.push({
           billNumber: "HD001",
           seller: "Nguyễn Văn A",
           totalAmount: 22000,
           finalAmount: 22000,
           paymentMethod: "Tiền mặt",
-          statusId: statuses.find((s) => s.name === "Đã thanh toán")._id,
-          shift_id: shifts.find((s) => s.notes === "Ca sáng ngày 14/06/2025")
-            ._id,
-        },
-        {
+          statusId: statusPaid._id,
+          shift_id: shiftMorning._id,
+        });
+      } else {
+        console.warn("Không tìm thấy status 'Đã thanh toán' hoặc shift 'Ca sáng ngày 14/06/2025', bỏ qua HD001");
+      }
+      if (statusReturned && shiftAfternoon) {
+        billsToInsert.push({
           billNumber: "HD002",
           seller: "Trần Thị B",
           totalAmount: 15000,
           finalAmount: 15000,
           paymentMethod: "Chuyển khoản ngân hàng",
-          statusId: statuses.find((s) => s.name === "Đã trả hàng")._id,
-          shift_id: shifts.find((s) => s.notes === "Ca chiều ngày 14/06/2025")
-            ._id,
-        },
-      ]);
-      console.log("Seeded bills!");
+          statusId: statusReturned._id,
+          shift_id: shiftAfternoon._id,
+        });
+      } else {
+        console.warn("Không tìm thấy status 'Đã trả hàng' hoặc shift 'Ca chiều ngày 14/06/2025', bỏ qua HD002");
+      }
+      if (billsToInsert.length > 0) {
+        bills = await db.Bill.insertMany(billsToInsert);
+        console.log("Seeded bills!");
+      } else {
+        bills = [];
+        console.warn("Không có bill nào được seed!");
+      }
     } else {
       bills = await db.Bill.find();
     }
