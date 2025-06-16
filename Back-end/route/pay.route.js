@@ -11,5 +11,5 @@ router.get('/:billId', controller.paymentController.getPaymentDetails); // Lấy
 // router.post('/:billId/add-item', controller.paymentController.addItemToBill); // Thêm hàng hóa vào đơn
 router.post('/:billId/process', controller.paymentController.processPayment); // Xử lý thanh toán
 router.post('/take-to-display', controller.paymentController.takeToDisplay);
-router.post('/createBill', controller.paymentController.manageBill);
+router.post('/createbill', controller.paymentController.manageBill);
 module.exports = router;
