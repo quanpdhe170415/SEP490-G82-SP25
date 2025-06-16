@@ -7,10 +7,6 @@ const shiftRouter = require('./shift.route');
 const goodsRoute = require('./goods.route');
 const paymentRouter = require('./pay.route');
 const returnOrderRoute = require("./returnorder.route");
-const productRouter = require("./product.route");
-const shiftRouter = require("./shift.route");
-const goodsRoute = require("./goods.route");
-const paymentRouter = require("./pay.route");
 
 router.use("/product", productRouter);
 router.use("/goods", goodsRoute);
