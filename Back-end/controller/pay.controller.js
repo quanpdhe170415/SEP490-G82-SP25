@@ -12,23 +12,29 @@ const ImportDetail = require('../models/import_detail');
 
 exports.createBill = async (req, res) => {
   try {
-    const { customerName, customerPhone, notes, shift_id } = req.body;
+    const { notes, shift_id } = req.body;
     // const account_id = req.user._id; // Giả định từ middleware auth
+
+        // Kiểm tra trạng thái của ca
+    if (shift_id) {
+      const shift = await Shift.findById(shift_id);
+      if (!shift) return res.status(404).json({ message: 'Ca không tồn tại' });
+      if (shift.status === 'closed') {
+        return res.status(400).json({ message: 'Ca đã đóng, không thể tạo hóa đơn' });
+      }
+    }
 
     const pendingStatus = await Status.findOne({ name: 'Pending' });
     if (!pendingStatus) return res.status(404).json({ message: 'Pending status not found' });
 
     const bill = new Bill({
       billNumber: `INV-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`,
-      customerName,
-      customerPhone,
       totalAmount: 0,
       discount: 0,
       finalAmount: 0,
       statusId: pendingStatus._id,
       paymentMethod: '',
       notes,
-      // createdBy: account_id,
       shift_id,
     });
     await bill.save();
@@ -229,7 +235,7 @@ exports.processPayment = async (req, res) => {
           shift.cash_transactions += 1;
           shift.cash_change_given += change;
           // Cập nhật final_cash_amount: initial_cash_amount + finalAmount - change
-          shift.final_cash_amount = (shift.initial_cash_amount || 0) + bill.finalAmount - change;
+          // shift.final_cash_amount = (shift.initial_cash_amount || 0) + bill.finalAmount - change;
         }
         await shift.save();
       }
