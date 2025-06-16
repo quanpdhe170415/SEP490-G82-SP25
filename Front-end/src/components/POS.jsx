@@ -38,6 +38,7 @@ const initialCashInDrawer = {
 
 export default function POS() {
   const [search, setSearch] = useState("");
+
   const [tabs, setTabs] = useState([]);
   const [activeTab, setActiveTab] = useState(1);
   const [products, setProducts] = useState([]); // lấy từ API
