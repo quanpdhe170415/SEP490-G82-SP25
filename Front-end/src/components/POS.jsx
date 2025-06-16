@@ -38,7 +38,6 @@ const initialCashInDrawer = {
 
 export default function POS() {
   const [search, setSearch] = useState("");
-
   const [tabs, setTabs] = useState([]);
   const [activeTab, setActiveTab] = useState(1);
   const [products, setProducts] = useState([]); // lấy từ API
@@ -116,7 +115,6 @@ export default function POS() {
 
   // Đổi tab
   const handleSelectTab = (id) => setActiveTab(id);
-
   // Đóng tab (cho phép đóng cả tab đầu tiên nếu còn nhiều hơn 1 tab)
   const handleCloseTab = (id) => {
     if (tabs.length === 1) return; // Không cho xóa tab cuối cùng
