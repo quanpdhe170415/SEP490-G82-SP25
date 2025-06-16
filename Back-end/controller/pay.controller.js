@@ -197,6 +197,65 @@ exports.getPaymentDetails = async (req, res) => {
   }
 };
 
+// exports.processPayment = async (req, res) => {
+//   try {
+//     const billId = req.params.billId;
+//     const { paymentMethod, cashPaid } = req.body;
+
+//     const bill = await Bill.findById(billId)
+//       .populate('shift_id')
+//       .populate('statusId');
+//     if (!bill) return res.status(404).json({ message: 'Bill not found' });
+//     if (bill.statusId && bill.statusId.name === 'Completed') return res.status(400).json({ message: 'Bill already completed' });
+
+//     if (!paymentMethod) return res.status(400).json({ message: 'Payment method is required' });
+//     if (paymentMethod === 'cash' && !cashPaid) return res.status(400).json({ message: 'Cash paid is required for cash payment' });
+
+//     const change = paymentMethod === 'cash' ? Math.max(0, cashPaid - bill.finalAmount) : 0;
+
+//     bill.paymentMethod = paymentMethod;
+//     bill.cashPaid = paymentMethod === 'cash' ? cashPaid : 0;
+//     bill.change = change;
+
+//     // Cập nhật statusId thành Completed
+//     const completedStatus = await Status.findOne({ name: 'Completed' });
+//     if (completedStatus) {
+//       bill.statusId = completedStatus._id;
+//     } else {
+//       return res.status(500).json({ message: 'Completed status not found' });
+//     }
+//     await bill.save();
+
+//     // Cập nhật Shift (nếu có)
+//     if (bill.shift_id) {
+//       const shift = await Shift.findById(bill.shift_id._id);
+//       if (shift) {
+//         shift.total_transactions += 1;
+//         if (paymentMethod === 'cash') {
+//           shift.cash_transactions += 1;
+//           shift.cash_change_given += change;
+//           // Cập nhật final_cash_amount: initial_cash_amount + finalAmount - change
+//           // shift.final_cash_amount = (shift.initial_cash_amount || 0) + bill.finalAmount - change;
+//         }
+//         await shift.save();
+//       }
+//     }
+
+//     res.status(200).json({
+//       paymentDetails: {
+//         totalAmount: bill.totalAmount,
+//         discount: bill.discount,
+//         finalAmount: bill.finalAmount,
+//         paymentMethod: bill.paymentMethod,
+//         cashPaid: bill.cashPaid,
+//         change: bill.change,
+//       },
+//     });
+//   } catch (error) {
+//     res.status(500).json({ message: 'Error processing payment', error: error.message });
+//   }
+// };
+
 exports.processPayment = async (req, res) => {
   try {
     const billId = req.params.billId;
@@ -209,12 +268,12 @@ exports.processPayment = async (req, res) => {
     if (bill.statusId && bill.statusId.name === 'Completed') return res.status(400).json({ message: 'Bill already completed' });
 
     if (!paymentMethod) return res.status(400).json({ message: 'Payment method is required' });
-    if (paymentMethod === 'cash' && !cashPaid) return res.status(400).json({ message: 'Cash paid is required for cash payment' });
+    if (paymentMethod === 'Tiền mặt' && !cashPaid) return res.status(400).json({ message: 'Cash paid is required for cash payment' });
 
-    const change = paymentMethod === 'cash' ? Math.max(0, cashPaid - bill.finalAmount) : 0;
+    const change = paymentMethod === 'Tiền mặt' ? cashPaid - bill.finalAmount : 0;
 
     bill.paymentMethod = paymentMethod;
-    bill.cashPaid = paymentMethod === 'cash' ? cashPaid : 0;
+    bill.cashPaid = paymentMethod === 'Tiền mặt' ? cashPaid : 0;
     bill.change = change;
 
     // Cập nhật statusId thành Completed
@@ -231,11 +290,11 @@ exports.processPayment = async (req, res) => {
       const shift = await Shift.findById(bill.shift_id._id);
       if (shift) {
         shift.total_transactions += 1;
-        if (paymentMethod === 'cash') {
+        if (paymentMethod === 'Tiền mặt') {
           shift.cash_transactions += 1;
           shift.cash_change_given += change;
-          // Cập nhật final_cash_amount: initial_cash_amount + finalAmount - change
-          // shift.final_cash_amount = (shift.initial_cash_amount || 0) + bill.finalAmount - change;
+          // Cập nhật final_cash_amount
+          shift.final_cash_amount = (shift.initial_cash_amount || 0) + bill.finalAmount - change;
         }
         await shift.save();
       }
@@ -258,7 +317,7 @@ exports.processPayment = async (req, res) => {
 
 exports.manageBill = async (req, res) => {
   try {
-    const { shift_id, notes, items, billId } = req.body;
+    const { shift_id, notes, items, billId, paymentMethod } = req.body;
 
     // Kiểm tra trạng thái của ca
     if (!shift_id) return res.status(400).json({ message: 'shift_id is required' });
@@ -284,7 +343,7 @@ exports.manageBill = async (req, res) => {
         discount: 0,
         finalAmount: 0,
         statusId: pendingStatus._id,
-        paymentMethod: '',
+        paymentMethod: paymentMethod || 'Tiền mặt',
         notes,
         shift_id,
       });
@@ -323,6 +382,7 @@ exports.manageBill = async (req, res) => {
           billDetail = new BillDetail({
             bill_id: bill._id,
             goods_id: goodsId,
+            goods_name: goods.name,
             quantity,
             unit_price: goods.selling_price,
             total_amount: quantity * goods.selling_price,
@@ -345,9 +405,11 @@ exports.manageBill = async (req, res) => {
 
       // Cập nhật totalAmount và finalAmount của bill
       const details = await BillDetail.find({ bill_id: bill._id });
-      const totalAmount = details.reduce((sum, d) => sum + d.total_amount, 0);
+      const totalAmount = details.reduce((sum, d) => sum + (d.total_amount || 0), 0); // Đảm bảo không NaN
       bill.totalAmount = totalAmount;
-      bill.finalAmount = totalAmount - bill.discount;
+      const discount = Number(bill.discount) || 0; // Đảm bảo discount là số
+      bill.finalAmount = totalAmount - discount; // Tính finalAmount
+      if (isNaN(bill.finalAmount)) bill.finalAmount = 0; // Phòng trường hợp NaN
       await bill.save();
     }
 

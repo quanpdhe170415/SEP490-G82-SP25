@@ -109,7 +109,7 @@ exports.closeShift = async (req, res) => {
     shift.shift_end_time = new Date();
     shift.final_cash_amount = totalFromDenominations; // Dựa trên denominations nhập vào
     shift.cash_change_given = shift.initial_cash_amount + revenue - totalFromDenominations; // Tính lại cashChangeGiven
-    shift.cash_transactions = completedBills.filter(bill => bill.paymentMethod === 'cash').length;
+    shift.cash_transactions = completedBills.filter(bill => bill.paymentMethod === 'Tiền mặt').length;
     shift.transfer_transactions = completedBills.filter(bill => bill.paymentMethod === 'transfer').length;
     shift.total_transactions = shift.cash_transactions + shift.transfer_transactions;
     shift.status = 'closed';
