@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 // Sửa lỗi ảnh sản phẩm mẫu không load được
 const mockProducts = [
@@ -38,11 +38,11 @@ const initialCashInDrawer = {
 
 export default function POS() {
   const [search, setSearch] = useState("");
-  const [tabs, setTabs] = useState([
-    { id: 1, name: "Hóa đơn 1", cart: mockCart } // tab đầu tiên
-  ]);
+  const [tabs, setTabs] = useState([]);
   const [activeTab, setActiveTab] = useState(1);
-  const [products] = useState(mockProducts);
+  const [products, setProducts] = useState([]); // lấy từ API
+  const [loadingProducts, setLoadingProducts] = useState(true);
+  const [errorProducts, setErrorProducts] = useState("");
   const [showPayment, setShowPayment] = useState(false);
   const [paymentType, setPaymentType] = useState("cash");
   const [customerPay, setCustomerPay] = useState("");
@@ -128,6 +128,44 @@ export default function POS() {
       else setActiveTab(newTabs[0].id);
     }
   };
+
+  // Lấy sản phẩm từ API khi load trang
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoadingProducts(true);
+      setErrorProducts("");
+      try {
+        const res = await fetch("http://localhost:9999/api/product/products-for-retail");
+        if (!res.ok) throw new Error("Không thể lấy danh sách sản phẩm");
+        const data = await res.json();
+        // Giả sử API trả về mảng sản phẩm, map lại cho đúng định dạng
+        setProducts(
+          (Array.isArray(data) ? data : data.products || []).map((p, idx) => ({
+            id: p._id || p.id || idx + 1,
+            code: p.code || p.barcode || "",
+            name: p.name || p.productName || "Sản phẩm",
+            price: p.price || p.retailPrice || 0,
+            type: p.type || p.category || "Khác",
+            img: p.img || p.image || "https://dummyimage.com/40x40/cccccc/000000&text=SP",
+          }))
+        );
+      } catch (err) {
+        setErrorProducts(err.message || "Lỗi khi tải sản phẩm");
+      } finally {
+        setLoadingProducts(false);
+      }
+    };
+    fetchProducts();
+  }, []);
+
+  // Khởi tạo tab đầu tiên nếu chưa có tab nào
+  useEffect(() => {
+    if (tabs.length === 0) {
+      setTabs([{ id: 1, name: "Hóa đơn 1", cart: [] }]);
+      setActiveTab(1);
+    }
+    // eslint-disable-next-line
+  }, []);
 
   const filteredProducts = products.filter(
     (p) =>
@@ -252,26 +290,35 @@ export default function POS() {
               <button className="btn btn-outline-primary btn-sm me-2">Nước</button>
               {/* Có thể thêm các tab loại sản phẩm khác */}
             </div>
-            <div className="row g-2">
-              {filteredProducts.map((p) => (
-                <div className="col-6" key={p.id}>
-                  <div className="card h-100" onClick={() => handleAddToCart(p)} style={{ cursor: 'pointer' }}>
-                    <div className="card-body p-2">
-                      <div className="d-flex align-items-center gap-2">
-                        <img src={p.img} alt="Ảnh" width={40} height={40} />
-                        <div>
-                          <div className="fw-bold">{p.name}</div>
-                          <div className="text-secondary small">{p.type}</div>
+            {loadingProducts ? (
+              <div className="text-center py-4">Đang tải sản phẩm...</div>
+            ) : errorProducts ? (
+              <div className="alert alert-danger">{errorProducts}</div>
+            ) : (
+              <div className="row g-2">
+                {filteredProducts.map((p) => (
+                  <div className="col-6" key={p.id}>
+                    <div className="card h-100" onClick={() => handleAddToCart(p)} style={{ cursor: 'pointer' }}>
+                      <div className="card-body p-2">
+                        <div className="d-flex align-items-center gap-2">
+                          <img src={p.img} alt="Ảnh" width={40} height={40} />
+                          <div>
+                            <div className="fw-bold">{p.name}</div>
+                            <div className="text-secondary small">{p.type}</div>
+                          </div>
                         </div>
-                      </div>
-                      <div className="mt-2">
-                        <span className="fw-bold text-primary">{p.price.toLocaleString()} đ</span>
+                        <div className="mt-2">
+                          <span className="fw-bold text-primary">{p.price.toLocaleString()} đ</span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+                {filteredProducts.length === 0 && (
+                  <div className="col-12 text-center text-secondary py-3">Không có sản phẩm phù hợp</div>
+                )}
+              </div>
+            )}
           </div>
           {/* Hóa đơn */}
           <div className="col-7">
