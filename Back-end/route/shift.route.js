@@ -4,4 +4,5 @@ const controller = require('../controller/index');
 router.post('/openshift', controller.shiftController.openShift);
 router.post('/closeshift/:shiftId', controller.shiftController.closeShift);
 router.post('/export/:shiftId', controller.shiftController.exportShiftReport);
+router.get('/checkShiftToday', controller.shiftController.checkTodayShift);
 module.exports = router;
