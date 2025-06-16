@@ -310,29 +310,44 @@ const connectDB = async () => {
     }
 
     if (statuses.length > 0 && shifts.length > 0) {
-      bills = await db.Bill.insertMany([
-        {
+      const statusPaid = statuses.find((s) => s.name === "Đã thanh toán");
+      const statusReturned = statuses.find((s) => s.name === "Đã trả hàng");
+      const shiftMorning = shifts.find((s) => s.notes === "Ca sáng ngày 14/06/2025");
+      const shiftAfternoon = shifts.find((s) => s.notes === "Ca chiều ngày 14/06/2025");
+      const billsToInsert = [];
+      if (statusPaid && shiftMorning) {
+        billsToInsert.push({
           billNumber: "HD001",
           seller: "Nguyễn Văn A",
           totalAmount: 22000,
           finalAmount: 22000,
           paymentMethod: "Tiền mặt",
-          statusId: statuses.find((s) => s.name === "Đã thanh toán")._id,
-          shift_id: shifts.find((s) => s.notes === "Ca sáng ngày 14/06/2025")
-            ._id,
-        },
-        {
+          statusId: statusPaid._id,
+          shift_id: shiftMorning._id,
+        });
+      } else {
+        console.warn("Không tìm thấy status 'Đã thanh toán' hoặc shift 'Ca sáng ngày 14/06/2025', bỏ qua HD001");
+      }
+      if (statusReturned && shiftAfternoon) {
+        billsToInsert.push({
           billNumber: "HD002",
           seller: "Trần Thị B",
           totalAmount: 15000,
           finalAmount: 15000,
           paymentMethod: "Chuyển khoản ngân hàng",
-          statusId: statuses.find((s) => s.name === "Đã trả hàng")._id,
-          shift_id: shifts.find((s) => s.notes === "Ca chiều ngày 14/06/2025")
-            ._id,
-        },
-      ]);
-      console.log("Seeded bills!");
+          statusId: statusReturned._id,
+          shift_id: shiftAfternoon._id,
+        });
+      } else {
+        console.warn("Không tìm thấy status 'Đã trả hàng' hoặc shift 'Ca chiều ngày 14/06/2025', bỏ qua HD002");
+      }
+      if (billsToInsert.length > 0) {
+        bills = await db.Bill.insertMany(billsToInsert);
+        console.log("Seeded bills!");
+      } else {
+        bills = [];
+        console.warn("Không có bill nào được seed!");
+      }
     } else {
       bills = await db.Bill.find();
     }
@@ -346,6 +361,7 @@ const connectDB = async () => {
     }
     if (bills.length > 0 && goods.length >= 2) {
       const billDetails = [
+        // Chi tiết cho HD001
         {
           bill_id: bills[0]._id, // HD001
           goods_id: goods[0]._id, // Coca Cola
@@ -362,6 +378,7 @@ const connectDB = async () => {
           unit_price: 12000,
           total_amount: 1 * 12000,
         },
+        // Chi tiết cho HD002
         {
           bill_id: bills[1]._id, // HD002
           goods_id: goods[1]._id, // Snack Oishi
@@ -370,10 +387,28 @@ const connectDB = async () => {
           unit_price: 15000,
           total_amount: 1 * 15000,
         },
+        // Chi tiết cho INV-20250613-180
+        {
+          bill_id: bills[2]._id, // INV-20250613-180
+          goods_id: goods[0]._id, // Coca Cola
+          goods_name: goods[0].goods_name,
+          quantity: 4,
+          unit_price: 10000,
+        },
+        // Chi tiết cho INV-20250613-209
+        {
+          bill_id: bills[3]._id, // INV-20250613-209
+          goods_id: goods[1]._id, // Snack Oishi
+          goods_name: goods[1].goods_name,
+          quantity: 2,
+          unit_price: 10000,
+        },
       ];
 
       await db.BillDetail.insertMany(billDetails);
-      console.log("Seeded bill details!");
+      console.log("Seeded bill details with new data!");
+    } else {
+      console.warn("Not enough bills or goods to seed bill details. Skipping bill details seeding.");
     }
   } catch (error) {
     console.error("MongoDB connection failed: ", error);
