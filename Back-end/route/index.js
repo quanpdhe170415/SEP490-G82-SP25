@@ -9,6 +9,7 @@ const paymentRouter = require('./pay.route');
 const returnOrderRoute = require("./returnorder.route");
 const goodsDisposalRoute = require('./goodsDisposal.route');
 
+
 router.use("/product", productRouter);
 router.use("/goods", goodsRoute);
 router.use("/auth", authenRouter);

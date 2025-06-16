@@ -268,25 +268,52 @@ const connectDB = async () => {
       console.log("Cleared existing bills!");
     }
     if (statuses.length > 0) {
-      bills = await db.Bill.insertMany([
-        {
-          billNumber: "HD001",
-          seller: "Nguyễn Văn A",
-          totalAmount: 22000,
-          finalAmount: 22000,
-          paymentMethod: "Tiền mặt",
-          statusId: statuses.find((s) => s.name === "Đã thanh toán")._id,
-        },
-        {
-          billNumber: "HD002",
-          seller: "Trần Thị B",
-          totalAmount: 15000,
-          finalAmount: 15000,
-          paymentMethod: "Chuyển khoản ngân hàng",
-          statusId: statuses.find((s) => s.name === "Đã trả hàng")._id,
-        },
-      ]);
-      console.log("Seeded bills!");
+      // Lỗi ở statusID với ._id nên sửa tạm ở dưới
+          // bills = await db.Bill.insertMany([
+          //   {
+          //     billNumber: "HD001",
+          //     seller: "Nguyễn Văn A",
+          //     totalAmount: 22000,
+          //     finalAmount: 22000,
+          //     paymentMethod: "Tiền mặt",
+          //     statusId: statuses.find((s) => s.name === "Đã thanh toán")._id,
+          //   },
+          //   {
+          //     billNumber: "HD002",
+          //     seller: "Trần Thị B",
+          //     totalAmount: 15000,
+          //     finalAmount: 15000,
+          //     paymentMethod: "Chuyển khoản ngân hàng",
+          //     statusId: statuses.find((s) => s.name === "Đã trả hàng")._id,
+          //   },
+          // ]);
+          // console.log("Seeded bills!");
+
+      const paidStatus = statuses.find((s) => s.name === "Đã thanh toán");
+      const returnedStatus = statuses.find((s) => s.name === "Đã trả hàng");
+      if (!paidStatus || !returnedStatus) {
+        console.error("Required statuses not found. Skipping bill seeding.");
+      } else {
+        bills = await db.Bill.insertMany([
+          {
+            billNumber: "HD001",
+            seller: "Nguyễn Văn A",
+            totalAmount: 22000,
+            finalAmount: 22000,
+            paymentMethod: "Tiền mặt",
+            statusId: paidStatus._id,
+          },
+          {
+            billNumber: "HD002",
+            seller: "Trần Thị B",
+            totalAmount: 15000,
+            finalAmount: 15000,
+            paymentMethod: "Chuyển khoản ngân hàng",
+            statusId: returnedStatus._id,
+          },
+        ]);
+        console.log("Seeded bills!");
+      }
     } else {
       bills = await db.Bill.find();
     }

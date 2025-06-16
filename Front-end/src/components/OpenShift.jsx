@@ -13,6 +13,7 @@ const denominations = [
   { value: 500000, label: "500.000" },
 ];
 
+// Fake data để test FE 
 const previousShiftCash = {
   1000: 5,
   2000: 10,
@@ -25,7 +26,6 @@ const previousShiftCash = {
   500000: 1,
 };
 
-// Giả lập dữ liệu ca làm việc
 const shiftData = {
   employeeName: "Nguyễn Văn A",
   receivedCash: 2000000,
@@ -37,21 +37,77 @@ const shiftData = {
 
 export default function OpenShift() {
   const [cashDetail, setCashDetail] = useState({ ...previousShiftCash });
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [accountId, setAccountId] = useState("");
+  const [notes, setNotes] = useState("");
 
   const totalCash = Object.entries(cashDetail).reduce(
     (sum, [denom, qty]) => sum + Number(denom) * Number(qty),
     0
   );
 
+  // Chuyển cashDetail object thành mảng denominations đúng định dạng backend yêu cầu
+  const getDenominationsArray = () => {
+    return denominations
+      .map((d) => ({
+        denomination_value: d.value,
+        count: Number(cashDetail[d.value]) || 0,
+      }))
+      .filter((item) => item.count > 0); // chỉ gửi các mệnh giá có số lượng > 0
+  };
+
   const handleChange = (value, input) => {
     let qty = input;
     if (qty === "" || qty === null) qty = 0;
-    if (!/^[0-9]*$/.test(qty)) return; // chỉ cho phép số
+    if (!/^[0-9]*$/.test(qty)) return;
     setCashDetail((prev) => ({ ...prev, [value]: Number(qty) }));
   };
 
   const handleReset = () => {
     setCashDetail({ ...previousShiftCash });
+  };
+
+  const handleOpenShift = async () => {
+    setLoading(true);
+    setMessage("");
+    setError("");
+    try {
+      const denominationsArr = getDenominationsArray();
+      if (!accountId) {
+        setError("Vui lòng nhập Account ID");
+        setLoading(false);
+        return;
+      }
+      if (denominationsArr.length === 0) {
+        setError("Vui lòng nhập số lượng mệnh giá tiền mặt");
+        setLoading(false);
+        return;
+      }
+      const payload = {
+        account_id: accountId,
+        initial_cash_amount: totalCash,
+        notes,
+        denominations: denominationsArr,
+      };
+      const res = await fetch("http://localhost:9999/api/shift/openshift", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || "Mở ca thất bại");
+      }
+      setMessage("Mở ca thành công!");
+    } catch (err) {
+      setError(err.message || "Có lỗi xảy ra khi mở ca");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -61,7 +117,22 @@ export default function OpenShift() {
           <div className="card-body">
             <h2 className="card-title mb-3 fw-bold text-black">Mở ca bán hàng</h2>
             <div className="mb-4" style={{ height: 4, width: 96, background: '#0070f4', borderRadius: 4 }}></div>
+            {message && <div className="alert alert-success">{message}</div>}
+            {error && <div className="alert alert-danger">{error}</div>}
             <ul className="list-group list-group-flush mb-4">
+              <li className="list-group-item bg-white">
+                <div className="mb-2 text-secondary d-flex justify-content-between align-items-center">
+                  <span>Account ID:</span>
+                  <input
+                    type="text"
+                    className="form-control form-control-sm ms-2"
+                    style={{ maxWidth: 200 }}
+                    value={accountId}
+                    onChange={e => setAccountId(e.target.value)}
+                    placeholder="Nhập Account ID"
+                  />
+                </div>
+              </li>
               <li className="list-group-item d-flex justify-content-between align-items-center bg-white">
                 <span className="text-secondary">Nhân viên mở ca:</span>
                 <span className="fw-semibold text-black">{shiftData.employeeName}</span>
@@ -92,6 +163,19 @@ export default function OpenShift() {
                 </div>
                 <div className="mt-2 fw-bold text-black">Tổng tiền: {totalCash.toLocaleString()} đ</div>
               </li>
+              <li className="list-group-item bg-white">
+                <div className="mb-2 text-secondary d-flex justify-content-between align-items-center">
+                  <span>Ghi chú:</span>
+                  <input
+                    type="text"
+                    className="form-control form-control-sm ms-2"
+                    style={{ maxWidth: 300 }}
+                    value={notes}
+                    onChange={e => setNotes(e.target.value)}
+                    placeholder="Ghi chú (nếu có)"
+                  />
+                </div>
+              </li>
               <li className="list-group-item d-flex justify-content-between align-items-center bg-white">
                 <span className="text-secondary">Thời gian mở ca:</span>
                 <span className="fw-semibold text-black">{shiftData.openTime}</span>
@@ -101,17 +185,14 @@ export default function OpenShift() {
                 <span className="fw-semibold text-black">{shiftData.expectedCloseTime}</span>
               </li>
               <li className="list-group-item d-flex justify-content-between align-items-center bg-white">
-                <span className="text-secondary">Ghi chú:</span>
-                <span className="fw-semibold text-black">{shiftData.note}</span>
-              </li>
-              <li className="list-group-item d-flex justify-content-between align-items-center bg-white">
                 <span className="text-secondary">Trạng thái:</span>
                 <span className="fw-semibold text-black">{shiftData.status}</span>
               </li>
             </ul>
             <div className="d-flex gap-2">
-              <button className="btn w-100 text-white fw-bold py-2" style={{ background: '#0070f4' }}>
-                Xác nhận mở ca
+              <button className="btn w-100 text-white fw-bold py-2" style={{ background: '#0070f4' }}
+                onClick={handleOpenShift} disabled={loading}>
+                {loading ? "Đang mở ca..." : "Xác nhận mở ca"}
               </button>
             </div>
           </div>
