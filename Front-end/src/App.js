@@ -27,6 +27,7 @@ function App() {
         <Route path="/home" element={<HomePage />} />
         <Route path="/forgotpassword" element={<ForgotPassword />} />
         <Route path="/homecashier" element={<HomeForCashier />} />
+        <Route path="/openshift" element={<OpenShift />} />
         <Route path="/bill-history" element={<BillHistoryPage />} />
         <Route path="/bill-export-history" element={<PurchaseHistory />} />
       </Routes>
