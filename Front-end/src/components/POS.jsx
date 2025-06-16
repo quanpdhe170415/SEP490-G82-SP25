@@ -116,17 +116,24 @@ export default function POS() {
   // Đổi tab
   const handleSelectTab = (id) => setActiveTab(id);
 
-  // Đóng tab (không cho đóng tab đầu tiên)
+  // Đóng tab (cho phép đóng cả tab đầu tiên nếu còn nhiều hơn 1 tab)
   const handleCloseTab = (id) => {
-    if (tabs.length === 1) return;
+    if (tabs.length === 1) return; // Không cho xóa tab cuối cùng
     const idx = tabs.findIndex(t => t.id === id);
     const newTabs = tabs.filter(t => t.id !== id);
-    setTabs(newTabs);
+    // Đánh lại số thứ tự hóa đơn
+    const renamedTabs = newTabs.map((tab, i) => ({ ...tab, id: i + 1, name: `Hóa đơn ${i + 1}` }));
+    // Cập nhật activeTab
+    let newActiveTab = activeTab;
     if (activeTab === id) {
-      // Nếu tab đang active bị đóng thì chuyển sang tab bên trái hoặc phải
-      if (idx > 0) setActiveTab(newTabs[idx - 1].id);
-      else setActiveTab(newTabs[0].id);
+      if (idx > 0) newActiveTab = renamedTabs[idx - 1]?.id || 1;
+      else newActiveTab = renamedTabs[0]?.id || 1;
+    } else {
+      // Nếu activeTab lớn hơn số tab mới thì giảm về cuối
+      if (activeTab > renamedTabs.length) newActiveTab = renamedTabs.length;
     }
+    setTabs(renamedTabs);
+    setActiveTab(newActiveTab);
   };
 
   // Lấy sản phẩm từ API khi load trang
@@ -259,22 +266,27 @@ export default function POS() {
           <div className="d-flex align-items-center flex-grow-1 gap-2" style={{ minWidth: 0 }}>
             {tabs.map(tab => (
               <div key={tab.id} className="position-relative d-flex align-items-center" style={{ minWidth: 0 }}>
-                <button
-                  className={`btn btn-${activeTab === tab.id ? '' : 'outline-'}light btn-sm px-3 fw-bold me-1`}
-                  style={{ background: activeTab === tab.id ? '#fff' : 'transparent', color: activeTab === tab.id ? '#0070f4' : '#fff', borderRadius: 8, border: 'none', minWidth: 110, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-                  onClick={() => handleSelectTab(tab.id)}
-                >
-                  <span className="me-2" style={{ color: '#0070f4', fontWeight: 700, fontSize: 18, verticalAlign: 'middle' }}>{activeTab === tab.id ? '↔' : ''}</span>
-                  {tab.name}
-                </button>
-                {tabs.length > 1 && (
+                <div className="d-flex align-items-center" style={{ minWidth: 0, gap: 6 }}>
                   <button
-                    className="btn btn-sm btn-close position-absolute top-50 end-0 translate-middle-y"
-                    style={{ right: 2, top: '50%', fontSize: 12, color: '#0070f4', background: 'transparent' }}
-                    onClick={() => handleCloseTab(tab.id)}
-                    tabIndex={-1}
-                  />
-                )}
+                    className={`btn btn-${activeTab === tab.id ? '' : 'outline-'}light btn-sm px-3 fw-bold me-0`}
+                    style={{ background: activeTab === tab.id ? '#fff' : 'transparent', color: activeTab === tab.id ? '#0070f4' : '#fff', borderRadius: 8, border: 'none', minWidth: 110, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                    onClick={() => handleSelectTab(tab.id)}
+                  >
+                    <span style={{ flex: 1, textAlign: 'left', fontWeight: 600, marginRight:'5px' }}>{tab.name}</span>
+
+                    {tabs.length > 1 && (
+                    <button
+                      className="btn btn-sm position-relative"
+                      style={{ fontSize: 12, color: '#fff', background: '#dc3545', borderRadius: '50%', width: 8, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', marginLeft: 2 }}
+                      onClick={(e) => { e.stopPropagation(); handleCloseTab(tab.id); }}
+                      tabIndex={-1}
+                      title="Đóng tab"
+                    >
+                      ×
+                    </button>
+                  )}
+                  </button>
+                </div>
               </div>
             ))}
             <button className="btn btn-light btn-sm px-2 d-flex align-items-center justify-content-center" style={{ borderRadius: 8, width: 32, height: 32, fontSize: 20 }} onClick={handleAddTab}>+</button>
