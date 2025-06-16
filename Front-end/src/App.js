@@ -10,6 +10,7 @@ import BillHistoryPage from './components/BillHistoryPage';
 import ForgotPassword from './components/ForgotPassword';
 import HomeForCashier from './components/HomeforCashier';
 import PurchaseHistory from "./components/PurchaseHistory";
+import GoodsDisposal from './components/GoodsDisposal';
 
 
 
@@ -23,6 +24,7 @@ function App() {
         <Route path="/homecashier" element={<HomeForCashier />} />
         <Route path="/bill-history" element={<BillHistoryPage />} />
         <Route path="/bill-export-history" element={<PurchaseHistory />} />
+        <Route path="/goods-disposal" element={<GoodsDisposal/>}/>
       </Routes>
     </Router>
   );
