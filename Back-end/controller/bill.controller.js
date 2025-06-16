@@ -117,16 +117,15 @@ exports.getAllBills = async (req, res) => {
   };
 
   // Lấy một chi tiết hóa đơn theo ID
-  exports.getBillDetailById = async (req, res) => {
-
+exports.getBillDetailById = async (req, res) => {
   try {
     const billDetail = await BillDetail.find({ bill_id: req.params.id })
-      .populate("bill_id", "billNumber")
-      .populate("goods_id", "goods_name");
-    if (!billDetail) {
+      .populate("bill_id") // Lấy toàn bộ thông tin của Bill
+      .populate("goods_id", "goods_name barcode"); // Giữ nguyên để lấy goods_name
+    if (!billDetail || billDetail.length === 0) {
       return res.status(404).json({
         success: false,
-        message: 'Không tìm thấy chi tiết hóa đơn',
+        message: "Không tìm thấy chi tiết hóa đơn",
       });
     }
     return res.status(200).json({
@@ -136,7 +135,7 @@ exports.getAllBills = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: 'Lỗi server: ' + error.message,
+      message: "Lỗi server: " + error.message,
     });
   }
 };
