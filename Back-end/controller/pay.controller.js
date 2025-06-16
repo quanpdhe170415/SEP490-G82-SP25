@@ -256,6 +256,105 @@ exports.processPayment = async (req, res) => {
   }
 };
 
+exports.manageBill = async (req, res) => {
+  try {
+    const { shift_id, notes, items, billId } = req.body;
 
+    // Kiểm tra trạng thái của ca
+    if (!shift_id) return res.status(400).json({ message: 'shift_id is required' });
+    const shift = await Shift.findById(shift_id);
+    if (!shift) return res.status(404).json({ message: 'Ca không tồn tại' });
+    if (shift.status === 'closed') {
+      return res.status(400).json({ message: 'Ca đã đóng, không thể tạo hoặc cập nhật hóa đơn' });
+    }
+
+    let bill;
+    if (billId) {
+      // Tìm hóa đơn hiện có
+      bill = await Bill.findById(billId);
+      if (!bill) return res.status(404).json({ message: 'Bill not found' });
+    } else {
+      // Tạo hóa đơn mới nếu không có billId
+      const pendingStatus = await Status.findOne({ name: 'Pending' });
+      if (!pendingStatus) return res.status(404).json({ message: 'Pending status not found' });
+
+      bill = new Bill({
+        billNumber: `INV-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`,
+        totalAmount: 0,
+        discount: 0,
+        finalAmount: 0,
+        statusId: pendingStatus._id,
+        paymentMethod: '',
+        notes,
+        shift_id,
+      });
+      await bill.save();
+    }
+
+    // Xử lý thêm hoặc cập nhật mặt hàng nếu có items
+    if (items && Array.isArray(items) && items.length > 0) {
+      for (const item of items) {
+        const { goodsId, quantity } = item;
+        if (!goodsId || !quantity || quantity <= 0) {
+          return res.status(400).json({ message: 'goodsId and valid quantity are required for each item' });
+        }
+
+        const goods = await Goods.findById(goodsId);
+        if (!goods || !goods.is_active) return res.status(404).json({ message: 'Goods not found or inactive' });
+
+        if (goods.display_quantity >= quantity) {
+          goods.display_quantity -= quantity;
+        } else if (goods.stock_quantity + goods.display_quantity >= quantity) {
+          const remaining = quantity - goods.display_quantity;
+          goods.display_quantity = 0;
+          goods.stock_quantity -= remaining;
+        } else {
+          return res.status(400).json({ message: 'Insufficient stock and display quantity' });
+        }
+        await goods.save();
+
+        // Kiểm tra xem BillDetail đã tồn tại cho goodsId này chưa
+        let billDetail = await BillDetail.findOne({ bill_id: bill._id, goods_id: goodsId });
+        if (billDetail) {
+          billDetail.quantity += quantity;
+          billDetail.total_amount = billDetail.quantity * billDetail.unit_price;
+          await billDetail.save();
+        } else {
+          billDetail = new BillDetail({
+            bill_id: bill._id,
+            goods_id: goodsId,
+            quantity,
+            unit_price: goods.selling_price,
+            total_amount: quantity * goods.selling_price,
+          });
+          await billDetail.save();
+        }
+
+        const latestImport = await ImportDetail.findOne({ goods_id: goodsId }).sort({ createdAt: -1 });
+        const batch_id = latestImport ? latestImport.import_batch_id : null;
+
+        const stockMovement = new StockMovement({
+          goodsId: goodsId,
+          batch_id: batch_id,
+          quantity: -quantity,
+          movedAt: new Date(),
+          reason: 'Bán lẻ',
+        });
+        await stockMovement.save();
+      }
+
+      // Cập nhật totalAmount và finalAmount của bill
+      const details = await BillDetail.find({ bill_id: bill._id });
+      const totalAmount = details.reduce((sum, d) => sum + d.total_amount, 0);
+      bill.totalAmount = totalAmount;
+      bill.finalAmount = totalAmount - bill.discount;
+      await bill.save();
+    }
+
+    res.status(201).json(bill);
+  } catch (error) {
+    res.status(500).json({ message: 'Error managing bill', error: error.message });
+  }
+};
 
 
