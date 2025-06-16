@@ -35,7 +35,7 @@ const db = {
   BillDetail,
   ReturnOrder,
   ReturnDetail,
-
+  UserDetail,
 };
   
 
