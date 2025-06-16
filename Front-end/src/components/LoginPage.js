@@ -5,12 +5,6 @@ import logo from '../assets/logo.png';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const users = [
-  { username: 'admin', password: '123456' },
-  { username: 'staff', password: 'staff123' },
-  { username: 'guest', password: 'guest' },
-];
-
 const LoginPage = () => {
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
@@ -18,33 +12,59 @@ const LoginPage = () => {
   const [error, setError] = useState('');
   const [remember, setRemember] = useState(false);
 
-  const handleLogin = () => {
-    const foundUser = users.find(
-      (user) => user.username === username && user.password === password
-    );
+  const handleLogin = async () => {
+    setError(''); // reset lỗi cũ
 
-    if (foundUser) {
-      localStorage.setItem('loginSuccess', 'true');
-      toast.success('Đăng nhập thành công!', {
-        position: 'top-right',
-        autoClose: 2000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: false,
-        draggable: false,
-        progress: undefined,
+    try {
+      const response = await fetch(`${process.env.REACT_APP_URL_SERVER}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: username,
+          password: password,
+          deviceType: 'web',
+        }),
       });
-      setTimeout(() => {
-        navigate('/home');
-      }, 1000);
-    } else {
-      setError('Tên đăng nhập hoặc mật khẩu không đúng');
+
+      const data = await response.json();
+
+      if (response.ok) {
+        // ✅ Lưu vào localStorage
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('refreshToken', data.refreshToken);
+        localStorage.setItem('deviceId', data.deviceId);
+        localStorage.setItem('deviceType', data.deviceType);
+        localStorage.setItem('role', data.role);
+        localStorage.setItem('userId', data.userId);
+        localStorage.setItem('username', data.username);
+
+        toast.success(data.message || 'Đăng nhập thành công!', {
+          position: 'top-right',
+          autoClose: 2000,
+        });
+
+        setTimeout(() => {
+          if (data.role === 'Admin') {
+            navigate('/home');
+          } else if (data.role === 'Staff') {
+            navigate('/openshift');
+          } else {
+            setError('Không có quyền truy cập phù hợp.');
+          }
+        }, 1000);
+      } else {
+        setError(data.message || 'Tên đăng nhập hoặc mật khẩu không đúng');
+      }
+    } catch (err) {
+      console.error(err);
+      setError('Lỗi hệ thống. Vui lòng thử lại sau.');
     }
   };
 
-  // Hàm xử lý khi nhấp vào "Quên mật khẩu?"
   const handleForgotPassword = () => {
-    navigate('/forgotpassword'); // Chuyển hướng đến trang quên mật khẩu
+    navigate('/forgotpassword');
   };
 
   return (
@@ -98,10 +118,6 @@ const LoginPage = () => {
             </label>
           </div>
 
-
-
-
-
           <span
             className="text-decoration-none text-primary"
             style={{ cursor: 'pointer' }}
@@ -109,7 +125,6 @@ const LoginPage = () => {
           >
             Quên mật khẩu?
           </span>
-
         </div>
 
         <div className="d-grid">
@@ -122,6 +137,4 @@ const LoginPage = () => {
   );
 };
 
-
 export default LoginPage;
-

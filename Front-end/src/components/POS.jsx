@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useNavigate } from "react-router-dom";
+import Sidebar from "./Sidebar"; // Thêm dòng này
 
 // Sửa lỗi ảnh sản phẩm mẫu không load được
 const mockProducts = [
@@ -39,6 +41,8 @@ const initialCashInDrawer = {
 };
 
 export default function POS() {
+  const navigate = useNavigate();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false); // Nếu muốn thu gọn sidebar
   const [search, setSearch] = useState("");
   const [tabs, setTabs] = useState([]);
   const [activeTab, setActiveTab] = useState(1);
@@ -143,7 +147,7 @@ export default function POS() {
       setLoadingProducts(true);
       setErrorProducts("");
       try {
-        const res = await fetch("http://localhost:9999/api/product/products-for-retail");
+        const res = await fetch(`${process.env.REACT_APP_URL_SERVER}product/products-for-retail`);
         if (!res.ok) throw new Error("Không thể lấy danh sách sản phẩm");
         const data = await res.json();
         // Giả sử API trả về mảng sản phẩm, map lại cho đúng định dạng
@@ -271,7 +275,7 @@ export default function POS() {
       }
       const cashPaid = useCashInput && totalCustomerCash > 0 ? totalCustomerCash : Number(customerPay) || 0;
       const paymentMethod = paymentType;
-      const res = await fetch(`http://localhost:9999/api/payment/${billId}/process`, {
+      const res = await fetch(`${process.env.REACT_APP_URL_SERVER}/payment/${billId}/process`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ paymentMethod, cashPaid })
@@ -297,11 +301,30 @@ export default function POS() {
           <div className="fw-bold">Tạp hóa Hải Chi</div>
         </div>
         <div className="nav flex-column gap-2">
-          <button className="btn btn-outline-primary btn-sm">Yêu cầu trả hàng</button>
-          <button className="btn btn-outline-primary btn-sm">Yêu cầu xuất hàng</button>
-          <button className="btn btn-outline-primary btn-sm">Thanh toán</button>
-          <button className="btn btn-outline-primary btn-sm">Đóng ca</button>
-        </div>
+      <button
+        className="btn btn-outline-primary btn-sm"
+        onClick={() => navigate("/history")}
+      >
+        Lịch sử hóa đơn
+      </button>
+      <button
+        className="btn btn-outline-primary btn-sm"
+        onClick={() => navigate("/request-export")}
+      >
+        Yêu cầu xuất hàng
+      </button>
+      <button
+        className="btn btn-outline-primary btn-sm"
+        onClick={() => navigate("/POS")}
+      >
+        Thanh toán
+      </button>
+      <button
+        className="btn btn-outline-primary btn-sm"
+        onClick={() => navigate("/closeshift")}
+      >Đóng ca
+      </button>
+    </div>
         <div className="mt-auto text-center">
           <img src="https://via.placeholder.com/32" alt="avatar" className="rounded-circle" />
         </div>
