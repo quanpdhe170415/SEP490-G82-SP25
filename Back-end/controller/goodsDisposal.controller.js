@@ -97,15 +97,15 @@ exports.getDetailDisposal = async (req, res) => {
         populate: [
           {
             path: 'goods_id',
-            select: 'goods_name barcode unit_of_measure description category_id selling_price average_import_price image_url'
+            select: 'goods_name barcode unit_of_measure selling_price image_url'
           },
           {
             path: 'import_batch_number',
-            select: 'import_receipt_number import_date supplier total_value status'
+            select: 'import_receipt_number import_date supplier'
           },
           {
             path: 'import_detail_id',
-            select: 'quantity_imported unit_import_price total_amount expiry_date manufacturing_batch_number manufacturing_date meets_conditions notes'
+            select: 'expiry_date manufacturing_batch_number manufacturing_date'
           }
         ]
       });
@@ -122,16 +122,21 @@ exports.getDetailDisposal = async (req, res) => {
     const transformedDisposal = {
       ...disposal.toObject(),
       disposal_items: disposal.disposal_items.map(item => ({
-        _id: item._id,
-        // Product information
+        disposal_item_id: item._id,
+        // Consolidated product information
         product_info: {
           goods_id: item.goods_id._id,
-          goods_name: item.goods_id.goods_name,
+          goods_name: item.goods_name,
           barcode: item.goods_id.barcode,
-          description: item.goods_id.description,
+          unit_of_measure: item.goods_id.unit_of_measure,
           selling_price: item.goods_id.selling_price,
-          average_import_price: item.goods_id.average_import_price,
-          image_url: item.goods_id.image_url
+          image_url: item.goods_id.image_url,
+          expiry_date: item.import_detail_id.expiry_date,
+          manufacturing_batch_number: item.import_detail_id.manufacturing_batch_number,
+          manufacturing_date: item.import_detail_id.manufacturing_date,
+          import_receipt_number: item.import_batch_number.import_receipt_number,
+          import_date: item.import_batch_number.import_date,
+          supplier: item.import_batch_number.supplier
         },
         // Disposal item details
         product_name: item.product_name,
@@ -141,51 +146,14 @@ exports.getDetailDisposal = async (req, res) => {
         cost_price: item.cost_price,
         item_disposal_reason: item.item_disposal_reason,
         item_images: item.item_images,
-        // Import batch information
-        import_batch_info: {
-          import_batch_id: item.import_batch_number._id,
-          import_receipt_number: item.import_batch_number.import_receipt_number,
-          import_date: item.import_batch_number.import_date,
-          supplier: item.import_batch_number.supplier,
-          batch_total_value: item.import_batch_number.total_value,
-          batch_status: item.import_batch_number.status
-        },
-        // Import detail information
-        import_detail_info: {
-          import_detail_id: item.import_detail_id._id,
-          quantity_imported: item.import_detail_id.quantity_imported,
-          unit_import_price: item.import_detail_id.unit_import_price,
-          total_amount: item.import_detail_id.total_amount,
-          expiry_date: item.import_detail_id.expiry_date,
-          manufacturing_batch_number: item.import_detail_id.manufacturing_batch_number,
-          manufacturing_date: item.import_detail_id.manufacturing_date,
-          meets_conditions: item.import_detail_id.meets_conditions,
-          import_notes: item.import_detail_id.notes
-        },
         // Calculated fields
-        disposal_value: item.quantity_disposed * item.cost_price,
-        disposal_percentage: item.import_detail_id.quantity_imported > 0 
-          ? ((item.quantity_disposed / item.import_detail_id.quantity_imported) * 100).toFixed(2)
-          : 0
+        disposal_value: item.quantity_disposed * item.cost_price
       }))
-    };
-
-    // Add summary statistics
-    const summary = {
-      total_items_count: transformedDisposal.disposal_items.length,
-      total_quantity_disposed: transformedDisposal.disposal_items.reduce((sum, item) => sum + item.quantity_disposed, 0),
-      average_cost_price: transformedDisposal.disposal_items.length > 0 
-        ? (transformedDisposal.disposal_items.reduce((sum, item) => sum + item.cost_price, 0) / transformedDisposal.disposal_items.length).toFixed(2)
-        : 0,
-      disposal_reasons: [...new Set(transformedDisposal.disposal_items.map(item => item.item_disposal_reason))]
     };
 
     res.status(200).json({
       success: true,
-      data: {
-        ...transformedDisposal,
-        summary
-      }
+      data: transformedDisposal
     });
   } catch (error) {
     console.error('Error fetching disposal details:', error);
