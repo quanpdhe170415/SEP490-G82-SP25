@@ -86,6 +86,7 @@ const connectDB = async () => {
 
     // Seed dữ liệu cho Status nếu chưa có
     const statusCount = await db.Status.countDocuments();
+    let statuses = [];
     if (statusCount === 0) {
       statuses = await db.Status.insertMany([
         {
@@ -99,32 +100,109 @@ const connectDB = async () => {
       statuses = await db.Status.find();
     }
 
-    // Seed dữ liệu cho Bill
+    // Seed dữ liệu cho Account (cần có để tạo shift)
+    const accountCount = await db.Account.countDocuments();
+    let accounts = [];
+    if (accountCount === 0) {
+      accounts = await db.Account.insertMany([
+        {
+          username: "admin",
+          email: "admin@example.com",
+          fullname: "Administrator",
+          phone: "0123456789",
+          is_active: true,
+        },
+      ]);
+      console.log("Seeded accounts!");
+    } else {
+      accounts = await db.Account.find();
+    }
+
+    // Seed dữ liệu cho Shift
+    const shiftCount = await db.Shift.countDocuments();
+    let shifts = [];
+    if (shiftCount === 0 && accounts.length > 0) {
+      shifts = await db.Shift.insertMany([
+        {
+          account_id: accounts[0]._id,
+          shift_start_time: new Date("2025-06-12T16:21:46.176Z"),
+          shift_end_time: new Date("2025-06-14T12:16:44.008Z"),
+          initial_cash_amount: 800000,
+          final_cash_amount: 860000,
+          cash_transactions: 2,
+          transfer_transactions: 0,
+          cash_change_given: 0,
+          total_transactions: 2,
+          cash_surplus: 0,
+          status: "closed",
+          notes: "Ca mở với 800,000 VND ngày 12/06/2025",
+          created_at: new Date("2025-06-12T16:21:46.176Z"),
+          updated_at: new Date("2025-06-12T16:21:46.176Z"),
+          updatedAt: new Date("2025-06-14T12:16:44.014Z"),
+        },
+        {
+          account_id: accounts[0]._id,
+          shift_start_time: new Date("2025-06-14T12:19:45.568Z"),
+          shift_end_time: new Date("2025-06-14T12:33:40.517Z"),
+          initial_cash_amount: 800000,
+          final_cash_amount: 820000,
+          cash_transactions: 1,
+          transfer_transactions: 0,
+          cash_change_given: 0,
+          total_transactions: 1,
+          cash_surplus: 0,
+          status: "closed",
+          notes: " |Cảnh báo: Số tiền mặt ban đầu (800000 VND) ít hơn số tiền cuối cùng của ca trước (860000 VND) là 60000 VND.",
+          createdAt: new Date("2025-06-14T12:19:45.569Z"),
+          updatedAt: new Date("2025-06-14T12:33:40.518Z"),
+        },
+      ]);
+      console.log("Seeded shifts!");
+    } else {
+      shifts = await db.Shift.find();
+    }
+
+    // Seed dữ liệu cho Bill (cập nhật lại để xóa dữ liệu cũ và thêm dữ liệu mới)
     const billCount = await db.Bill.countDocuments();
+    let bills = [];
     if (billCount > 0) {
       await db.Bill.deleteMany({}); // Xóa tất cả dữ liệu hiện có
       console.log("Cleared existing bills!");
     }
-    if (statuses.length > 0) {
+    
+    if (statuses.length > 0 && shifts.length > 0) {
       bills = await db.Bill.insertMany([
+        // Dữ liệu bill mới từ shift
         {
-          billNumber: "HD001",
-          seller: "Nguyễn Văn A",
-          totalAmount: 22000,
-          finalAmount: 22000,
-          paymentMethod: "Tiền mặt",
+          billNumber: "INV-20250613-180",
+          customerName: "Tran Van B",
+          customerPhone: "0901234567",
+          totalAmount: 40000,
+          discount: 0,
+          finalAmount: 40000,
           statusId: statuses[0]._id, // Đã thanh toán
+          paymentMethod: "Tiền mặt",
+          notes: "",
+          shift_id: shifts[0]._id, // Liên kết với shift đầu tiên
+          createdAt: new Date("2025-06-13T17:41:54.505Z"),
+          updatedAt: new Date("2025-06-13T17:41:54.505Z"),
         },
         {
-          billNumber: "HD002",
-          seller: "Trần Thị B",
-          totalAmount: 15000,
-          finalAmount: 15000,
-          paymentMethod: "Chuyển khoản ngân hàng",
-          statusId: statuses[1]._id, // Đã trả hàng
+          billNumber: "INV-20250613-209",
+          customerName: "Tran Van B",
+          customerPhone: "0901234567",
+          totalAmount: 20000,
+          discount: 0,
+          finalAmount: 20000,
+          statusId: statuses[0]._id, // Đã thanh toán
+          paymentMethod: "Tiền mặt",
+          notes: "",
+          shift_id: shifts[0]._id, // Liên kết với shift đầu tiên
+          createdAt: new Date("2025-06-13T17:52:11.942Z"),
+          updatedAt: new Date("2025-06-13T17:52:11.942Z"),
         },
       ]);
-      console.log("Seeded bills!");
+      console.log("Seeded bills with shift data!");
     } else {
       bills = await db.Bill.find();
     }
@@ -139,6 +217,7 @@ const connectDB = async () => {
     const goods = await db.Goods.find();
     if (bills.length > 0 && goods.length >= 2) {
       const billDetails = [
+        // Chi tiết cho HD001
         {
           bill_id: bills[0]._id, // HD001
           goods_id: goods[0]._id, // Coca Cola
@@ -153,12 +232,29 @@ const connectDB = async () => {
           quantity: 1,
           unit_price: 12000,
         },
+        // Chi tiết cho HD002
         {
           bill_id: bills[1]._id, // HD002
           goods_id: goods[1]._id, // Snack Oishi
           goods_name: goods[1].goods_name,
           quantity: 1,
           unit_price: 15000,
+        },
+        // Chi tiết cho INV-20250613-180
+        {
+          bill_id: bills[2]._id, // INV-20250613-180
+          goods_id: goods[0]._id, // Coca Cola
+          goods_name: goods[0].goods_name,
+          quantity: 4,
+          unit_price: 10000,
+        },
+        // Chi tiết cho INV-20250613-209
+        {
+          bill_id: bills[3]._id, // INV-20250613-209
+          goods_id: goods[1]._id, // Snack Oishi
+          goods_name: goods[1].goods_name,
+          quantity: 2,
+          unit_price: 10000,
         },
       ];
 
@@ -170,16 +266,12 @@ const connectDB = async () => {
       });
 
       await db.BillDetail.insertMany(billDetails);
-      console.log("Seeded bill details!");
+      console.log("Seeded bill details with new data!");
     }
   } catch (error) {
     console.error("MongoDB in-memory connection failed: ", error);
     process.exit(1);
   }
-
-  
 };
-
-
 
 module.exports = connectDB;
