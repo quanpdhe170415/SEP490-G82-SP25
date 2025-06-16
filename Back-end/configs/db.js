@@ -346,6 +346,7 @@ const connectDB = async () => {
     }
     if (bills.length > 0 && goods.length >= 2) {
       const billDetails = [
+        // Chi tiết cho HD001
         {
           bill_id: bills[0]._id, // HD001
           goods_id: goods[0]._id, // Coca Cola
@@ -362,6 +363,7 @@ const connectDB = async () => {
           unit_price: 12000,
           total_amount: 1 * 12000,
         },
+        // Chi tiết cho HD002
         {
           bill_id: bills[1]._id, // HD002
           goods_id: goods[1]._id, // Snack Oishi
@@ -370,10 +372,28 @@ const connectDB = async () => {
           unit_price: 15000,
           total_amount: 1 * 15000,
         },
+        // Chi tiết cho INV-20250613-180
+        {
+          bill_id: bills[2]._id, // INV-20250613-180
+          goods_id: goods[0]._id, // Coca Cola
+          goods_name: goods[0].goods_name,
+          quantity: 4,
+          unit_price: 10000,
+        },
+        // Chi tiết cho INV-20250613-209
+        {
+          bill_id: bills[3]._id, // INV-20250613-209
+          goods_id: goods[1]._id, // Snack Oishi
+          goods_name: goods[1].goods_name,
+          quantity: 2,
+          unit_price: 10000,
+        },
       ];
 
       await db.BillDetail.insertMany(billDetails);
-      console.log("Seeded bill details!");
+      console.log("Seeded bill details with new data!");
+    } else {
+      console.warn("Not enough bills or goods to seed bill details. Skipping bill details seeding.");
     }
   } catch (error) {
     console.error("MongoDB connection failed: ", error);
