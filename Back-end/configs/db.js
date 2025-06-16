@@ -308,6 +308,7 @@ const connectDB = async () => {
       await db.Bill.deleteMany({});
       console.log("Cleared existing bills!");
     }
+
     if (statuses.length > 0 && shifts.length > 0) {
       bills = await db.Bill.insertMany([
         {
