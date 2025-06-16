@@ -219,3 +219,50 @@ exports.exportShiftReport = async (req, res) => {
     res.status(500).json({ message: 'Error exporting shift report', error: error.message });
   }
 };
+
+
+exports.getFullNameByShiftId = async (req, res) => {
+  try {
+    // Lấy shift_id từ params
+    const { shift_id } = req.params;
+
+    // Kiểm tra shift_id hợp lệ
+    if (!mongoose.Types.ObjectId.isValid(shift_id)) {
+      return res.status(400).json({
+        success: false,
+        message: "shift_id không hợp lệ",
+      });
+    }
+
+    // Truy vấn Shift để lấy account_id
+    const shift = await Shift.findById(shift_id).populate("account_id", "_id");
+
+    // Kiểm tra nếu không tìm thấy shift
+    if (!shift) {
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy ca làm việc",
+      });
+    }
+
+    // Tìm UserDetail dựa trên account_id (user_id trong UserDetail tham chiếu đến Account)
+    const userDetail = await UserDetail.findOne({
+      user_id: shift.account_id._id,
+    }).select("full_name");
+
+    // Trả về full_name từ UserDetail
+    res.status(200).json({
+      success: true,
+      data: {
+        full_name: userDetail?.full_name || "Không có thông tin",
+      },
+    });
+  } catch (error) {
+    // Xử lý lỗi khi truy vấn
+    res.status(500).json({
+      success: false,
+      message: "Lỗi khi lấy thông tin full_name",
+      error: error.message,
+    });
+  }
+};

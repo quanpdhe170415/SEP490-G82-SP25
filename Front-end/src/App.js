@@ -8,10 +8,14 @@ import BillHistoryPage from './components/BillHistoryPage';
 import ReturnGoods from './components/ReturnGoods';
 import ForgotPassword from './components/ForgotPassword';
 import HomeForCashier from './components/HomeforCashier';
+
+import ImportHistory from "./components/ImportHistory";
+
 import OpenShift from './components/OpenShift';
 import CloseShift from './components/CloseShift';
 import POS from './components/POS';
 import PurchaseHistory from "./components/PurchaseHistory";
+
 
 
 
@@ -31,7 +35,7 @@ function App() {
         <Route path="/homecashier" element={<HomeForCashier />} />
         <Route path="/openshift" element={<OpenShift />} />
         <Route path="/bill-history" element={<BillHistoryPage />} />
-        <Route path="/bill-export-history" element={<PurchaseHistory />} />
+        <Route path="/import-history" element={<ImportHistory />} />
       </Routes>
     </Router>
   );
