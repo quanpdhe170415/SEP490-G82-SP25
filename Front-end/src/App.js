@@ -14,7 +14,7 @@ import ImportHistory from "./components/ImportHistory";
 import OpenShift from './components/OpenShift';
 import CloseShift from './components/CloseShift';
 import POS from './components/POS';
-import PurchaseHistory from "./components/PurchaseHistory";
+// import PurchaseHistory from "./components/PurchaseHistory";
 
 
 
