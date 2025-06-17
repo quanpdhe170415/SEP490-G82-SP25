@@ -1,46 +1,61 @@
 const bcrypt = require("bcryptjs");
-// const jwt = require("jsonwebtoken");
-// const { OAuth2Client } = require("google-auth-library");
-// const nodemailer = require("nodemailer");
-const { Account } = require("../models");
-const jwt = require('jsonwebtoken');
+const jwt = require("jsonwebtoken");
+const { v4: uuidv4 } = require("uuid");
+const { Account, Session } = require("../models");
 
 exports.login = async (req, res) => {
-  const { email, password } = req.body;
+  const { username, password, deviceType } = req.body;
 
   try {
-    // Tìm tài khoản dựa trên email
-    const account = await Account.findOne({ email }).populate('role_id'); // Lấy thông tin role
+    // Tìm tài khoản dựa trên username
+    const account = await Account.findOne({ username }).populate('role_id');
     if (!account) {
-      return res.status(404).json({ message: "Email không tồn tại trong hệ thống!" });
+      return res.status(404).json({ message: "Tài khoản không tồn tại trong hệ thống!" });
     }
 
+    // Kiểm tra mật khẩu
     const isMatch = await bcrypt.compare(password, account.password);
-    console.log('Input password:', password); // Log mật khẩu nhập
-    console.log('Stored hash:', account.password); // Log hash trong DB
-    console.log('Password match:', isMatch);
     if (!isMatch) {
       return res.status(401).json({ message: "Mật khẩu không đúng!" });
     }
 
-    // Tạo token JWT
+    // Tạo access token
     const payload = {
       userId: account._id,
-      role: account.role_id.name, // Lấy tên vai trò (Chủ cửa hàng, Thủ kho, Thu ngân)
+      role: account.role_id.name,
       email: account.email
     };
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' }); // Token hết hạn sau 1 giờ
+    // Tạo refresh token
+    const refreshToken = jwt.sign({ userId: account._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
-    // Trả về token và thông tin vai trò
+    // Sinh deviceId (UUID)
+    const deviceId = uuidv4();
+
+    // Lưu session vào DB
+    await Session.create({
+      userId: account._id,
+      deviceId,
+      deviceType: deviceType || "web",
+      refreshToken,
+      isActive: true,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+
     res.status(200).json({
       message: "Đăng nhập thành công!",
       token,
+      refreshToken,
+      deviceId,
+      deviceType: deviceType || "web",
       role: account.role_id.name,
-      userId: account._id
+      userId: account._id,
+      username: account.username,
     });
   } catch (err) {
-    console.error('Reset Password Error:', err.message);
+    console.error('Login Error:', err.message);
     res.status(500).send("Server error");
   }
 };

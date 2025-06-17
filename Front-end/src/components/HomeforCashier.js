@@ -5,7 +5,7 @@ import logo from '../assets/logo.png';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const API_URL = process.env.REACT_URL_SERVER || 'http://localhost:9999/api/';
+const API_URL = process.env.REACT_APP_URL_SERVER || 'http://localhost:9999/api/';
 
 const HomeForCashier = () => {
   const navigate = useNavigate();

@@ -13,7 +13,6 @@ const billDetailSchema = new mongoose.Schema({
   },
   goods_name: {
     type: String,
-    required: true,
   },
   quantity: {
     type: Number,

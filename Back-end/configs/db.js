@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 require("dotenv").config();
+const bcrypt = require("bcryptjs");
 
 const db = require("../models");
 
@@ -27,8 +28,34 @@ const connectDB = async () => {
       db.BillDetail.createCollection(),
       db.ReturnOrder.createCollection(),
       db.ReturnDetail.createCollection(),
+      db.Session.createCollection(),
+      db.ShiftType.createCollection(),
     ]);
     console.log("All collections ensured!");
+
+ let shiftTypes = [];
+    const shiftTypeCount = await db.ShiftType.countDocuments();
+    console.log(`ShiftType count: ${shiftTypeCount}`);
+    if (shiftTypeCount === 0) {
+      shiftTypes = await db.ShiftType.insertMany([
+        {
+          name: "Ca sáng",
+          start_time: "08:00",
+          end_time: "15:00",
+          notes: "Ca sáng từ 8h đến 15h",
+        },
+        {
+          name: "Ca chiều",
+          start_time: "15:00",
+          end_time: "22:00",
+          notes: "Ca chiều từ 15h đến 22h",
+        },
+      ]);
+      console.log("Seeded shift types:", shiftTypes.map(s => s.name));
+    } else {
+      shiftTypes = await db.ShiftType.find();
+      console.log("Existing shift types:", shiftTypes.map(s => s.name));
+    }
 
     // Seed dữ liệu cho Role nếu chưa có
     let roles = [];
@@ -43,6 +70,13 @@ const connectDB = async () => {
         {
           name: "Staff",
           code: "STAFF",
+        },
+        {
+          name: "Manager",
+          code: "MANAGER",},
+        {
+          name: "WarehouseStaff",
+          code: "WAREHOUSE_STAFF",
         },
       ]);
       console.log(
@@ -66,10 +100,12 @@ const connectDB = async () => {
     const accountCount = await db.Account.countDocuments();
     console.log(`Account count: ${accountCount}`);
     if (accountCount === 0) {
+      const password1 = await bcrypt.hash("123456", 10);
+      const password2 = await bcrypt.hash("123456", 10);
       accounts = await db.Account.insertMany([
         {
           username: "admin1",
-          password: "hashed_password_1", // Thay bằng mật khẩu đã mã hóa
+          password: password1, // Thay bằng mật khẩu đã mã hóa
           full_name: "Nguyễn Văn A",
           email: "admin1@example.com",
           phone: "0901234567",
@@ -78,7 +114,7 @@ const connectDB = async () => {
         },
         {
           username: "admin2",
-          password: "hashed_password_2", // Thay bằng mật khẩu đã mã hóa
+          password: password2, // Thay bằng mật khẩu đã mã hóa
           full_name: "Trần Thị B",
           email: "admin2@example.com",
           phone: "0912345678",
@@ -310,29 +346,44 @@ const connectDB = async () => {
     }
 
     if (statuses.length > 0 && shifts.length > 0) {
-      bills = await db.Bill.insertMany([
-        {
+      const statusPaid = statuses.find((s) => s.name === "Đã thanh toán");
+      const statusReturned = statuses.find((s) => s.name === "Đã trả hàng");
+      const shiftMorning = shifts.find((s) => s.notes === "Ca sáng ngày 14/06/2025");
+      const shiftAfternoon = shifts.find((s) => s.notes === "Ca chiều ngày 14/06/2025");
+      const billsToInsert = [];
+      if (statusPaid && shiftMorning) {
+        billsToInsert.push({
           billNumber: "HD001",
           seller: "Nguyễn Văn A",
           totalAmount: 22000,
           finalAmount: 22000,
           paymentMethod: "Tiền mặt",
-          statusId: statuses.find((s) => s.name === "Đã thanh toán")._id,
-          shift_id: shifts.find((s) => s.notes === "Ca sáng ngày 14/06/2025")
-            ._id,
-        },
-        {
+          statusId: statusPaid._id,
+          shift_id: shiftMorning._id,
+        });
+      } else {
+        console.warn("Không tìm thấy status 'Đã thanh toán' hoặc shift 'Ca sáng ngày 14/06/2025', bỏ qua HD001");
+      }
+      if (statusReturned && shiftAfternoon) {
+        billsToInsert.push({
           billNumber: "HD002",
           seller: "Trần Thị B",
           totalAmount: 15000,
           finalAmount: 15000,
           paymentMethod: "Chuyển khoản ngân hàng",
-          statusId: statuses.find((s) => s.name === "Đã trả hàng")._id,
-          shift_id: shifts.find((s) => s.notes === "Ca chiều ngày 14/06/2025")
-            ._id,
-        },
-      ]);
-      console.log("Seeded bills!");
+          statusId: statusReturned._id,
+          shift_id: shiftAfternoon._id,
+        });
+      } else {
+        console.warn("Không tìm thấy status 'Đã trả hàng' hoặc shift 'Ca chiều ngày 14/06/2025', bỏ qua HD002");
+      }
+      if (billsToInsert.length > 0) {
+        bills = await db.Bill.insertMany(billsToInsert);
+        console.log("Seeded bills!");
+      } else {
+        bills = [];
+        console.warn("Không có bill nào được seed!");
+      }
     } else {
       bills = await db.Bill.find();
     }
@@ -346,6 +397,7 @@ const connectDB = async () => {
     }
     if (bills.length > 0 && goods.length >= 2) {
       const billDetails = [
+        // Chi tiết cho HD001
         {
           bill_id: bills[0]._id, // HD001
           goods_id: goods[0]._id, // Coca Cola
@@ -362,6 +414,7 @@ const connectDB = async () => {
           unit_price: 12000,
           total_amount: 1 * 12000,
         },
+        // Chi tiết cho HD002
         {
           bill_id: bills[1]._id, // HD002
           goods_id: goods[1]._id, // Snack Oishi
@@ -370,10 +423,28 @@ const connectDB = async () => {
           unit_price: 15000,
           total_amount: 1 * 15000,
         },
+        // Chi tiết cho INV-20250613-180
+        // {
+        //   bill_id: bills[2]._id, // INV-20250613-180
+        //   goods_id: goods[0]._id, // Coca Cola
+        //   goods_name: goods[0].goods_name,
+        //   quantity: 4,
+        //   unit_price: 10000,
+        // },
+        // // Chi tiết cho INV-20250613-209
+        // {
+        //   bill_id: bills[3]._id, // INV-20250613-209
+        //   goods_id: goods[1]._id, // Snack Oishi
+        //   goods_name: goods[1].goods_name,
+        //   quantity: 2,
+        //   unit_price: 10000,
+        // },
       ];
 
       await db.BillDetail.insertMany(billDetails);
-      console.log("Seeded bill details!");
+      console.log("Seeded bill details with new data!");
+    } else {
+      console.warn("Not enough bills or goods to seed bill details. Skipping bill details seeding.");
     }
   } catch (error) {
     console.error("MongoDB connection failed: ", error);
