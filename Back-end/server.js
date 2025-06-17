@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const http = require('http'); // 👈 Thêm dòng này
 const { Server } = require('socket.io');
-const routes = require('./route/index');
+// const routes = require('./route/index');
 const app = express();
 require('dotenv').config();
 const router = require('./route/index');
@@ -49,7 +49,7 @@ io.on('connection', (socket) => {
     console.log('🔴 Client disconnected:', socket.id);
   });
 });
-app.use('/api', routes);
+// app.use('/api', routes);
 
 
 app.use('/api',router);

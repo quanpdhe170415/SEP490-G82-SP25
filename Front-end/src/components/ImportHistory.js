@@ -13,7 +13,7 @@ import {
 import Header from "./Header";
 import Sidebar from "./Sidebar";
 
-const PurchaseHistory = () => {
+const ImportHistory = () => {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -37,7 +37,7 @@ const PurchaseHistory = () => {
   const fetchPurchases = async () => {
     try {
       setLoading(true);
-      const response = await fetch("http://localhost:9999/api/purchase/");
+      const response = await fetch("http://localhost:9999/api/import/");
       const result = await response.json();
 
       if (result.success) {
@@ -50,34 +50,34 @@ const PurchaseHistory = () => {
     }
   };
 
-  const fetchPurchaseDetails = async (purchaseId) => {
+  const fetchPurchaseDetails = async (importId) => {
     try {
-      setLoadingDetails((prev) => ({ ...prev, [purchaseId]: true }));
+      setLoadingDetails((prev) => ({ ...prev, [importId]: true }));
       const response = await fetch(
-        `http://localhost:9999/api/purchase/${purchaseId}`
+        `http://localhost:9999/api/import/${importId}`
       );
       const result = await response.json();
 
       if (result.success) {
         setPurchaseDetails((prev) => ({
           ...prev,
-          [purchaseId]: result.data,
+          [importId]: result.data,
         }));
       }
     } catch (error) {
       console.error("Error fetching purchase details:", error);
     } finally {
-      setLoadingDetails((prev) => ({ ...prev, [purchaseId]: false }));
+      setLoadingDetails((prev) => ({ ...prev, [importId]: false }));
     }
   };
 
-  // Styles for the page (reusing styles from BillHistory for consistency)
+  // Styles for the page
   const pageStyles = {
     purchaseHistoryPage: {
       fontFamily: "Inter, sans-serif",
-      background: "linear-gradient(135deg, #f0f9f0 0%, #e8f5e8 100%)",
+      background: "#f5f5f5",
       minHeight: "100vh",
-      color: "#2e7d32",
+      color: "#0070f4",
     },
     mainContent: {
       padding: "1rem",
@@ -103,7 +103,7 @@ const PurchaseHistory = () => {
       padding: "1.5rem",
     },
     searchTitle: {
-      color: "#2e7d32",
+      color: "#0070f4",
       fontWeight: "600",
       marginBottom: "1.5rem",
       fontSize: "1.25rem",
@@ -131,7 +131,7 @@ const PurchaseHistory = () => {
     pageTitle: {
       fontSize: "2rem",
       fontWeight: "600",
-      color: "#2e7d32",
+      color: "#0070f4",
       marginBottom: "2rem",
       textAlign: "center",
     },
@@ -142,7 +142,7 @@ const PurchaseHistory = () => {
       boxShadow: "0 2px 10px rgba(0, 0, 0, 0.05)",
     },
     tableHeader: {
-      background: "#4caf50",
+      background: "#0070f4",
       color: "white",
       fontWeight: "600",
       padding: "1rem",
@@ -189,7 +189,7 @@ const PurchaseHistory = () => {
       color: "#333",
     },
     totalSummary: {
-      background: "#4caf50",
+      background: "#0070f4",
       color: "white",
       padding: "1rem",
       borderRadius: "8px",
@@ -307,13 +307,6 @@ const PurchaseHistory = () => {
     return statusMap[status] || "Khác";
   };
 
-  // Sample suppliers for filtering (replace with actual API call in production)
-  const suppliers = [
-    { id: "sup1", name: "Nhà cung cấp A" },
-    { id: "sup2", name: "Nhà cung cấp B" },
-    { id: "sup3", name: "Nhà cung cấp C" },
-  ];
-
   const filteredPurchases = filterPurchases();
 
   if (loading) {
@@ -391,32 +384,6 @@ const PurchaseHistory = () => {
                   ))}
                 </div>
               </div>
-
-              {/* Supplier Filter */}
-              <div>
-                <label style={pageStyles.formLabel}>Nhà cung cấp</label>
-                <div>
-                  {suppliers.map((supplier) => (
-                    <div key={supplier.id} style={{ marginBottom: "0.5rem" }}>
-                      <label
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "0.5rem",
-                          cursor: "pointer",
-                        }}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={supplierSearch[supplier.id] || false}
-                          onChange={() => handleSupplierChange(supplier.id)}
-                        />
-                        <span>{supplier.name}</span>
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
           </div>
 
@@ -485,7 +452,7 @@ const PurchaseHistory = () => {
                             <div style={pageStyles.purchaseDetails}>
                               <h5
                                 style={{
-                                  color: "#2e7d32",
+                                  color: "#0070f4",
                                   fontWeight: "600",
                                   marginBottom: "1.5rem",
                                 }}
@@ -553,7 +520,7 @@ const PurchaseHistory = () => {
                                         <th
                                           style={{
                                             ...pageStyles.tableHeader,
-                                            background: "#388e3c",
+                                            background: "#0070f4",
                                           }}
                                         >
                                           Mã hàng
@@ -561,7 +528,7 @@ const PurchaseHistory = () => {
                                         <th
                                           style={{
                                             ...pageStyles.tableHeader,
-                                            background: "#388e3c",
+                                            background: "#0070f4",
                                           }}
                                         >
                                           Tên hàng
@@ -569,7 +536,7 @@ const PurchaseHistory = () => {
                                         <th
                                           style={{
                                             ...pageStyles.tableHeader,
-                                            background: "#388e3c",
+                                            background: "#0070f4",
                                           }}
                                         >
                                           Số lượng
@@ -577,7 +544,7 @@ const PurchaseHistory = () => {
                                         <th
                                           style={{
                                             ...pageStyles.tableHeader,
-                                            background: "#388e3c",
+                                            background: "#0070f4",
                                           }}
                                         >
                                           Đơn giá
@@ -585,10 +552,34 @@ const PurchaseHistory = () => {
                                         <th
                                           style={{
                                             ...pageStyles.tableHeader,
-                                            background: "#388e3c",
+                                            background: "#0070f4",
                                           }}
                                         >
                                           Thành tiền
+                                        </th>
+                                        <th
+                                          style={{
+                                            ...pageStyles.tableHeader,
+                                            background: "#0070f4",
+                                          }}
+                                        >
+                                          Hạn sử dụng
+                                        </th>
+                                        <th
+                                          style={{
+                                            ...pageStyles.tableHeader,
+                                            background: "#0070f4",
+                                          }}
+                                        >
+                                          Số lô sản xuất
+                                        </th>
+                                        <th
+                                          style={{
+                                            ...pageStyles.tableHeader,
+                                            background: "#0070f4",
+                                          }}
+                                        >
+                                          Ngày sản xuất
                                         </th>
                                       </tr>
                                     </thead>
@@ -610,7 +601,7 @@ const PurchaseHistory = () => {
                                                 padding: "0.75rem",
                                               }}
                                             >
-                                              {item.goods_id?._id || "N/A"}
+                                              {item.barcode}
                                             </td>
                                             <td
                                               style={{
@@ -645,6 +636,37 @@ const PurchaseHistory = () => {
                                             >
                                               {item.total_amount.toLocaleString()}{" "}
                                               VND
+                                            </td>
+                                            <td
+                                              style={{
+                                                ...pageStyles.tableCell,
+                                                padding: "0.75rem",
+                                              }}
+                                            >
+                                              {item.expiry_date
+                                                ? formatDate(item.expiry_date)
+                                                : "N/A"}
+                                            </td>
+                                            <td
+                                              style={{
+                                                ...pageStyles.tableCell,
+                                                padding: "0.75rem",
+                                              }}
+                                            >
+                                              {item.manufacturing_batch_number ||
+                                                "N/A"}
+                                            </td>
+                                            <td
+                                              style={{
+                                                ...pageStyles.tableCell,
+                                                padding: "0.75rem",
+                                              }}
+                                            >
+                                              {item.manufacturing_date
+                                                ? formatDate(
+                                                    item.manufacturing_date
+                                                  )
+                                                : "N/A"}
                                             </td>
                                           </tr>
                                         )
@@ -700,4 +722,4 @@ const PurchaseHistory = () => {
   );
 };
 
-export default PurchaseHistory;
+export default ImportHistory;

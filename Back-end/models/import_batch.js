@@ -36,7 +36,7 @@ const ImportBatchSchema = new mongoose.Schema(
     },
     conditions_checked: {
       type: Boolean,
-      default: false,
+      default: false,   
       required: true,
     },
   },

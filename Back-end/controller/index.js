@@ -7,6 +7,7 @@ const invoiceController = require('./invoice.controller');
 const billController = require('./bill.controller');
 const returnOrderController = require("./returnrorder.controller");
 const importController = require("./import.controller");
+const goodsDisposalController = require('./goodsDisposal.controller');
 
 module.exports = {
   goodsController,
@@ -17,6 +18,7 @@ module.exports = {
   productController,
   invoiceController,
   billController,
+  goodsDisposalController,
   productController,
   returnOrderController,
   importController,
