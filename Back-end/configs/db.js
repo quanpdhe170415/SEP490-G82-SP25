@@ -339,19 +339,7 @@ const connectDB = async () => {
           manufacturing_date: new Date("2025-02-01"),
           notes: "Chờ kiểm tra chất lượng",
           meets_conditions: false,
-        },
-        {
-          import_batch_id: importBatches[2]._id, // PN003
-          goods_id: goods[2]._id, // Bánh mì sandwich
-          quantity_imported: 30,
-          unit_import_price: 19000,
-          total_amount: 19000 * 30,
-          expiry_date: new Date("2025-05-12"), // Đã hết hạn
-          manufacturing_batch_number: "LOT003",
-          manufacturing_date: new Date("2025-04-10"),
-          notes: "Sản phẩm có dấu hiệu hết hạn",
-          meets_conditions: true,
-        },
+        }
       ];
 
       importDetails = await db.ImportDetail.insertMany(importDetails);
@@ -498,21 +486,6 @@ const connectDB = async () => {
     }
     if (goods.length > 0 && importBatches.length > 0 && importDetails.length > 0) {
       disposalItems = await db.DisposalItem.insertMany([
-        {
-          goods_id: goods[2]._id, // Bánh mì sandwich (hết hạn)
-          product_name: goods[2].goods_name,
-          batch_number: "LOT003",
-          unit_of_measure: goods[2].unit_of_measure,
-          quantity_disposed: 15,
-          cost_price: 19000,
-          item_disposal_reason: "Hết hạn sử dụng",
-          item_images: [
-            "https://example.com/expired_sandwich_1.jpg",
-            "https://example.com/expired_sandwich_2.jpg"
-          ],
-          import_batch_number: importBatches[2]._id,
-          import_detail_id: importDetails[2]._id,
-        },
         {
           goods_id: goods[0]._id, // Coca Cola
           product_name: goods[0].goods_name,
