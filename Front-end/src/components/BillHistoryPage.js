@@ -323,18 +323,19 @@ const BillHistory = () => {
 
   return (
     <div style={pageStyles.billHistoryPage}>
-      <Header />
+      
 
       <Container fluid style={pageStyles.mainContent}>
         <div style={pageStyles.pageRow}>
           {/* Sidebar */}
-          <Sidebar
+          {/* <Sidebar
             activeItem="bill-history"
             isCollapsed={sidebarCollapsed}
             onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
-          />
+          /> */}
 
           {/* Search Panel */}
+          {/* <div className="d-flex align-items-center gap-3 px-3 py-2" style={{ background: '#0070f4', borderRadius: '12px 12px 0 0', minHeight: 56 }}></div> */}
           <div style={pageStyles.searchPanel}>
             <div style={pageStyles.searchPanelBody}>
               <h5 style={pageStyles.searchTitle}>Tìm kiếm</h5>
