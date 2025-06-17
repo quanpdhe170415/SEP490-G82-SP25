@@ -8,9 +8,9 @@ import BillHistoryPage from './components/BillHistoryPage';
 import ReturnGoods from './components/ReturnGoods';
 import ForgotPassword from './components/ForgotPassword';
 import HomeForCashier from './components/HomeforCashier';
-
+import GoodsDisposal from './components/GoodsDisposal';
 import ImportHistory from "./components/ImportHistory";
-
+import GoodsDisposalDetail from './components/GoodsDisposalDetail';
 import OpenShift from './components/OpenShift';
 import CloseShift from './components/CloseShift';
 import POS from './components/POS';
@@ -31,6 +31,9 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/home" element={<HomePage />} />
         <Route path="/bill-history" element={<BillHistoryPage />} />
+        {/* <Route path="/bill-export-history" element={<PurchaseHistory />} /> */}
+        <Route path="/goods-disposal" element={<GoodsDisposal/>}/>
+        <Route path="/goods-disposal-detail/:id" element={<GoodsDisposalDetail />} />
         <Route path="/return-goods" element={<ReturnGoods/>} />
         <Route path="/forgotpassword" element={<ForgotPassword />} />
         {/* <Route path="/homecashier" element={<HomeForCashier />} /> */}
@@ -38,6 +41,7 @@ function App() {
         <Route path="/bill-history" element={<BillHistoryPage />} />
         <Route path="/import-history" element={<ImportHistory />} />
         <Route path="/cashier/*" element={<CashierSidebar />} />
+        
       </Routes>
     </Router>
   );
