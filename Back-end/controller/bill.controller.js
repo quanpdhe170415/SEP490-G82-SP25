@@ -3,7 +3,7 @@ const {Bill} = require('../models');
 const { BillDetail } = require("../models");
 const { UserDetail } = require("../models");
 //Check bill status for Bank Transfer payment
-exports. isBillPaid = async (req, res) => {
+exports.isBillPaid = async (req, res) => {
     try {
         const { bill_id } = req.body;
 

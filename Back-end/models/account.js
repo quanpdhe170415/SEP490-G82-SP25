@@ -19,7 +19,7 @@ const accountSchema = new mongoose.Schema({
   role_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Role',
-    required: true
+    required: false
   },
   is_active: {
     type: Boolean,

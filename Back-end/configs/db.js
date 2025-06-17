@@ -28,6 +28,8 @@ const connectDB = async () => {
       db.BillDetail.createCollection(),
       db.ReturnOrder.createCollection(),
       db.ReturnDetail.createCollection(),
+      db.GoodsDisposal.createCollection(),
+      db.DisposalItem.createCollection(),
       db.Session.createCollection(),
       db.ShiftType.createCollection(),
     ]);
@@ -235,11 +237,28 @@ const connectDB = async () => {
           image_url:
             "https://product.hstatic.net/200000495609/product/snack-tom-cay-oishi-du-vi-goi-lon-68g-banh-keo-an-vat-imnuts_d3ff6a241a9e4bb28aea097f9eca7166.jpg",
         },
+        {
+          goods_name: "Bánh mì sandwich",
+          barcode: "8931111222333",
+          unit_of_measure: "chiếc",
+          description: "Bánh mì kẹp thịt nguội",
+          category_id: categories[1]._id,
+          selling_price: 25000,
+          average_import_price: 18000,
+          last_import_price: 19000,
+          last_import_date: new Date(),
+          stock_quantity: 30,
+          display_quantity: 8,
+          minimum_stock_quantity: 5,
+          is_active: true,
+          image_url: "https://example.com/sandwich.jpg",
+        },
       ]);
       console.log("Seeded goods!");
     } else {
       goods = await db.Goods.find();
     }
+
 
     // Seed dữ liệu cho ImportBatch
     let importBatches = [];
@@ -271,6 +290,16 @@ const connectDB = async () => {
           notes: "Đang chờ kiểm tra hàng",
           conditions_checked: false,
         },
+        {
+          import_receipt_number: "PN003",
+          supplier: "Công ty TNHH DEF",
+          import_date: new Date("2025-05-10T08:00:00Z"),
+          imported_by: accounts[0]._id,
+          total_value: 570000,
+          status: "completed",
+          notes: "Lô hàng có một số sản phẩm hết hạn",
+          conditions_checked: true,
+        },
       ]);
       console.log("Seeded import batches!");
     } else {
@@ -284,8 +313,9 @@ const connectDB = async () => {
       await db.ImportDetail.deleteMany({});
       console.log("Cleared existing import details!");
     }
+    let importDetails = [];
     if (importBatches.length > 0 && goods.length >= 2) {
-      const importDetails = [
+      importDetails = [
         {
           import_batch_id: importBatches[0]._id, // PN001
           goods_id: goods[0]._id, // Coca Cola
@@ -310,9 +340,21 @@ const connectDB = async () => {
           notes: "Chờ kiểm tra chất lượng",
           meets_conditions: false,
         },
+        {
+          import_batch_id: importBatches[2]._id, // PN003
+          goods_id: goods[2]._id, // Bánh mì sandwich
+          quantity_imported: 30,
+          unit_import_price: 19000,
+          total_amount: 19000 * 30,
+          expiry_date: new Date("2025-05-12"), // Đã hết hạn
+          manufacturing_batch_number: "LOT003",
+          manufacturing_date: new Date("2025-04-10"),
+          notes: "Sản phẩm có dấu hiệu hết hạn",
+          meets_conditions: true,
+        },
       ];
 
-      await db.ImportDetail.insertMany(importDetails);
+      importDetails = await db.ImportDetail.insertMany(importDetails);
       console.log("Seeded import details!");
     }
 
@@ -446,6 +488,111 @@ const connectDB = async () => {
     } else {
       console.warn("Not enough bills or goods to seed bill details. Skipping bill details seeding.");
     }
+
+    // Seed dữ liệu cho DisposalItem
+    const disposalItemCount = await db.DisposalItem.countDocuments();
+    let disposalItems = [];
+    if (disposalItemCount > 0) {
+      await db.DisposalItem.deleteMany({});
+      console.log("Cleared existing disposal items!");
+    }
+    if (goods.length > 0 && importBatches.length > 0 && importDetails.length > 0) {
+      disposalItems = await db.DisposalItem.insertMany([
+        {
+          goods_id: goods[2]._id, // Bánh mì sandwich (hết hạn)
+          product_name: goods[2].goods_name,
+          batch_number: "LOT003",
+          unit_of_measure: goods[2].unit_of_measure,
+          quantity_disposed: 15,
+          cost_price: 19000,
+          item_disposal_reason: "Hết hạn sử dụng",
+          item_images: [
+            "https://example.com/expired_sandwich_1.jpg",
+            "https://example.com/expired_sandwich_2.jpg"
+          ],
+          import_batch_number: importBatches[2]._id,
+          import_detail_id: importDetails[2]._id,
+        },
+        {
+          goods_id: goods[0]._id, // Coca Cola
+          product_name: goods[0].goods_name,
+          batch_number: "LOT001",
+          unit_of_measure: goods[0].unit_of_measure,
+          quantity_disposed: 5,
+          cost_price: 8500,
+          item_disposal_reason: "Bao bì bị hỏng trong quá trình vận chuyển",
+          item_images: [
+            "https://example.com/damaged_cola_1.jpg",
+            "https://example.com/damaged_cola_2.jpg"
+          ],
+          import_batch_number: importBatches[0]._id,
+          import_detail_id: importDetails[0]._id,
+        },
+        {
+          goods_id: goods[1]._id, // Snack Oishi
+          product_name: goods[1].goods_name,
+          batch_number: "LOT002",
+          unit_of_measure: goods[1].unit_of_measure,
+          quantity_disposed: 3,
+          cost_price: 9500,
+          item_disposal_reason: "Sản phẩm bị ẩm mốc",
+          item_images: [
+            "https://example.com/moldy_snack_1.jpg"
+          ],
+          import_batch_number: importBatches[1]._id,
+          import_detail_id: importDetails[1]._id,
+        },
+      ]);
+      console.log("Seeded disposal items!");
+    }
+
+    // Seed dữ liệu cho GoodsDisposal
+    const goodsDisposalCount = await db.GoodsDisposal.countDocuments();
+    if (goodsDisposalCount > 0) {
+      await db.GoodsDisposal.deleteMany({});
+      console.log("Cleared existing goods disposals!");
+    }
+    if (disposalItems.length > 0 && accounts.length >= 3) {
+      const goodsDisposals = await db.GoodsDisposal.insertMany([
+        {
+          disposal_number: "HUY001",
+          created_by: accounts[3]._id, // Phạm Thị D (staff1)
+          disposal_date: new Date("2025-06-16T14:30:00Z"),
+          reason_for_disposal: "Hủy hàng hết hạn sử dụng theo quy định",
+          disposal_items: [disposalItems[0]._id], // Bánh mì sandwich hết hạn
+          total_disposal_value: 15 * 19000, // 285,000
+          status: "approved",
+          approved_by: accounts[2]._id, // Lê Văn C (manager1)
+          confirmed_by: accounts[0]._id, // Nguyễn Văn A (admin1)
+          notes: "Hủy 15 chiếc bánh mì hết hạn, đã được phê duyệt và xác nhận thực hiện",
+        },
+        {
+          disposal_number: "HUY002",
+          created_by: accounts[1]._id, // Trần Thị B (admin2)
+          disposal_date: new Date("2025-06-15T10:00:00Z"),
+          reason_for_disposal: "Hàng hóa bị hỏng trong quá trình vận chuyển và bảo quản",
+          disposal_items: [disposalItems[1]._id, disposalItems[2]._id], // Coca Cola hỏng + Snack ẩm mốc
+          total_disposal_value: (5 * 8500) + (3 * 9500), // 42,500 + 28,500 = 71,000
+          status: "pending",
+          notes: "Chờ phê duyệt hủy hàng bị hỏng",
+        },
+        {
+          disposal_number: "HUY003",
+          created_by: accounts[3]._id, // Phạm Thị D (staff1)
+          disposal_date: new Date("2025-06-17T09:15:00Z"),
+          reason_for_disposal: "Kiểm tra định kỳ phát hiện hàng có dấu hiệu hư hỏng",
+          disposal_items: [], // Chưa có items cụ thể
+          total_disposal_value: 0,
+          status: "cancelled",
+          notes: "Đã hủy phiếu này do phát hiện hàng vẫn còn sử dụng được",
+        },
+      ]);
+      console.log("Seeded goods disposals!");
+    }
+
+    console.log("=== DATABASE SEEDING COMPLETED ===");
+    console.log("All collections have been seeded with sample data!");
+    
   } catch (error) {
     console.error("MongoDB connection failed: ", error);
     process.exit(1);
