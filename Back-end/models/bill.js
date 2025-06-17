@@ -34,7 +34,7 @@ const billSchema = new mongoose.Schema({
   shift_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Shift',
-    required: true,
+    required: false,
   },
 });
 
