@@ -17,7 +17,6 @@ const billSchema = new mongoose.Schema({
   paymentMethod: {
     type: String,
     enum: ['Tiền mặt', 'Chuyển khoản ngân hàng'],
-    required: true,
   },
   statusId: {
     type: mongoose.Schema.Types.ObjectId,
