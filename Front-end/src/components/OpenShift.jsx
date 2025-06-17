@@ -143,8 +143,8 @@ useEffect(() => {
       }
       setMessage("Mở ca thành công!");
       // Sau khi mở ca thành công, có thể chuyển hướng luôn nếu muốn
-      setTimeout(() => navigate("/homecashier"), 1000);
-    } catch (err) {
+      setTimeout(() => navigate("/POS"), 1000);
+} catch (err) {
       setError(err.message || "Có lỗi xảy ra khi mở ca");
     } finally {
       setLoading(false);

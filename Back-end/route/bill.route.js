@@ -1,5 +1,6 @@
 const Router = require('express').Router();
 const { billController } = require('../controller');
+Router.post("/create", billController.createBill); // Thêm dòng này
 
 Router.get('/checkStatus', billController.isBillPaid);
 

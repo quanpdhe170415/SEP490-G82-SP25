@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const controller = require('../controller');
 
-router.get('/export-invoice', controller.invoiceController.exportInvoice);
+router.post('/export-invoice', controller.invoiceController.exportInvoice);
 
 module.exports = router;
 
