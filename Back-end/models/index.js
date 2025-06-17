@@ -16,6 +16,8 @@ const Status = require('./statusBill');
 const BillDetail = require('./billDetail');
 const ReturnOrder = require("./returnOrder"); 
 const ReturnDetail = require("./returndetail");
+const StatusWarehouse = require("./statuswarehouse")
+
 mongoose.Promise = global.Promise;
 
 const db = {
@@ -36,6 +38,7 @@ const db = {
   ReturnOrder,
   ReturnDetail,
   UserDetail,
+  StatusWarehouse,
 };
   
 
