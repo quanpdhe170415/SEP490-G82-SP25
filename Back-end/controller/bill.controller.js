@@ -2,6 +2,10 @@
 const {Bill} = require('../models');
 const { BillDetail } = require("../models");
 const { UserDetail } = require("../models");
+const { Status } = require("../models");
+const { Shift } = require("../models");
+const { Goods } = require("../models");
+const { Account } = require("../models");
 //Check bill status for Bank Transfer payment
 exports. isBillPaid = async (req, res) => {
     try {
@@ -43,7 +47,83 @@ exports. isBillPaid = async (req, res) => {
     }
 };
 
+exports.createBill = async (req, res) => {
+  try {
+    const {
+      items, // [{ productId, quantity, price, discount, discountType }]
+      cashier, // userId
+      paymentMethod,
+      shift_id,
+    } = req.body;
 
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ error: "Danh sách sản phẩm không hợp lệ" });
+    }
+    if (!cashier) {
+      return res.status(400).json({ error: "Thiếu thông tin thu ngân" });
+    }
+    if (!shift_id) {
+      shift_id = "6850a3a83310a456cb629450"; // Nếu không có shift_id, có thể để null
+    }
+
+    // Lấy tên thu ngân
+    const account = await Account.findById(cashier);
+    const seller = account ? account.full_name || account.username : "Không rõ";
+
+    // Tính tổng tiền
+    let totalAmount = 0;
+    for (const item of items) {
+      let finalPrice = item.price;
+      if (item.discountType === "VND") {
+        finalPrice -= item.discount || 0;
+      } else if (item.discountType === "%") {
+        finalPrice -= (item.price * (item.discount || 0)) / 100;
+      }
+      totalAmount += finalPrice * item.quantity;
+    }
+
+    // Tạo billNumber tự động (ví dụ: theo timestamp)
+    const billNumber = "HD" + Date.now();
+
+    // Lấy statusId cho "Đã thanh toán"
+    const status = await Status.findOne({ name: "Đã thanh toán" });
+    const statusId = "68508c242bc4aadea688b7f5";
+
+    // Tạo bill mới
+    const bill = new Bill({
+      billNumber,
+      seller,
+      totalAmount,
+      finalAmount: totalAmount,
+      paymentMethod,
+      statusId,
+      shift_id,
+    });
+    await bill.save();
+
+    // Lưu chi tiết hóa đơn
+    for (const item of items) {
+      // Lấy tên sản phẩm từ DB nếu chưa có
+      let goodsName = item.name;
+      if (!goodsName) {
+        const goods = await Goods.findById(item.productId);
+        goodsName = goods ? goods.goods_name : "";
+      }
+      await BillDetail.create({
+        bill_id: bill._id,
+        goods_id: item.productId,
+        goods_name: goodsName,
+        quantity: item.quantity,
+        unit_price: item.price,
+        total_amount: item.price * item.quantity,
+      });
+    }
+
+    res.status(201).json({ billId: bill._id, billNumber });
+  } catch (error) {
+    res.status(500).json({ error: "Lỗi khi tạo hóa đơn: " + error.message });
+  }
+};
 
 // Lấy danh sách tất cả hóa đơn
 exports.getAllBills = async (req, res) => {
