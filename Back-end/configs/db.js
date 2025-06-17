@@ -10,7 +10,7 @@ const connectDB = async () => {
     });
     console.log("MongoDB connected successfully");
 
-    // Đảm bảo các collection được tạo ra
+    // Ensure collections are created
     await Promise.all([
       db.Account.createCollection(),
       db.Role.createCollection(),
@@ -30,7 +30,7 @@ const connectDB = async () => {
     ]);
     console.log("All collections ensured!");
 
-    // Seed dữ liệu cho Role nếu chưa có
+    // Seed data for Role if not exists
     let roles = [];
     const roleCount = await db.Role.countDocuments();
     console.log(`Role count: ${roleCount}`);
@@ -61,7 +61,7 @@ const connectDB = async () => {
       throw new Error("No roles available for seeding Account");
     }
 
-    // Seed dữ liệu cho Account nếu chưa có
+    // Seed data for Account if not exists
     let accounts = [];
     const accountCount = await db.Account.countDocuments();
     console.log(`Account count: ${accountCount}`);
@@ -69,7 +69,7 @@ const connectDB = async () => {
       accounts = await db.Account.insertMany([
         {
           username: "admin1",
-          password: "hashed_password_1", // Thay bằng mật khẩu đã mã hóa
+          password: "hashed_password_1", // Replace with hashed password
           full_name: "Nguyễn Văn A",
           email: "admin1@example.com",
           phone: "0901234567",
@@ -78,7 +78,7 @@ const connectDB = async () => {
         },
         {
           username: "admin2",
-          password: "hashed_password_2", // Thay bằng mật khẩu đã mã hóa
+          password: "hashed_password_2", // Replace with hashed password
           full_name: "Trần Thị B",
           email: "admin2@example.com",
           phone: "0912345678",
@@ -98,7 +98,7 @@ const connectDB = async () => {
       );
     }
 
-    // Seed dữ liệu cho Shift nếu chưa có
+    // Seed data for Shift if not exists
     let shifts = [];
     const shiftCount = await db.Shift.countDocuments();
     console.log(`Shift count: ${shiftCount}`);
@@ -145,7 +145,7 @@ const connectDB = async () => {
       );
     }
 
-    // Seed dữ liệu cho Category nếu chưa có
+    // Seed data for Category if not exists
     let categories = [];
     const categoryCount = await db.Category.countDocuments();
     console.log(`Category count: ${categoryCount}`);
@@ -159,7 +159,7 @@ const connectDB = async () => {
       categories = await db.Category.find();
     }
 
-    // Seed dữ liệu cho Goods nếu chưa có
+    // Seed data for Goods if not exists
     let goods = [];
     const goodsCount = await db.Goods.countDocuments();
     console.log(`Goods count: ${goodsCount}`);
@@ -205,15 +205,11 @@ const connectDB = async () => {
       goods = await db.Goods.find();
     }
 
-    // Seed dữ liệu cho ImportBatch
+    // Seed data for ImportBatch if not exists
     let importBatches = [];
     const importBatchCount = await db.ImportBatch.countDocuments();
     console.log(`ImportBatch count: ${importBatchCount}`);
-    if (importBatchCount > 0) {
-      await db.ImportBatch.deleteMany({});
-      console.log("Cleared existing import batches!");
-    }
-    if (goods.length >= 2 && accounts.length > 0) {
+    if (importBatchCount === 0 && goods.length >= 2 && accounts.length > 0) {
       importBatches = await db.ImportBatch.insertMany([
         {
           import_receipt_number: "PN001",
@@ -241,14 +237,14 @@ const connectDB = async () => {
       importBatches = await db.ImportBatch.find();
     }
 
-    // Seed dữ liệu cho ImportDetail
+    // Seed data for ImportDetail if not exists
     const importDetailCount = await db.ImportDetail.countDocuments();
     console.log(`ImportDetail count: ${importDetailCount}`);
-    if (importDetailCount > 0) {
-      await db.ImportDetail.deleteMany({});
-      console.log("Cleared existing import details!");
-    }
-    if (importBatches.length > 0 && goods.length >= 2) {
+    if (
+      importDetailCount === 0 &&
+      importBatches.length > 0 &&
+      goods.length >= 2
+    ) {
       const importDetails = [
         {
           import_batch_id: importBatches[0]._id, // PN001
@@ -280,7 +276,7 @@ const connectDB = async () => {
       console.log("Seeded import details!");
     }
 
-    // Seed dữ liệu cho Status nếu chưa có
+    // Seed data for Status if not exists
     let statuses = [];
     const statusCount = await db.Status.countDocuments();
     console.log(`Status count: ${statusCount}`);
@@ -300,16 +296,11 @@ const connectDB = async () => {
       statuses = await db.Status.find();
     }
 
-    // Seed dữ liệu cho Bill
+    // Seed data for Bill if not exists
     let bills = [];
     const billCount = await db.Bill.countDocuments();
     console.log(`Bill count: ${billCount}`);
-    if (billCount > 0) {
-      await db.Bill.deleteMany({});
-      console.log("Cleared existing bills!");
-    }
-
-    if (statuses.length > 0 && shifts.length > 0) {
+    if (billCount === 0 && statuses.length > 0 && shifts.length > 0) {
       bills = await db.Bill.insertMany([
         {
           billNumber: "HD001",
@@ -337,14 +328,10 @@ const connectDB = async () => {
       bills = await db.Bill.find();
     }
 
-    // Seed dữ liệu cho BillDetail
+    // Seed data for BillDetail if not exists
     const billDetailCount = await db.BillDetail.countDocuments();
     console.log(`BillDetail count: ${billDetailCount}`);
-    if (billDetailCount > 0) {
-      await db.BillDetail.deleteMany({});
-      console.log("Cleared existing bill details!");
-    }
-    if (bills.length > 0 && goods.length >= 2) {
+    if (billDetailCount === 0 && bills.length > 0 && goods.length >= 2) {
       const billDetails = [
         {
           bill_id: bills[0]._id, // HD001
