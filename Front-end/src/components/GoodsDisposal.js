@@ -1,85 +1,161 @@
-import React, { useState } from "react";
-import "./Css/GoodsDisposal.css"; // Assuming you have a CSS file for styles
+import React, { useState, useEffect } from "react";
+import "./Css/GoodsDisposal.css"; 
+import axios from "axios"; 
 
 export default function GoodsDisposal() {
     const [searchData, setSearchData] = useState({
         importCode: "",
-        creator: "",
         importer: "",
-        startDate: "28/05/2025",
+        startDate: "",
         endDate: "",
-    })
+        statusFilters: {
+            "Đã hoàn thành": false,
+            "Phiếu tạm": false,
+            "Đã hủy": false
+        },
+    });
 
-    const [tableData] = useState([
-        {
-            id: "XH00001",
-            totalValue: "50000",
-            time: "28/05/2025 22:03",
-            note: "Tại nạn không còn giá trị sử dụng",
-            status: "Phiếu tạm",
-        },
-        {
-            id: "XH00002",
-            totalValue: "100000",
-            time: "29/05/2025 22:03",
-            note: "Hết HSD",
-            status: "Đã hoàn thành",
-        },
-    ])
+    const [tableData, setTableData] = useState([]);
+    const [expandedRow, setExpandedRow] = useState(null);
+    const [detailData, setDetailData] = useState({});
 
-    const [expandedRow, setExpandedRow] = useState(null)
+    // Fetch data from API on component mount
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = await axios.get("http://localhost:9999/api/goods-disposal/list");
+                if (response.data.success) {
+                    // Map API data to tableData format
+                    const mappedTableData = response.data.data.map((item) => ({
+                        id: item.disposal_number,
+                        totalValue: item.total_disposal_value.toString(),
+                        time: new Date(item.disposal_date).toLocaleString("vi-VN", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                        }),
+                        note: item.reason_for_disposal,
+                        status: item.status === "approved" ? "Đã hoàn thành" : item.status === "pending" ? "Phiếu tạm" : "Đã hủy",
+                        importer: item.created_by.username,
+                    }));
+                    
+                    // Map API data to detailData format
+                    const mappedDetailData = response.data.data.reduce((acc, item) => {
+                        acc[item.disposal_number] = {
+                            items: item.items_summary.map((summary) => ({
+                                itemCode: `ITEM-${Math.random().toString(36).substr(2, 9)}`,
+                                itemName: summary.product_name,
+                                quantity: summary.quantity_disposed,
+                                costPrice: item.total_disposal_value / summary.quantity_disposed || 0,
+                                destructionValue: item.total_disposal_value,
+                                reason: item.reason_for_disposal,
+                                barcode: summary.barcode,
+                                image: "https://letsenhance.io/static/73136da51c245e80edc6c",
+                            })),
+                            creator: item.created_by.username,
+                            totalQuantity: item.total_items,
+                            totalValue: item.total_disposal_value,
+                        };
+                        return acc;
+                    }, {});
+                    
+                    setTableData(mappedTableData);
+                    setDetailData(mappedDetailData);
+                }
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        };
 
-    const [detailData] = useState({
-        XH00001: {
-            items: [
-                {
-                    itemCode: "1575239",
-                    itemName: "Bò ăn cơm",
-                    quantity: 5,
-                    costPrice: 7500,
-                    destructionValue: 37500,
-                    reason: "Hàng bị hỏng do tai nạn", // Reason for disposal
-                    image: "https://letsenhance.io/static/73136da51c245e80edc6ccfe44888a99/1015f/MainBefore.jpg", // Image path or URL
-                },
-            ],
-            creator: "",
-            totalQuantity: 5,
-            totalValue: 37500,
-        },
-        XH00002: {
-            items: [
-                {
-                    itemCode: "1575240",
-                    itemName: "Sữa hết hạn",
-                    quantity: 10,
-                    costPrice: 10000,
-                    destructionValue: 100000,
-                },
-            ],
-            creator: "",
-            totalQuantity: 10,
-            totalValue: 100000,
-        },
-    })
+        fetchData();
+    }, []);
 
     const handleInputChange = (field, value) => {
         setSearchData((prev) => ({
             ...prev,
             [field]: value,
-        }))
-    }
+        }));
+    };
 
-    const handleSearch = () => {
-        console.log("Searching with:", searchData)
-    }
+    // Handle status filter change
+    const handleStatusChange = (status) => {
+        setSearchData(prev => ({
+            ...prev,
+            statusFilters: {
+                ...prev.statusFilters,
+                [status]: !prev.statusFilters[status]
+            }
+        }));
+    };
+
+    // Handle reason filter change
+    const handleReasonChange = (reason) => {
+        setSearchData(prev => ({
+            ...prev,
+            reasonFilters: {
+                ...prev.reasonFilters,
+                [reason]: !prev.reasonFilters[reason]
+            }
+        }));
+    };
+
+    // Filter function similar to BillHistory
+    const filterData = () => {
+        let filtered = [...tableData];
+
+        // Filter theo mã nhập
+        if (searchData.importCode) {
+            filtered = filtered.filter(item => 
+                item.id.toLowerCase().includes(searchData.importCode.toLowerCase())
+            );
+        }
+
+        // Filter theo người nhập
+        if (searchData.importer) {
+            filtered = filtered.filter(item => 
+                item.importer.toLowerCase().includes(searchData.importer.toLowerCase())
+            );
+        }
+
+        // Filter theo thời gian
+        if (searchData.startDate) {
+            filtered = filtered.filter(item => {
+                const itemDate = new Date(item.time.split(', ')[0].split('/').reverse().join('-'));
+                const startDate = new Date(searchData.startDate);
+                return itemDate >= startDate;
+            });
+        }
+
+        if (searchData.endDate) {
+            filtered = filtered.filter(item => {
+                const itemDate = new Date(item.time.split(', ')[0].split('/').reverse().join('-'));
+                const endDate = new Date(searchData.endDate);
+                return itemDate <= endDate;
+            });
+        }
+
+        // Filter theo trạng thái (checkbox)
+        const activeStatuses = Object.keys(searchData.statusFilters).filter(status => searchData.statusFilters[status]);
+        if (activeStatuses.length > 0) {
+            filtered = filtered.filter(item => activeStatuses.includes(item.status));
+        }
+
+
+        return filtered;
+    };
+
+    const filteredData = filterData();
+
 
     const handleExportFile = () => {
-        console.log("Exporting file...")
-    }
+        console.log("Exporting file...");
+    };
 
     const handleRowClick = (rowId) => {
-        setExpandedRow(expandedRow === rowId ? null : rowId)
-    }
+        setExpandedRow(expandedRow === rowId ? null : rowId);
+    };
 
     return (
         <div className="app">
@@ -126,15 +202,7 @@ export default function GoodsDisposal() {
                                     type="text"
                                     value={searchData.importCode}
                                     onChange={(e) => handleInputChange("importCode", e.target.value)}
-                                />
-                            </div>
-
-                            <div className="form-group">
-                                <label>Người tạo</label>
-                                <input
-                                    type="text"
-                                    value={searchData.creator}
-                                    onChange={(e) => handleInputChange("creator", e.target.value)}
+                                    placeholder="Nhập mã xuất hủy"
                                 />
                             </div>
 
@@ -144,26 +212,46 @@ export default function GoodsDisposal() {
                                     type="text"
                                     value={searchData.importer}
                                     onChange={(e) => handleInputChange("importer", e.target.value)}
+                                    placeholder="Nhập tên người nhập"
                                 />
                             </div>
 
                             <div className="form-group">
-                                <label>Thời gian</label>
+                                <label>Thời gian từ</label>
                                 <input
-                                    type="text"
+                                    type="date"
                                     value={searchData.startDate}
                                     onChange={(e) => handleInputChange("startDate", e.target.value)}
                                 />
+                            </div>
+
+                            <div className="form-group">
+                                <label>Đến</label>
                                 <input
-                                    type="text"
+                                    type="date"
                                     value={searchData.endDate}
                                     onChange={(e) => handleInputChange("endDate", e.target.value)}
                                 />
                             </div>
 
-                            <button className="search-btn" onClick={handleSearch}>
-                                Tìm kiếm
-                            </button>
+                            {/* Status Filter with Checkboxes */}
+                            <div className="form-group">
+                                <label>Trạng thái</label>
+                                <div className="checkbox-group">
+                                    {Object.keys(searchData.statusFilters).map((status) => (
+                                        <div key={status} className="checkbox-item">
+                                            <label className="checkbox-label">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={searchData.statusFilters[status]}
+                                                    onChange={() => handleStatusChange(status)}
+                                                />
+                                                <span>{status}</span>
+                                            </label>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
 
                         {/* Data Table */}
@@ -179,9 +267,9 @@ export default function GoodsDisposal() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {tableData.map((row, index) => (
-                                        <>
-                                            <tr key={index} onClick={() => handleRowClick(row.id)} className="table-row">
+                                    {filteredData.map((row, index) => (
+                                        <React.Fragment key={row.id}>
+                                            <tr onClick={() => handleRowClick(row.id)} className="table-row">
                                                 <td>{row.id}</td>
                                                 <td>{row.totalValue}</td>
                                                 <td>{row.time}</td>
@@ -211,11 +299,12 @@ export default function GoodsDisposal() {
                                                                         <strong>Ghi chú:</strong> {row.note}
                                                                     </div>
                                                                     <div className="detail-item">
-                                                                        <strong>Người xuất hủy:</strong>
+                                                                        <strong>Người tạo phiếu:</strong>
                                                                         <input
                                                                             type="text"
                                                                             className="creator-input"
                                                                             value={detailData[row.id]?.creator || ""}
+                                                                            readOnly
                                                                         />
                                                                     </div>
                                                                 </div>
@@ -230,26 +319,26 @@ export default function GoodsDisposal() {
                                                                             <th>Số lượng hủy</th>
                                                                             <th>Giá vốn</th>
                                                                             <th>Giá trị hủy</th>
-                                                                            <th>Lý do hủy</th> {/* New column for reason */}
-                                                                            <th>Hình ảnh</th> {/* New column for image */}
+                                                                            <th>Lý do hủy</th>
+                                                                            <th>Hình ảnh</th>
                                                                         </tr>
                                                                     </thead>
                                                                     <tbody>
                                                                         {detailData[row.id]?.items.map((item, itemIndex) => (
                                                                             <tr key={itemIndex}>
-                                                                                <td>{item.itemCode}</td>
+                                                                                <td>{item.barcode}</td>
                                                                                 <td>{item.itemName}</td>
                                                                                 <td>{item.quantity}</td>
                                                                                 <td>{item.costPrice.toLocaleString()}</td>
                                                                                 <td>{item.destructionValue.toLocaleString()}</td>
-                                                                                <td>{item.reason}</td> {/* Display reason */}
+                                                                                <td>{item.reason}</td>
                                                                                 <td>
                                                                                     <img
                                                                                         src={item.image}
                                                                                         alt={item.itemName}
-                                                                                        style={{ width: "50px", height: "50px", objectFit: "cover" }} // Style the image
+                                                                                        style={{ width: "50px", height: "50px", objectFit: "cover" }}
                                                                                     />
-                                                                                </td> {/* Display image */}
+                                                                                </td>
                                                                             </tr>
                                                                         ))}
                                                                     </tbody>
@@ -258,28 +347,35 @@ export default function GoodsDisposal() {
 
                                                             <div className="detail-summary">
                                                                 <div className="summary-item">
-                                                                    <strong>Tổng số lượng hủy:</strong> {detailData[row.id]?.totalQuantity}
+                                                                    <strong>Tổng số lượng hủy:</strong> {detailData[row.id]?.totalQuantity || 0}
                                                                 </div>
                                                                 <div className="summary-item">
                                                                     <strong>Tổng giá trị hủy:</strong> {detailData[row.id]?.totalValue.toLocaleString()}
                                                                 </div>
                                                             </div>
 
-                                                            <div className="detail-actions">
-                                                                <button className="action-btn open-btn">Mở phiếu</button>
-                                                                {/* <button className="action-btn print-btn">In</button>
-                                                                <button className="action-btn export-btn">Xuất file</button> */}
-                                                                <button className="action-btn cancel-btn">Hủy</button>
-                                                            </div>
+                                                            {row.status === "Phiếu tạm" && (
+                                                                <div className="detail-actions">
+                                                                    <button className="action-btn open-btn">Mở phiếu</button>
+                                                                    <button className="action-btn cancel-btn">Hủy</button>
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     </td>
                                                 </tr>
                                             )}
-                                        </>
+                                        </React.Fragment>
                                     ))}
                                 </tbody>
                             </table>
                         </div>
+
+                        {/* No Results Message */}
+                        {filteredData.length === 0 && tableData.length > 0 && (
+                            <div className="no-results">
+                                <p>Không tìm thấy kết quả phù hợp với bộ lọc đã chọn.</p>
+                            </div>
+                        )}
                     </div>
 
                     {/* Pagination */}
@@ -289,5 +385,5 @@ export default function GoodsDisposal() {
                 </main>
             </div>
         </div>
-    )
+    );
 };
