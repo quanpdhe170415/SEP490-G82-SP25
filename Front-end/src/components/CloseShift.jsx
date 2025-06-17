@@ -29,6 +29,7 @@ export default function CloseShift() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [notes, setNotes] = useState(shiftData.note);
 
   const totalCash = Object.entries(cashDetail).reduce(
     (sum, [denom, qty]) => sum + Number(denom) * Number(qty),
@@ -188,9 +189,19 @@ export default function CloseShift() {
                   {shiftData.closeTime}
                 </span>
               </li>
-              <li className="list-group-item d-flex justify-content-between align-items-center bg-white">
-                <span className="text-secondary">Ghi chú:</span>
-                <span className="fw-semibold text-black">{shiftData.note}</span>
+              <li className="list-group-item bg-white">
+                <div className="mb-2 text-secondary d-flex justify-content-between align-items-center">
+                  <span>Ghi chú:</span>
+                  <textarea
+                    className="form-control form-control-sm ms-2"
+                    style={{ maxWidth: 350, minHeight: 60, resize: 'vertical' }}
+                    value={notes}
+                    onChange={e => setNotes(e.target.value)}
+                    placeholder="Ghi chú (nếu có)"
+                    maxLength={200}
+                  />
+                </div>
+                <div className="text-end text-secondary small">{notes.length}/200 ký tự</div>
               </li>
               <li className="list-group-item d-flex justify-content-between align-items-center bg-white">
                 <span className="text-secondary">Trạng thái:</span>

@@ -1,4 +1,8 @@
 import React, { useState, useEffect } from "react";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { useNavigate } from "react-router-dom";
+import ExportRequestModal from "./ExportRequestModal"; // Tạo component này để nhập thông tin xuất hàng
 
 // Sửa lỗi ảnh sản phẩm mẫu không load được
 const mockProducts = [
@@ -7,6 +11,8 @@ const mockProducts = [
   { id: 3, code: "8930009999", name: "Bánh quy", price: 15000, type: "Bánh kẹo", img: "https://dummyimage.com/40x40/cccccc/000000&text=SP" },
   // ...có thể thêm sản phẩm mẫu
 ];
+
+
 
 const mockCart = [
   { id: 2, code: "8930005678", name: "Kem đánh răng", price: 20000, qty: 1, discount: 5000, discountType: "VND" },
@@ -37,6 +43,8 @@ const initialCashInDrawer = {
 };
 
 export default function POS() {
+  const navigate = useNavigate();
+  const [showExportRequest, setShowExportRequest] = useState(false);
   const [search, setSearch] = useState("");
   const [tabs, setTabs] = useState([]);
   const [activeTab, setActiveTab] = useState(1);
@@ -54,6 +62,32 @@ export default function POS() {
 
   // Lấy cart của tab hiện tại
   const cart = tabs.find(t => t.id === activeTab)?.cart || [];
+
+const handleCreateExportRequest = async (data) => {
+    try {
+      const token = localStorage.getItem("token");
+      const userId = localStorage.getItem("userId");
+      // Gắn userId vào created_by nếu cần
+      const payload = { ...data, created_by: userId };
+      const res = await fetch(`${process.env.REACT_APP_URL_SERVER}/export/export`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token ? `Bearer ${token}` : undefined,
+        },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        alert(err.error || "Tạo yêu cầu thất bại");
+        return;
+      }
+      toast("Tạo yêu cầu xuất kho thành công!");
+      setShowExportRequest(false);
+    } catch (err) {
+      toast("Có lỗi xảy ra khi tạo yêu cầu!");
+    }
+  };
 
   // Tính toán giá cuối cùng cho từng sản phẩm trong giỏ
   const getFinalPrice = (item) => {
@@ -141,7 +175,7 @@ export default function POS() {
       setLoadingProducts(true);
       setErrorProducts("");
       try {
-        const res = await fetch("http://localhost:9999/api/product/products-for-retail");
+        const res = await fetch(`${process.env.REACT_APP_URL_SERVER}product/products-for-retail`);
         if (!res.ok) throw new Error("Không thể lấy danh sách sản phẩm");
         const data = await res.json();
         // Giả sử API trả về mảng sản phẩm, map lại cho đúng định dạng
@@ -215,8 +249,41 @@ export default function POS() {
   };
 
   // Khi nhấn thanh toán
-  const handleOpenPayment = () => {
-    setShowPayment(true);
+  const handleOpenPayment = async () => {
+    try {
+      // Lấy shiftId từ localStorage hoặc hardcode
+      const shift_id = localStorage.getItem('shift_id') || "684ffe133092125dd21c8a1a";
+      if (!shift_id) {
+        alert('Vui lòng mở ca và đảm bảo shiftId hợp lệ trước khi tạo hóa đơn!');
+        return;
+      }
+      // Lấy billId nếu tab hiện tại đã có
+      const billId = tabs.find(tab => tab.id === activeTab)?.billId;
+      // Lấy note từ input hoặc state nếu có, ở đây tạm để rỗng
+      const note = '';
+      // Chuẩn bị items từ cart
+      const items = cart.map(item => ({
+        goodsId: item.id || item._id,
+        quantity: item.qty
+      }));
+      if (items.length === 0) {
+        alert('Giỏ hàng trống!');
+        return;
+      }
+      const payload = { shift_id, note, items };
+      if (billId) payload.billId = billId;
+      const res = await fetch('http://localhost:9999/api/payment/createbill', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      // if (!res.ok) throw new Error('Không thể tạo/cập nhật hóa đơn');
+      const bill = await res.json();
+      setTabs(tabs => tabs.map(tab => tab.id === activeTab ? { ...tab, billId: bill._id } : tab));
+      setShowPayment(true);
+    } catch (err) {
+      alert(err.message || 'Lỗi khi tạo/cập nhật hóa đơn');
+    }
   };
 
   // Đóng sidebar
@@ -225,6 +292,57 @@ export default function POS() {
     setCustomerPay("");
     setCashInput(denominations.reduce((acc, d) => ({ ...acc, [d.value]: 0 }), {}));
   };
+
+const handleConfirmPayment = async () => {
+  try {
+    const currentTab = tabs.find(tab => tab.id === activeTab);
+    if (!currentTab || currentTab.cart.length === 0) {
+      alert("Không có sản phẩm để thanh toán!");
+      return;
+    }
+
+    // Chuẩn bị data giống mẫu backend
+    const invoiceData = {
+      invoiceCode: "HD" + Date.now(),
+      date: new Date().toLocaleString("vi-VN"),
+      cashierName: localStorage.getItem("username") || "Thu ngân",
+      paymentMethod: paymentType === "cash" ? "Tiền mặt" : "Chuyển khoản",
+      products: currentTab.cart.map(item => ({
+        name: item.name,
+        quantity: item.qty,
+        price: item.price
+      })),
+      total: currentTab.cart.reduce((sum, item) => sum + item.price * item.qty, 0)
+    };
+
+    // Gọi API tạo hóa đơn PDF (POST, truyền data vào body)
+    const pdfRes = await fetch(`${process.env.REACT_APP_URL_SERVER}/invoice/export-invoice`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Accept": "application/pdf" },
+      body: JSON.stringify(invoiceData)
+    });
+    if (!pdfRes.ok) {
+      alert("Không thể tạo file hóa đơn PDF!");
+      return;
+    }
+    const blob = await pdfRes.blob();
+    const url = window.URL.createObjectURL(blob);
+    window.open(url, "_blank");
+
+    // Reset tab/cart sau khi thanh toán
+    setTabs(tabs =>
+      tabs.map(tab =>
+        tab.id === activeTab ? { ...tab, cart: [] } : tab
+      )
+    );
+    setShowPayment(false);
+    setCustomerPay("");
+    setCashInput(denominations.reduce((acc, d) => ({ ...acc, [d.value]: 0 }), {}));
+    alert("Thanh toán và in hóa đơn thành công!");
+  } catch (err) {
+    alert("Có lỗi xảy ra khi xác nhận thanh toán!");
+  }
+};
 
   return (
     <div className="min-vh-100 bg-light d-flex flex-row" style={{ fontFamily: 'Arial', position: 'relative' }}>
@@ -235,11 +353,37 @@ export default function POS() {
           <div className="fw-bold">Tạp hóa Hải Chi</div>
         </div>
         <div className="nav flex-column gap-2">
-          <button className="btn btn-outline-primary btn-sm">Yêu cầu trả hàng</button>
-          <button className="btn btn-outline-primary btn-sm">Yêu cầu xuất hàng</button>
-          <button className="btn btn-outline-primary btn-sm">Thanh toán</button>
-          <button className="btn btn-outline-primary btn-sm">Đóng ca</button>
-        </div>
+      <button
+        className="btn btn-outline-primary btn-sm"
+        onClick={() => navigate("/history")}
+      >
+        Lịch sử hóa đơn
+      </button>
+      <button
+          className="btn btn-outline-primary btn-sm"
+          onClick={() => setShowExportRequest(true)}
+        >
+          Yêu cầu xuất hàng
+        </button>
+      <button
+        className="btn btn-outline-primary btn-sm"
+        onClick={() => navigate("/POS")}
+      >
+        Thanh toán
+      </button>
+      <button
+        className="btn btn-outline-primary btn-sm"
+        onClick={() => navigate("/closeshift")}
+      >Đóng ca
+      </button>
+      {showExportRequest && (
+        <ExportRequestModal
+          show={showExportRequest}
+          onClose={() => setShowExportRequest(false)}
+          onSubmit={handleCreateExportRequest}
+        />
+      )}
+    </div>
         <div className="mt-auto text-center">
           <img src="https://via.placeholder.com/32" alt="avatar" className="rounded-circle" />
         </div>
@@ -289,9 +433,6 @@ export default function POS() {
               </div>
             ))}
             <button className="btn btn-light btn-sm px-2 d-flex align-items-center justify-content-center" style={{ borderRadius: 8, width: 32, height: 32, fontSize: 20 }} onClick={handleAddTab}>+</button>
-            <button className="btn btn-light btn-sm px-2 d-flex align-items-center justify-content-center" style={{ borderRadius: 8, width: 32, height: 32 }}>
-              <span style={{ fontSize: 18 }}>▼</span>
-            </button>
           </div>
         </div>
         <div className="row">
@@ -333,81 +474,84 @@ export default function POS() {
           </div>
           {/* Hóa đơn */}
           <div className="col-7">
-            <table className="table table-bordered mb-2">
-              <thead className="table-light">
-                <tr>
-                  <th style={{ width: 40 }}></th>
-                  <th style={{ width: 180 }}>Tên sản phẩm</th>
-                  <th style={{ width: 80 }}>Số lượng</th>
-                  <th style={{ width: 100 }}>Giá</th>
-                  <th style={{ width: 180 }}>Chi tiết</th>
-                </tr>
-              </thead>
-              <tbody>
-                {cart.map((item) => (
-                  <tr key={item.id}>
-                    <td className="text-center align-middle">
-                      <button className="btn btn-danger btn-sm" title="Xóa" onClick={() => handleRemoveFromCart(item.id)}>
-                        &times;
-                      </button>
-                    </td>
-                    <td>
-                      <div className="fw-bold">{item.name}</div>
-                      <div className="small text-secondary">{item.code}</div>
-                    </td>
-                    <td>
-                      <div className="d-flex align-items-center gap-1">
-                        <button className="btn btn-outline-secondary btn-sm px-2" onClick={() => handleQtyChange(item.id, -1)}>-</button>
-                        <span className="mx-1">{item.qty}</span>
-                        <button className="btn btn-outline-secondary btn-sm px-2" onClick={() => handleQtyChange(item.id, 1)}>+</button>
-                      </div>
-                    </td>
-                    <td>
-                      <div>{item.price.toLocaleString()} đ</div>
-                    </td>
-                    <td>
-                      <div className="mb-1">Giá gốc: {item.price.toLocaleString()} đ</div>
-                      <div className="mb-1 d-flex align-items-center gap-1">
-                        <span>Giảm giá</span>
-                        <input
-                          type="number"
-                          min="0"
-                          className="form-control form-control-sm"
-                          style={{ width: 70 }}
-                          value={item.discount}
-                          onChange={e => handleDiscountChange(item.id, Number(e.target.value), item.discountType)}
-                        />
-                        <div className="form-check form-check-inline mb-0">
-                          <input
-                            className="form-check-input"
-                            type="radio"
-                            name={`discountType${item.id}`}
-                            id={`vnd${item.id}`}
-                            checked={item.discountType === "VND"}
-                            onChange={() => handleDiscountChange(item.id, item.discount, "VND")}
-                          />
-                          <label className="form-check-label" htmlFor={`vnd${item.id}`}>VND</label>
-                        </div>
-                        <div className="form-check form-check-inline mb-0">
-                          <input
-                            className="form-check-input"
-                            type="radio"
-                            name={`discountType${item.id}`}
-                            id={`percent${item.id}`}
-                            checked={item.discountType === "%"}
-                            onChange={() => handleDiscountChange(item.id, item.discount, "%")}
-                          />
-                          <label className="form-check-label" htmlFor={`percent${item.id}`}>%</label>
-                        </div>
-                      </div>
-                      <div className="mb-1">Giá cuối: {getFinalPrice(item).toLocaleString()} đ</div>
-                      <div className="fw-bold">Thành tiền: {(getFinalPrice(item) * item.qty).toLocaleString()} đ</div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {/* Xóa phần tổng tiền và thanh toán ở đây, chuyển xuống dưới */}
+            <div className="card shadow-sm mb-2" style={{marginTop: 38}}>
+              <div className="card-body p-2">
+                <table className="table table-bordered mb-0">
+                  <thead className="table-light">
+                    <tr>
+                      <th style={{ width: 40 }}></th>
+                      <th style={{ width: 180 }}>Tên sản phẩm</th>
+                      <th style={{ width: 80 }}>Số lượng</th>
+                      <th style={{ width: 100 }}>Giá</th>
+                      <th style={{ width: 180 }}>Chi tiết</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {cart.map((item) => (
+                      <tr key={item.id}>
+                        <td className="text-center align-middle">
+                          <button className="btn btn-danger btn-sm" title="Xóa" onClick={() => handleRemoveFromCart(item.id)}>
+                            &times;
+                          </button>
+                        </td>
+                        <td>
+                          <div className="fw-bold">{item.name}</div>
+                          <div className="small text-secondary">{item.code}</div>
+                        </td>
+                        <td>
+                          <div className="d-flex align-items-center gap-1">
+                            <button className="btn btn-outline-secondary btn-sm px-2" onClick={() => handleQtyChange(item.id, -1)}>-</button>
+                            <span className="mx-1">{item.qty}</span>
+                            <button className="btn btn-outline-secondary btn-sm px-2" onClick={() => handleQtyChange(item.id, 1)}>+</button>
+                          </div>
+                        </td>
+                        <td>
+                          <div>{item.price.toLocaleString()} đ</div>
+                        </td>
+                        <td>
+                          <div className="mb-1">Giá gốc: {item.price.toLocaleString()} đ</div>
+                          <div className="mb-1 d-flex align-items-center gap-1">
+                            <span>Giảm giá</span>
+                            <input
+                              type="number"
+                              min="0"
+                              className="form-control form-control-sm"
+                              style={{ width: 70 }}
+                              value={item.discount}
+                              onChange={e => handleDiscountChange(item.id, Number(e.target.value), item.discountType)}
+                            />
+                            <div className="form-check form-check-inline mb-0">
+                              <input
+                                className="form-check-input"
+                                type="radio"
+                                name={`discountType${item.id}`}
+                                id={`vnd${item.id}`}
+                                checked={item.discountType === "VND"}
+                                onChange={() => handleDiscountChange(item.id, item.discount, "VND")}
+                              />
+                              <label className="form-check-label" htmlFor={`vnd${item.id}`}>VND</label>
+                            </div>
+                            <div className="form-check form-check-inline mb-0">
+                              <input
+                                className="form-check-input"
+                                type="radio"
+                                name={`discountType${item.id}`}
+                                id={`percent${item.id}`}
+                                checked={item.discountType === "%"}
+                                onChange={() => handleDiscountChange(item.id, item.discount, "%")}
+                              />
+                              <label className="form-check-label" htmlFor={`percent${item.id}`}>%</label>
+                            </div>
+                          </div>
+                          <div className="mb-1">Giá cuối: {getFinalPrice(item).toLocaleString()} đ</div>
+                          <div className="fw-bold">Thành tiền: {(getFinalPrice(item) * item.qty).toLocaleString()} đ</div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
         {/* Thanh toán cố định góc dưới phải */}
@@ -420,52 +564,109 @@ export default function POS() {
       </div>
       {/* Sidebar xác nhận thanh toán */}
       {showPayment && (
-        <div style={{ position: 'fixed', top: 0, right: 0, width: 370, height: '100vh', maxWidth: '100vw', background: '#fff', boxShadow: '-2px 0 8px rgba(0,0,0,0.1)', zIndex: 2000, transition: 'all 0.3s', borderLeft: '1px solid #eee', display: 'flex', flexDirection: 'column' }}>
-          <div className="p-3 border-bottom d-flex justify-content-between align-items-center" style={{ minHeight: 56 }}>
-            <div className="fw-bold">Xác nhận thanh toán</div>
-            <button className="btn btn-sm btn-close" onClick={handleClosePayment}></button>
-          </div>
-          <div className="p-3 flex-grow-1 overflow-auto" style={{ minHeight: 0 }}>
-            <div className="mb-2">Nhân viên: <span className="fw-bold">Nguyễn Văn A</span></div>
-            <div className="mb-2">{new Date().toLocaleString()}</div>
-            <div className="mb-2">Số tiền khách phải trả</div>
-            <input className="form-control mb-2" value={total.toLocaleString()} disabled />
-            <div className="mb-2">Giảm giá</div>
-            <input className="form-control mb-2" value={0} disabled />
-            <div className="mb-2">Khách cần trả</div>
-            <input className="form-control mb-2" value={customerNeedPay.toLocaleString()} disabled />
-            <div className="mb-2">Khách thanh toán</div>
-            <input
-              className="form-control mb-2"
-              type="number"
-              placeholder="Nhập số tiền khách đưa"
-              value={customerPay}
-              onChange={handleCustomerPayChange}
-            />
-            <div className="mb-2">Hoặc chọn mệnh giá:</div>
-            <div className="row g-1 mb-2">
-              {denominations.map((d, idx) => (
-                <div className="col-4 mb-1" key={d.value}>
-                  <div className="input-group input-group-sm">
-                    <span className="input-group-text bg-primary text-white" style={{ minWidth: 60 }}>{d.label}</span>
-                    <input
-                      type="number"
-                      min="0"
-                      className="form-control text-end"
-                      value={cashInput[d.value] === 0 ? "" : cashInput[d.value]}
-                      onChange={e => handleCashInputChange(d.value, e.target.value)}
-                    />
-                  </div>
-                  <div className="small text-secondary">Còn lại: {cashInDrawer[d.value]}</div>
-                </div>
-              ))}
-            </div>
-            <div className="mb-2">Tiền thừa</div>
-            <input className="form-control mb-3" value={change >= 0 ? change.toLocaleString() : ""} disabled />
-            <button className="btn btn-success w-100 fw-bold">Xác nhận thanh toán</button>
-          </div>
+  <div style={{
+    position: 'fixed', top: 0, right: 0, width: 370, height: '100vh',
+    maxWidth: '100vw', background: '#fff', boxShadow: '-2px 0 8px rgba(0,0,0,0.1)',
+    zIndex: 2000, transition: 'all 0.3s', borderLeft: '1px solid #eee',
+    display: 'flex', flexDirection: 'column'
+  }}>
+    <div className="p-3 border-bottom d-flex justify-content-between align-items-center" style={{ minHeight: 56 }}>
+      <div className="fw-bold">Xác nhận thanh toán</div>
+      <button className="btn btn-sm btn-close" onClick={handleClosePayment}></button>
+    </div>
+    <div className="p-3 flex-grow-1 overflow-auto" style={{ minHeight: 0 }}>
+<div className="mb-2">
+  Nhân viên: <span className="fw-bold">{localStorage.getItem("username") || "Chưa đăng nhập"}</span>
+</div>
+      <div className="mb-2">{new Date().toLocaleString("vi-VN")}</div>
+
+      {/* Radio chọn phương thức thanh toán */}
+      <div className="mb-3">
+        <label className="fw-bold mb-1">Phương thức thanh toán:</label>
+        <div className="form-check form-check-inline">
+          <input
+            className="form-check-input"
+            type="radio"
+            name="paymentMethod"
+            id="paymentCash"
+            value="Tiền mặt"
+            checked={paymentType === "Tiền mặt"}
+            onChange={() => setPaymentType("Tiền mặt")}
+          />
+          <label className="form-check-label" htmlFor="paymentCash">Tiền mặt</label>
         </div>
+        <div className="form-check form-check-inline">
+          <input
+            className="form-check-input"
+            type="radio"
+            name="paymentMethod"
+            id="paymentQR"
+            value="QR"
+            checked={paymentType === "QR"}
+            onChange={() => setPaymentType("QR")}
+          />
+          <label className="form-check-label" htmlFor="paymentQR">QR</label>
+        </div>
+        <div className="form-check form-check-inline">
+          <input
+            className="form-check-input"
+            type="radio"
+            name="paymentMethod"
+            id="paymentCombo"
+            value="Kết hợp"
+            checked={paymentType === "Kết hợp"}
+            onChange={() => setPaymentType("Kết hợp")}
+          />
+          <label className="form-check-label" htmlFor="paymentCombo">Kết hợp</label>
+        </div>
+      </div>
+
+      <div className="mb-2">Số tiền khách phải trả</div>
+      <input className="form-control mb-2" value={total.toLocaleString()} disabled />
+
+      <div className="mb-2">Giảm giá</div>
+      <input className="form-control mb-2" value={0} disabled />
+
+      <div className="mb-2">Khách cần trả</div>
+      <input className="form-control mb-2" value={customerNeedPay.toLocaleString()} disabled />
+
+      {paymentType === "Tiền mặt" && (
+        <>
+          <div className="mb-2">Khách thanh toán</div>
+          <input
+            className="form-control mb-2"
+            type="number"
+            placeholder="Nhập số tiền khách đưa"
+            value={customerPay}
+            onChange={handleCustomerPayChange}
+          />
+          <div className="mb-2">Chọn nhanh mệnh giá:</div>
+<div className="d-flex flex-wrap gap-2 mb-3">
+  {denominations.map(d => (
+    <button
+      key={d.value}
+      className="btn btn-outline-primary btn-sm"
+      onClick={() => setCustomerPay(prev => Number(prev) + d.value)}
+      style={{ minWidth: 90 }}
+    >
+      {d.label} đ
+    </button>
+  ))}
+</div>
+
+          <div className="mb-2">Tiền thừa</div>
+          <input className="form-control mb-3" value={change >= 0 ? change.toLocaleString() : ""} disabled />
+        </>
       )}
+
+      <button className="btn btn-success w-100 fw-bold" onClick={handleConfirmPayment}>
+        Xác nhận thanh toán
+      </button>
+    </div>
+  </div>
+)}
+
+      <ToastContainer position="top-right" autoClose={2000} hideProgressBar={false} newestOnTop closeOnClick pauseOnFocusLoss draggable pauseOnHover />
     </div>
   );
 }

@@ -1,5 +1,7 @@
-const { ImportBatch } = require("../models");
-const { ImportDetail } = require("../models");
+
+const {ImportBatch} = require("../models");
+const {ImportDetail} = require("../models");
+
 
 // Lấy danh sách phiếu nhập
 exports.getAllPurchases = async (req, res) => {
@@ -47,10 +49,12 @@ exports.getPurchaseDetails = async (req, res) => {
 
     // Lấy danh sách mặt hàng
     const items = await ImportDetail.find({ import_batch_id: purchaseId })
+
       .select(
         "goods_id quantity_imported unit_import_price total_amount expiry_date manufacturing_batch_number manufacturing_date"
       )
       .populate("goods_id", "goods_name barcode ")
+
       .lean();
 
     // Chuyển đổi để khớp với frontend
