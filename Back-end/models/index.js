@@ -16,6 +16,8 @@ const Status = require('./statusBill');
 const BillDetail = require('./billDetail');
 const ReturnOrder = require("./returnOrder"); 
 const ReturnDetail = require("./returndetail");
+const GoodsDisposal = require('./goodsDisposal');
+const DisposalItem = require('./disposalItem');
 const Session = require('./session');
 const ShiftType = require('./shiftType');
 mongoose.Promise = global.Promise;
@@ -37,6 +39,8 @@ const db = {
   BillDetail,
   ReturnOrder,
   ReturnDetail,
+  GoodsDisposal,
+  DisposalItem,
   UserDetail,
   Session,
   ShiftType
