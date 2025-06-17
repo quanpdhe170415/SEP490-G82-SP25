@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import "./Css/GoodsDisposal.css"; 
+import { useNavigate } from "react-router-dom"; 
 import axios from "axios"; 
 
 export default function GoodsDisposal() {
+    const navigate = useNavigate();
     const [searchData, setSearchData] = useState({
         importCode: "",
         importer: "",
@@ -27,7 +29,8 @@ export default function GoodsDisposal() {
                 if (response.data.success) {
                     // Map API data to tableData format
                     const mappedTableData = response.data.data.map((item) => ({
-                        id: item.disposal_number,
+                        id: item._id,
+                        disposal_number: item.disposal_number,
                         totalValue: item.total_disposal_value.toString(),
                         time: new Date(item.disposal_date).toLocaleString("vi-VN", {
                             day: "2-digit",
@@ -78,7 +81,11 @@ export default function GoodsDisposal() {
             [field]: value,
         }));
     };
-
+   const handleOpenDisposal = (row) => {
+    // console.log(row.id);
+    
+        navigate(`/goods-disposal-detail/${row.id}`);
+    };
     // Handle status filter change
     const handleStatusChange = (status) => {
         setSearchData(prev => ({
@@ -270,7 +277,7 @@ export default function GoodsDisposal() {
                                     {filteredData.map((row, index) => (
                                         <React.Fragment key={row.id}>
                                             <tr onClick={() => handleRowClick(row.id)} className="table-row">
-                                                <td>{row.id}</td>
+                                                <td>{row.disposal_number}</td>
                                                 <td>{row.totalValue}</td>
                                                 <td>{row.time}</td>
                                                 <td>{row.note}</td>
@@ -354,9 +361,14 @@ export default function GoodsDisposal() {
                                                                 </div>
                                                             </div>
 
-                                                            {row.status === "Phiếu tạm" && (
+                                                             {row.status === "Phiếu tạm" && (
                                                                 <div className="detail-actions">
-                                                                    <button className="action-btn open-btn">Mở phiếu</button>
+                                                                    <button 
+                                                                        className="action-btn open-btn"
+                                                                        onClick={() => handleOpenDisposal(row)}
+                                                                    >
+                                                                        Mở phiếu
+                                                                    </button>
                                                                     <button className="action-btn cancel-btn">Hủy</button>
                                                                 </div>
                                                             )}
