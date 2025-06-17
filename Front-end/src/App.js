@@ -8,6 +8,11 @@ import BillHistoryPage from './components/BillHistoryPage';
 import ReturnGoods from './components/ReturnGoods';
 import ForgotPassword from './components/ForgotPassword';
 import HomeForCashier from './components/HomeforCashier';
+
+
+
+
+
 import GoodsDisposal from './components/GoodsDisposal';
 import ImportHistory from "./components/ImportHistory";
 import GoodsDisposalDetail from './components/GoodsDisposalDetail';
@@ -15,7 +20,7 @@ import OpenShift from './components/OpenShift';
 import CloseShift from './components/CloseShift';
 import POS from './components/POS';
 import CashierSidebar from './components/CashierSidebar';
-// import PurchaseHistory from "./components/PurchaseHistory";
+
 
 
 
@@ -40,8 +45,10 @@ function App() {
         <Route path="/openshift" element={<OpenShift />} />
         <Route path="/bill-history" element={<BillHistoryPage />} />
         <Route path="/import-history" element={<ImportHistory />} />
+
         <Route path="/cashier/*" element={<CashierSidebar />} />
         
+
       </Routes>
     </Router>
   );

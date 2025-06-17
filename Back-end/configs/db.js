@@ -37,7 +37,7 @@ const connectDB = async () => {
 
  let shiftTypes = [];
     const shiftTypeCount = await db.ShiftType.countDocuments();
-    console.log(`ShiftType count: ${shiftTypeCount}`);
+    console.log(ShiftType count: ${shiftTypeCount});
     if (shiftTypeCount === 0) {
       shiftTypes = await db.ShiftType.insertMany([
         {
@@ -62,7 +62,7 @@ const connectDB = async () => {
     // Seed dữ liệu cho Role nếu chưa có
     let roles = [];
     const roleCount = await db.Role.countDocuments();
-    console.log(`Role count: ${roleCount}`);
+    console.log(Role count: ${roleCount});
     if (roleCount === 0) {
       roles = await db.Role.insertMany([
         {
@@ -100,7 +100,7 @@ const connectDB = async () => {
     // Seed dữ liệu cho Account nếu chưa có
     let accounts = [];
     const accountCount = await db.Account.countDocuments();
-    console.log(`Account count: ${accountCount}`);
+    console.log(Account count: ${accountCount});
     if (accountCount === 0) {
       const password1 = await bcrypt.hash("123456", 10);
       const password2 = await bcrypt.hash("123456", 10);
@@ -123,6 +123,24 @@ const connectDB = async () => {
           is_active: true,
           role_id: roles.find((r) => r.name === "Staff")._id,
         },
+        {
+          username: "manager1",
+          password: password1, // Thay bằng mật khẩu đã mã hóa
+          full_name: "Lê Văn C",
+          email: "a@gmail.com",
+          phone: "0987654321",
+          is_active: true,
+          role_id: roles.find((r) => r.name === "Manager")._id,
+        },
+        {
+          username: "staff1",
+          password: password2, // Thay bằng mật khẩu đã mã hóa
+          full_name: "Phạm Thị D",
+          email: "b@gmail.com",
+          phone: "0976543210",
+          is_active: true,
+          role_id: roles.find((r) => r.name === "WarehouseStaff")._id,
+        },
       ]);
       console.log(
         "Seeded accounts:",
@@ -139,7 +157,7 @@ const connectDB = async () => {
     // Seed dữ liệu cho Shift nếu chưa có
     let shifts = [];
     const shiftCount = await db.Shift.countDocuments();
-    console.log(`Shift count: ${shiftCount}`);
+    console.log(Shift count: ${shiftCount});
     if (shiftCount === 0 && accounts.length > 0) {
       shifts = await db.Shift.insertMany([
         {
@@ -186,7 +204,7 @@ const connectDB = async () => {
     // Seed dữ liệu cho Category nếu chưa có
     let categories = [];
     const categoryCount = await db.Category.countDocuments();
-    console.log(`Category count: ${categoryCount}`);
+    console.log(Category count: ${categoryCount});
     if (categoryCount === 0) {
       categories = await db.Category.insertMany([
         { category_name: "Đồ uống", description: "Các loại nước giải khát" },
@@ -200,7 +218,7 @@ const connectDB = async () => {
     // Seed dữ liệu cho Goods nếu chưa có
     let goods = [];
     const goodsCount = await db.Goods.countDocuments();
-    console.log(`Goods count: ${goodsCount}`);
+    console.log(Goods count: ${goodsCount});
     if (goodsCount === 0 && categories.length > 0) {
       goods = await db.Goods.insertMany([
         {
@@ -263,7 +281,7 @@ const connectDB = async () => {
     // Seed dữ liệu cho ImportBatch
     let importBatches = [];
     const importBatchCount = await db.ImportBatch.countDocuments();
-    console.log(`ImportBatch count: ${importBatchCount}`);
+    console.log(ImportBatch count: ${importBatchCount});
     if (importBatchCount > 0) {
       await db.ImportBatch.deleteMany({});
       console.log("Cleared existing import batches!");
@@ -308,7 +326,7 @@ const connectDB = async () => {
 
     // Seed dữ liệu cho ImportDetail
     const importDetailCount = await db.ImportDetail.countDocuments();
-    console.log(`ImportDetail count: ${importDetailCount}`);
+    console.log(ImportDetail count: ${importDetailCount});
     if (importDetailCount > 0) {
       await db.ImportDetail.deleteMany({});
       console.log("Cleared existing import details!");
@@ -349,7 +367,7 @@ const connectDB = async () => {
     // Seed dữ liệu cho Status nếu chưa có
     let statuses = [];
     const statusCount = await db.Status.countDocuments();
-    console.log(`Status count: ${statusCount}`);
+    console.log(Status count: ${statusCount});
     if (statusCount === 0) {
       statuses = await db.Status.insertMany([
         {
@@ -369,7 +387,7 @@ const connectDB = async () => {
     // Seed dữ liệu cho Bill
     let bills = [];
     const billCount = await db.Bill.countDocuments();
-    console.log(`Bill count: ${billCount}`);
+    console.log(Bill count: ${billCount});
     if (billCount > 0) {
       await db.Bill.deleteMany({});
       console.log("Cleared existing bills!");
@@ -420,7 +438,7 @@ const connectDB = async () => {
 
     // Seed dữ liệu cho BillDetail
     const billDetailCount = await db.BillDetail.countDocuments();
-    console.log(`BillDetail count: ${billDetailCount}`);
+    console.log(BillDetail count: ${billDetailCount});
     if (billDetailCount > 0) {
       await db.BillDetail.deleteMany({});
       console.log("Cleared existing bill details!");
@@ -484,40 +502,40 @@ const connectDB = async () => {
       await db.DisposalItem.deleteMany({});
       console.log("Cleared existing disposal items!");
     }
-    if (goods.length > 0 && importBatches.length > 0 && importDetails.length > 0) {
-      disposalItems = await db.DisposalItem.insertMany([
-        {
-          goods_id: goods[0]._id, // Coca Cola
-          product_name: goods[0].goods_name,
-          batch_number: "LOT001",
-          unit_of_measure: goods[0].unit_of_measure,
-          quantity_disposed: 5,
-          cost_price: 8500,
-          item_disposal_reason: "Bao bì bị hỏng trong quá trình vận chuyển",
-          item_images: [
-            "https://example.com/damaged_cola_1.jpg",
-            "https://example.com/damaged_cola_2.jpg"
-          ],
-          import_batch_number: importBatches[0]._id,
-          import_detail_id: importDetails[0]._id,
-        },
-        {
-          goods_id: goods[1]._id, // Snack Oishi
-          product_name: goods[1].goods_name,
-          batch_number: "LOT002",
-          unit_of_measure: goods[1].unit_of_measure,
-          quantity_disposed: 3,
-          cost_price: 9500,
-          item_disposal_reason: "Sản phẩm bị ẩm mốc",
-          item_images: [
-            "https://example.com/moldy_snack_1.jpg"
-          ],
-          import_batch_number: importBatches[1]._id,
-          import_detail_id: importDetails[1]._id,
-        },
-      ]);
-      console.log("Seeded disposal items!");
-    }
+    // if (goods.length > 0 && importBatches.length > 0 && importDetails.length > 0) {
+    //   disposalItems = await db.DisposalItem.insertMany([
+    //     {
+    //       goods_id: goods[0]._id, // Coca Cola
+    //       product_name: goods[0].goods_name,
+    //       batch_number: "LOT001",
+    //       unit_of_measure: goods[0].unit_of_measure,
+    //       quantity_disposed: 5,
+    //       cost_price: 8500,
+    //       item_disposal_reason: "Bao bì bị hỏng trong quá trình vận chuyển",
+    //       item_images: [
+    //         "https://example.com/damaged_cola_1.jpg",
+    //         "https://example.com/damaged_cola_2.jpg"
+    //       ],
+    //       import_batch_number: importBatches[0]._id,
+    //       import_detail_id: importDetails[0]._id,
+    //     },
+    //     {
+    //       goods_id: goods[1]._id, // Snack Oishi
+    //       product_name: goods[1].goods_name,
+    //       batch_number: "LOT002",
+    //       unit_of_measure: goods[1].unit_of_measure,
+    //       quantity_disposed: 3,
+    //       cost_price: 9500,
+    //       item_disposal_reason: "Sản phẩm bị ẩm mốc",
+    //       item_images: [
+    //         "https://example.com/moldy_snack_1.jpg"
+    //       ],
+    //       import_batch_number: importBatches[1]._id,
+    //       import_detail_id: importDetails[1]._id,
+    //     },
+    //   ]);
+    //   console.log("Seeded disposal items!");
+    // }
 
     // Seed dữ liệu cho GoodsDisposal
     const goodsDisposalCount = await db.GoodsDisposal.countDocuments();

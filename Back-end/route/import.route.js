@@ -7,5 +7,5 @@ router.get("/", controller.importController.getAllPurchases);
 
 // Lấy chi tiết phiếu nhập
 router.get("/:id", controller.importController.getPurchaseDetails);
-
+router.put("/:id", controller.importController.updatePurchaseDetails);
 module.exports = router;

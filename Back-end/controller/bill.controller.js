@@ -2,10 +2,12 @@
 const {Bill} = require('../models');
 const { BillDetail } = require("../models");
 const { UserDetail } = require("../models");
+
 const { Status } = require("../models");
 const { Shift } = require("../models");
 const { Goods } = require("../models");
 const { Account } = require("../models");
+
 //Check bill status for Bank Transfer payment
 exports.isBillPaid = async (req, res) => {
     try {

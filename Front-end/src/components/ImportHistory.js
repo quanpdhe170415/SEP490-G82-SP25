@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Link } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify"; // Import Toastify
+import "react-toastify/dist/ReactToastify.css"; // Import Toastify styles
 import {
   Container,
   Row,
@@ -28,6 +30,7 @@ const ImportHistory = () => {
   const [purchaseDetails, setPurchaseDetails] = useState({});
   const [loading, setLoading] = useState(true);
   const [loadingDetails, setLoadingDetails] = useState({});
+  const [editableItems, setEditableItems] = useState({});
 
   // Fetch purchase orders from API
   useEffect(() => {
@@ -45,6 +48,7 @@ const ImportHistory = () => {
       }
     } catch (error) {
       console.error("Error fetching purchases:", error);
+      toast.error("Lỗi khi tải dữ liệu nhập hàng!"); // Show error toast
     } finally {
       setLoading(false);
     }
@@ -53,9 +57,7 @@ const ImportHistory = () => {
   const fetchPurchaseDetails = async (importId) => {
     try {
       setLoadingDetails((prev) => ({ ...prev, [importId]: true }));
-      const response = await fetch(
-        `http://localhost:9999/api/import/${importId}`
-      );
+      const response = await fetch(`http://localhost:9999/api/import/${importId}`);
       const result = await response.json();
 
       if (result.success) {
@@ -63,15 +65,98 @@ const ImportHistory = () => {
           ...prev,
           [importId]: result.data,
         }));
+        setEditableItems((prev) => ({
+          ...prev,
+          [importId]: result.data.map((item) => ({
+            _id: item._id,
+            expiry_date: item.expiry_date || "",
+            manufacturing_batch_number: item.manufacturing_batch_number || "",
+            manufacturing_date: item.manufacturing_date || "",
+          })),
+        }));
+      } else {
+        toast.error("Lỗi khi tải chi tiết đơn nhập!"); // Show error toast
       }
     } catch (error) {
       console.error("Error fetching purchase details:", error);
+      toast.error("Lỗi khi tải chi tiết đơn nhập!"); // Show error toast
     } finally {
       setLoadingDetails((prev) => ({ ...prev, [importId]: false }));
     }
   };
 
-  // Styles for the page
+  const handleItemChange = (importId, itemId, field, value) => {
+    setEditableItems((prev) => ({
+      ...prev,
+      [importId]: prev[importId].map((item) =>
+        item._id === itemId ? { ...item, [field]: value } : item
+      ),
+    }));
+  };
+
+  const savePurchaseDetails = async (importId) => {
+    try {
+      setLoadingDetails((prev) => ({ ...prev, [importId]: true }));
+      const response = await fetch(`http://localhost:9999/api/import/${importId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          items: editableItems[importId],
+          status: "received",
+        }),
+      });
+      const result = await response.json();
+
+      if (result.success) {
+        // Show success toast
+        toast.success("Cập nhật thông tin thành công!", {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+        });
+
+        // Update purchase status in purchaseData
+        setPurchaseData((prev) =>
+          prev.map((purchase) =>
+            purchase._id === importId
+              ? { ...purchase, status: "received" }
+              : purchase
+          )
+        );
+        // Update purchase details
+        setPurchaseDetails((prev) => ({
+          ...prev,
+          [importId]: prev[importId].map((item) => {
+            const updatedItem = editableItems[importId].find(
+              (editable) => editable._id === item._id
+            );
+            return {
+              ...item,
+              expiry_date: updatedItem.expiry_date,
+              manufacturing_batch_number: updatedItem.manufacturing_batch_number,
+              manufacturing_date: updatedItem.manufacturing_date,
+            };
+          }),
+        }));
+        setSelectedPurchaseId(null); // Close details after saving
+      } else {
+        console.error("Error saving purchase details:", result.message);
+        toast.error("Lỗi khi lưu chi tiết đơn nhập!"); // Show error toast
+      }
+    } catch (error) {
+      console.error("Error saving purchase details:", error);
+      toast.error("Lỗi khi lưu chi tiết đơn nhập!"); // Show error toast
+    } finally {
+      setLoadingDetails((prev) => ({ ...prev, [importId]: false }));
+    }
+  };
+
+  // Styles for the page (unchanged)
   const pageStyles = {
     purchaseHistoryPage: {
       fontFamily: "Inter, sans-serif",
@@ -96,40 +181,51 @@ const ImportHistory = () => {
       position: "sticky",
       top: "20px",
       height: "fit-content",
-      width: "280px",
+      width: "240px",
       flexShrink: 0,
     },
     searchPanelBody: {
-      padding: "1.5rem",
+      padding: "1.2rem",
     },
     searchTitle: {
       color: "#0070f4",
       fontWeight: "600",
       marginBottom: "1.5rem",
-      fontSize: "1.25rem",
+      fontSize: "1.1rem",
     },
     formLabel: {
       fontWeight: "500",
       color: "#555",
-      marginBottom: "0.5rem",
+      marginBottom: "0.4rem",
+      fontSize: "0.9rem",
     },
     formControl: {
       border: "1px solid #ddd",
       borderRadius: "6px",
-      padding: "0.6rem 0.8rem",
+      padding: "0.4rem 0.6rem",
       transition: "border-color 0.2s ease",
       width: "100%",
-      marginBottom: "1rem",
+      marginBottom: "0.8rem",
+      fontSize: "0.85rem",
+    },
+    batchNumberInput: {
+      border: "1px solid #ddd",
+      borderRadius: "6px",
+      padding: "0.6rem 0.8rem",
+      fontSize: "0.9rem",
+      transition: "border-color 0.2s ease",
+      width: "100%",
+      marginBottom: "0.8rem",
     },
     contentArea: {
       background: "rgba(255, 255, 255, 0.95)",
       borderRadius: "12px",
-      padding: "2rem",
+      padding: "2.5rem",
       boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
       flex: 1,
     },
     pageTitle: {
-      fontSize: "2rem",
+      fontSize: "2.25rem",
       fontWeight: "600",
       color: "#0070f4",
       marginBottom: "2rem",
@@ -145,16 +241,35 @@ const ImportHistory = () => {
       background: "#0070f4",
       color: "white",
       fontWeight: "600",
-      padding: "1rem",
+      padding: "0.8rem",
       border: "none",
       textTransform: "uppercase",
       fontSize: "0.8rem",
-      letterSpacing: "0.5px",
+      letterSpacing: "0.4px",
+    },
+    tableHeaderSmall: {
+      background: "#0070f4",
+      color: "white",
+      fontWeight: "600",
+      padding: "0.8rem 0.4rem",
+      border: "none",
+      textTransform: "uppercase",
+      fontSize: "0.8rem",
+      letterSpacing: "0.4px",
+      width: "80px",
     },
     tableCell: {
-      padding: "1rem",
+      padding: "0.8rem",
       borderBottom: "1px solid #f0f0f0",
       transition: "background-color 0.2s ease",
+      fontSize: "0.85rem",
+    },
+    tableCellSmall: {
+      padding: "0.6rem 0.4rem",
+      borderBottom: "1px solid #f0f0f0",
+      transition: "background-color 0.2s ease",
+      fontSize: "0.85rem",
+      width: "80px",
     },
     purchaseDetails: {
       background: "#f8f9fa",
@@ -221,6 +336,17 @@ const ImportHistory = () => {
       display: "inline-block",
       marginTop: "1rem",
     },
+    btnSave: {
+      background: "#28a745",
+      border: "none",
+      padding: "0.6rem 1.2rem",
+      borderRadius: "6px",
+      fontWeight: "500",
+      color: "white",
+      textDecoration: "none",
+      display: "inline-block",
+      marginTop: "1rem",
+    },
     loadingText: {
       textAlign: "center",
       color: "#666",
@@ -229,12 +355,11 @@ const ImportHistory = () => {
     },
   };
 
-  // Helper function to format date
+  // Helper function to format date (only date, no time)
   const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
     const date = new Date(dateString);
-    return (
-      date.toLocaleDateString("vi-VN") + " " + date.toLocaleTimeString("vi-VN")
-    );
+    return date.toLocaleDateString("vi-VN");
   };
 
   // Filter purchases based on selected filters
@@ -316,6 +441,7 @@ const ImportHistory = () => {
         <Container fluid style={pageStyles.mainContent}>
           <div style={pageStyles.loadingText}>Đang tải dữ liệu...</div>
         </Container>
+        <ToastContainer />
       </div>
     );
   }
@@ -323,7 +449,6 @@ const ImportHistory = () => {
   return (
     <div style={pageStyles.purchaseHistoryPage}>
       <Header />
-
       <Container fluid style={pageStyles.mainContent}>
         <div style={pageStyles.pageRow}>
           {/* Sidebar */}
@@ -342,7 +467,7 @@ const ImportHistory = () => {
               <div style={{ marginBottom: "1rem" }}>
                 <label style={pageStyles.formLabel}>Thời gian từ</label>
                 <input
-                  type="datetime-local"
+                  type="date"
                   style={pageStyles.formControl}
                   value={fromDate}
                   onChange={(e) => setFromDate(e.target.value)}
@@ -352,7 +477,7 @@ const ImportHistory = () => {
               <div style={{ marginBottom: "1rem" }}>
                 <label style={pageStyles.formLabel}>Đến</label>
                 <input
-                  type="datetime-local"
+                  type="date"
                   style={pageStyles.formControl}
                   value={toDate}
                   onChange={(e) => setToDate(e.target.value)}
@@ -459,7 +584,6 @@ const ImportHistory = () => {
                               >
                                 Chi tiết đơn nhập
                               </h5>
-
                               <div style={pageStyles.purchaseInfo}>
                                 <div style={pageStyles.infoItem}>
                                   <span style={pageStyles.infoLabel}>
@@ -494,7 +618,6 @@ const ImportHistory = () => {
                                   </span>
                                 </div>
                               </div>
-
                               {/* Items Table */}
                               {loadingDetails[purchase._id] ? (
                                 <div style={pageStyles.loadingText}>
@@ -517,68 +640,28 @@ const ImportHistory = () => {
                                   >
                                     <thead>
                                       <tr>
-                                        <th
-                                          style={{
-                                            ...pageStyles.tableHeader,
-                                            background: "#0070f4",
-                                          }}
-                                        >
+                                        <th style={pageStyles.tableHeader}>
                                           Mã hàng
                                         </th>
-                                        <th
-                                          style={{
-                                            ...pageStyles.tableHeader,
-                                            background: "#0070f4",
-                                          }}
-                                        >
+                                        <th style={pageStyles.tableHeader}>
                                           Tên hàng
                                         </th>
-                                        <th
-                                          style={{
-                                            ...pageStyles.tableHeader,
-                                            background: "#0070f4",
-                                          }}
-                                        >
+                                        <th style={pageStyles.tableHeader}>
                                           Số lượng
                                         </th>
-                                        <th
-                                          style={{
-                                            ...pageStyles.tableHeader,
-                                            background: "#0070f4",
-                                          }}
-                                        >
+                                        <th style={pageStyles.tableHeader}>
                                           Đơn giá
                                         </th>
-                                        <th
-                                          style={{
-                                            ...pageStyles.tableHeader,
-                                            background: "#0070f4",
-                                          }}
-                                        >
+                                        <th style={pageStyles.tableHeader}>
                                           Thành tiền
                                         </th>
-                                        <th
-                                          style={{
-                                            ...pageStyles.tableHeader,
-                                            background: "#0070f4",
-                                          }}
-                                        >
+                                        <th style={pageStyles.tableHeaderSmall}>
                                           Hạn sử dụng
                                         </th>
-                                        <th
-                                          style={{
-                                            ...pageStyles.tableHeader,
-                                            background: "#0070f4",
-                                          }}
-                                        >
+                                        <th style={pageStyles.tableHeader}>
                                           Số lô sản xuất
                                         </th>
-                                        <th
-                                          style={{
-                                            ...pageStyles.tableHeader,
-                                            background: "#0070f4",
-                                          }}
-                                        >
+                                        <th style={pageStyles.tableHeaderSmall}>
                                           Ngày sản xuất
                                         </th>
                                       </tr>
@@ -639,13 +722,32 @@ const ImportHistory = () => {
                                             </td>
                                             <td
                                               style={{
-                                                ...pageStyles.tableCell,
-                                                padding: "0.75rem",
+                                                ...pageStyles.tableCellSmall,
                                               }}
                                             >
-                                              {item.expiry_date
-                                                ? formatDate(item.expiry_date)
-                                                : "N/A"}
+                                              {purchase.status === "pending" ? (
+                                                <input
+                                                  type="date"
+                                                  style={pageStyles.formControl}
+                                                  value={
+                                                    editableItems[
+                                                      purchase._id
+                                                    ]?.find(
+                                                      (i) => i._id === item._id
+                                                    )?.expiry_date || ""
+                                                  }
+                                                  onChange={(e) =>
+                                                    handleItemChange(
+                                                      purchase._id,
+                                                      item._id,
+                                                      "expiry_date",
+                                                      e.target.value
+                                                    )
+                                                  }
+                                                />
+                                              ) : (
+                                                formatDate(item.expiry_date)
+                                              )}
                                             </td>
                                             <td
                                               style={{
@@ -653,20 +755,65 @@ const ImportHistory = () => {
                                                 padding: "0.75rem",
                                               }}
                                             >
-                                              {item.manufacturing_batch_number ||
-                                                "N/A"}
+                                              {purchase.status === "pending" ? (
+                                                <input
+                                                  type="text"
+                                                  style={
+                                                    pageStyles.batchNumberInput
+                                                  }
+                                                  value={
+                                                    editableItems[
+                                                      purchase._id
+                                                    ]?.find(
+                                                      (i) => i._id === item._id
+                                                    )
+                                                      ?.manufacturing_batch_number ||
+                                                    ""
+                                                  }
+                                                  onChange={(e) =>
+                                                    handleItemChange(
+                                                      purchase._id,
+                                                      item._id,
+                                                      "manufacturing_batch_number",
+                                                      e.target.value
+                                                    )
+                                                  }
+                                                />
+                                              ) : (
+                                                item.manufacturing_batch_number ||
+                                                "N/A"
+                                              )}
                                             </td>
-                                            <td
+                                           <td
                                               style={{
-                                                ...pageStyles.tableCell,
-                                                padding: "0.75rem",
+                                                ...pageStyles.tableCellSmall,
                                               }}
                                             >
-                                              {item.manufacturing_date
-                                                ? formatDate(
-                                                    item.manufacturing_date
-                                                  )
-                                                : "N/A"}
+                                              {purchase.status === "pending" ? (
+                                                <input
+                                                  type="date"
+                                                  style={pageStyles.formControl}
+                                                  value={
+                                                    editableItems[
+                                                      purchase._id
+                                                    ]?.find(
+                                                      (i) => i._id === item._id
+                                                    )?.manufacturing_date || ""
+                                                  }
+                                                  onChange={(e) =>
+                                                    handleItemChange(
+                                                      purchase._id,
+                                                      item._id,
+                                                      "manufacturing_date",
+                                                      e.target.value
+                                                    )
+                                                  }
+                                                />
+                                              ) : (
+                                                formatDate(
+                                                  item.manufacturing_date
+                                                )
+                                              )}
                                             </td>
                                           </tr>
                                         )
@@ -675,7 +822,6 @@ const ImportHistory = () => {
                                   </table>
                                 </div>
                               ) : null}
-
                               {/* Total Summary */}
                               {purchaseDetails[purchase._id] && (
                                 <div style={pageStyles.totalSummary}>
@@ -697,14 +843,27 @@ const ImportHistory = () => {
                                   </div>
                                 </div>
                               )}
-
                               <div style={pageStyles.summaryButtonContainer}>
-                                <Link
-                                  to="/return-purchase"
-                                  style={pageStyles.btnReturn}
-                                >
-                                  Trả hàng nhập
-                                </Link>
+                                {purchase.status === "pending" ? (
+                                  <button
+                                    style={pageStyles.btnSave}
+                                    onClick={() =>
+                                      savePurchaseDetails(purchase._id)
+                                    }
+                                    disabled={loadingDetails[purchase._id]}
+                                  >
+                                    {loadingDetails[purchase._id]
+                                      ? "Đang lưu..."
+                                      : "Lưu hóa đơn"}
+                                  </button>
+                                ) : (
+                                  <Link
+                                    to="/return-purchase"
+                                    style={pageStyles.btnReturn}
+                                  >
+                                    Trả hàng nhập
+                                  </Link>
+                                )}
                               </div>
                             </div>
                           </td>
@@ -718,6 +877,7 @@ const ImportHistory = () => {
           </div>
         </div>
       </Container>
+      <ToastContainer /> {/* Add ToastContainer to render toasts */}
     </div>
   );
 };

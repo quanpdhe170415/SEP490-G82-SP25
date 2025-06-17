@@ -426,320 +426,426 @@ const BillHistory = () => {
             </div>
           </div>
 
-          {/* Main Content Area */}
-          <div style={pageStyles.contentArea}>
-            <h2 style={pageStyles.pageTitle}>Lịch sử hóa đơn</h2>
 
-            {/* Bill Table */}
-            <div style={pageStyles.billTableWrapper}>
-              <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                <thead>
-                  <tr>
-                    <th style={pageStyles.tableHeader}>Mã hóa đơn</th>
-                    <th style={pageStyles.tableHeader}>Thời gian</th>
-                    <th style={pageStyles.tableHeader}>Người bán</th>
-                    <th style={pageStyles.tableHeader}>Tổng tiền</th>
-                    <th style={pageStyles.tableHeader}>Thanh toán</th>
-                    <th style={pageStyles.tableHeader}>Phương thức</th>
-                    <th style={pageStyles.tableHeader}>Trạng thái</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredBills.map((bill) => (
-                    <React.Fragment key={bill._id}>
-                      <tr
-                        onClick={() => toggleBillDetails(bill._id)}
-                        style={{
-                          cursor: "pointer",
-                          backgroundColor:
-                            selectedBillId === bill._id
-                              ? "#e8f5e8"
-                              : "transparent",
-                        }}
-                        onMouseEnter={(e) => {
-                          if (selectedBillId !== bill._id) {
-                            e.currentTarget.style.backgroundColor = "#f8f9fa";
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          if (selectedBillId !== bill._id) {
-                            e.currentTarget.style.backgroundColor =
-                              "transparent";
-                          }
-                        }}
-                      >
-                        <td style={pageStyles.tableCell}>
-                          {bill.billNumber}
-                        </td>
-                        <td style={pageStyles.tableCell}>
-                          {formatDate(bill.createdAt)}
-                        </td>
-                        <td style={pageStyles.tableCell}>{bill.seller}</td>
-                        <td style={pageStyles.tableCell}>
-                          {bill.totalAmount.toLocaleString()} VND
-                        </td>
-                        <td style={pageStyles.tableCell}>
-                          {bill.finalAmount.toLocaleString()} VND
-                        </td>
-                        <td style={pageStyles.tableCell}>
-                          {bill.paymentMethod}
-                        </td>
-                        <td style={pageStyles.tableCell}>
-                          {/* You may need to map statusId to actual status name */}
-                          Hoàn thành
-                        </td>
-                      </tr>
-                      {selectedBillId === bill._id && (
-                        <tr>
-                          <td
-                            colSpan="7"
-                            style={{ padding: 0, border: "none" }}
-                          >
-                            <div style={pageStyles.billDetails}>
-                              <h5
-                                style={{
-                                  color: "#2e7d32",
-                                  fontWeight: "600",
-                                  marginBottom: "1.5rem",
-                                }}
-                              >
-                                Chi tiết hóa đơn
-                              </h5>
+    return (
+      <div style={pageStyles.billHistoryPage}>
+        <Header />
 
-                              <div style={pageStyles.billInfo}>
-                                <div style={pageStyles.infoItem}>
-                                  <span style={pageStyles.infoLabel}>
-                                    Mã hóa đơn:
-                                  </span>
-                                  <span style={pageStyles.infoValue}>
-                                    {bill.billNumber}
-                                  </span>
-                                </div>
-                                <div style={pageStyles.infoItem}>
-                                  <span style={pageStyles.infoLabel}>
-                                    Thời gian:
-                                  </span>
-                                  <span style={pageStyles.infoValue}>
-                                    {formatDate(bill.createdAt)}
-                                  </span>
-                                </div>
-                                <div style={pageStyles.infoItem}>
-                                  <span style={pageStyles.infoLabel}>
-                                    Người bán:
-                                  </span>
-                                  <span style={pageStyles.infoValue}>
-                                    {bill.seller}
-                                  </span>
-                                </div>
-                                <div style={pageStyles.infoItem}>
-                                  <span style={pageStyles.infoLabel}>
-                                    Phương thức:
-                                  </span>
-                                  <span style={pageStyles.infoValue}>
-                                    {bill.paymentMethod}
-                                  </span>
-                                </div>
-                                <div style={pageStyles.infoItem}>
-                                  <span style={pageStyles.infoLabel}>
-                                    Trạng thái:
-                                  </span>
-                                  <span style={pageStyles.infoValue}>
-                                    Hoàn thành
-                                  </span>
-                                </div>
-                              </div>
+        <Container fluid style={pageStyles.mainContent}>
+          <div style={pageStyles.pageRow}>
+            {/* Sidebar */}
+            <Sidebar
+              activeItem="bill-history"
+              isCollapsed={sidebarCollapsed}
+              onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+            />
 
-                              {/* Items Table */}
-                              {loadingDetails[bill._id] ? (
-                                <div style={pageStyles.loadingText}>
-                                  Đang tải chi tiết...
-                                </div>
-                              ) : billDetails[bill._id] ? (
-                                <div
-                                  style={{
-                                    background: "white",
-                                    borderRadius: "6px",
-                                    overflow: "hidden",
-                                    marginBottom: "1rem",
-                                  }}
-                                >
-                                  <table
-                                    style={{
-                                      width: "100%",
-                                      borderCollapse: "collapse",
-                                    }}
-                                  >
-                                    <thead>
-                                      <tr>
-                                        <th
-                                          style={{
-                                            ...pageStyles.tableHeader,
-                                            background: "#388e3c",
-                                          }}
-                                        >
-                                          Mã hàng
-                                        </th>
-                                        <th
-                                          style={{
-                                            ...pageStyles.tableHeader,
-                                            background: "#388e3c",
-                                          }}
-                                        >
-                                          Tên hàng
-                                        </th>
-                                        <th
-                                          style={{
-                                            ...pageStyles.tableHeader,
-                                            background: "#388e3c",
-                                          }}
-                                        >
-                                          Số lượng
-                                        </th>
-                                        <th
-                                          style={{
-                                            ...pageStyles.tableHeader,
-                                            background: "#388e3c",
-                                          }}
-                                        >
-                                          Đơn giá
-                                        </th>
-                                        <th
-                                          style={{
-                                            ...pageStyles.tableHeader,
-                                            background: "#388e3c",
-                                          }}
-                                        >
-                                          Thành tiền
-                                        </th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      {billDetails[bill._id].map(
-                                        (item, index) => (
-                                          <tr
-                                            key={item._id}
-                                            style={{
-                                              backgroundColor:
-                                                index % 2 === 1
-                                                  ? "#f8f9fa"
-                                                  : "white",
-                                            }}
-                                          >
-                                            <td
-                                              style={{
-                                                ...pageStyles.tableCell,
-                                                padding: "0.75rem",
-                                              }}
-                                            >
-                                              {item.goods_id.barcode || "N/A"}
-                                            </td>
-                                            <td
-                                              style={{
-                                                ...pageStyles.tableCell,
-                                                padding: "0.75rem",
-                                              }}
-                                            >
-                                              {item.goods_name}
-                                            </td>
-                                            <td
-                                              style={{
-                                                ...pageStyles.tableCell,
-                                                padding: "0.75rem",
-                                              }}
-                                            >
-                                              {item.quantity}
-                                            </td>
-                                            <td
-                                              style={{
-                                                ...pageStyles.tableCell,
-                                                padding: "0.75rem",
-                                              }}
-                                            >
-                                              {item.unit_price.toLocaleString()}{" "}
-                                              VND
-                                            </td>
-                                            <td
-                                              style={{
-                                                ...pageStyles.tableCell,
-                                                padding: "0.75rem",
-                                              }}
-                                            >
-                                              {item.total_amount.toLocaleString()}{" "}
-                                              VND
-                                            </td>
-                                          </tr>
-                                        )
-                                      )}
-                                    </tbody>
-                                  </table>
-                                </div>
-                              ) : null}
+            {/* Search Panel */}
+            <div style={pageStyles.searchPanel}>
+              <div style={pageStyles.searchPanelBody}>
+                <h5 style={pageStyles.searchTitle}>Tìm kiếm</h5>
 
-                              {/* Total Summary */}
-                              {billDetails[bill._id] && (
-                                <div style={pageStyles.totalSummary}>
-                                  <div style={pageStyles.summaryItem}>
-                                    <span>Tổng số lượng hàng:</span>
-                                    <span>
-                                      {billDetails[bill._id].reduce(
-                                        (acc, item) => acc + item.quantity,
-                                        0
-                                      )}
-                                    </span>
-                                  </div>
-                                  <div style={pageStyles.summaryItem}>
-                                    <span>Tổng số tiền:</span>
-                                    <span>
-                                      {bill.totalAmount.toLocaleString()} VND
-                                    </span>
-                                  </div>
-                                  <div style={pageStyles.summaryItem}>
-                                    <span>Số tiền khách cần trả:</span>
-                                    <span>
-                                      {bill.totalAmount.toLocaleString()} VND
-                                    </span>
-                                  </div>
-                                  <div
-                                    style={{
-                                      ...pageStyles.summaryItem,
-                                      fontWeight: "600",
-                                      fontSize: "1.1rem",
-                                      borderTop:
-                                        "1px solid rgba(255, 255, 255, 0.3)",
-                                      paddingTop: "0.5rem",
-                                      marginTop: "0.5rem",
-                                    }}
-                                  >
-                                    <span>Số tiền khách đã trả:</span>
-                                    <span>
-                                      {bill.finalAmount.toLocaleString()} VND
-                                    </span>
-                                  </div>
-                                </div>
-                              )}
+                {/* Time Range */}
+                <div style={{ marginBottom: "1rem" }}>
+                  <label style={pageStyles.formLabel}>Thời gian từ</label>
+                  <input
+                    type="datetime-local"
+                    style={pageStyles.formControl}
+                    value={fromDate}
+                    onChange={(e) => setFromDate(e.target.value)}
+                  />
+                </div>
 
-                              <div style={pageStyles.summaryButtonContainer}>
-                                <Link
-                                  to={`/return-goods?billId=${bill._id}`}
-                                  style={pageStyles.btnReturn}
-                                >
-                                  Trả hàng
-                                </Link>
-                              </div>
-                            </div>
+                <div style={{ marginBottom: "1rem" }}>
+                  <label style={pageStyles.formLabel}>Đến</label>
+                  <input
+                    type="datetime-local"
+                    style={pageStyles.formControl}
+                    value={toDate}
+                    onChange={(e) => setToDate(e.target.value)}
+                  />
+                </div>
+
+                {/* Status Filter */}
+                <div style={{ marginBottom: "1rem" }}>
+                  <label style={pageStyles.formLabel}>Trạng thái</label>
+                  <div>
+                    {[
+                      "pending",
+                      "confirmed",
+                      "processing",
+                      "completed",
+                      "cancelled",
+                      "refunded",
+                    ].map((status) => (
+                      <div key={status} style={{ marginBottom: "0.5rem" }}>
+                        <label
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "0.5rem",
+                            cursor: "pointer",
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={statusSearch[status]}
+                            onChange={() => handleStatusChange(status)}
+                          />
+                          <span>{getStatusLabel(status)}</span>
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Payment Method Filter */}
+                <div>
+                  <label style={pageStyles.formLabel}>
+                    Phương thức thanh toán
+                  </label>
+                  <div>
+                    {["cash", "transfer"].map((method) => (
+                      <div key={method} style={{ marginBottom: "0.5rem" }}>
+                        <label
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "0.5rem",
+                            cursor: "pointer",
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={paymentMethodSearch[method]}
+                            onChange={() => handlePaymentMethodChange(method)}
+                          />
+                          <span>
+                            {method === "cash" ? "Tiền mặt" : "Chuyển khoản"}
+                          </span>
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Main Content Area */}
+            <div style={pageStyles.contentArea}>
+              <h2 style={pageStyles.pageTitle}>Lịch sử hóa đơn</h2>
+
+              {/* Bill Table */}
+              <div style={pageStyles.billTableWrapper}>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr>
+                      <th style={pageStyles.tableHeader}>Mã hóa đơn</th>
+                      <th style={pageStyles.tableHeader}>Thời gian</th>
+                      <th style={pageStyles.tableHeader}>Người bán</th>
+                      <th style={pageStyles.tableHeader}>Tổng tiền</th>
+                      <th style={pageStyles.tableHeader}>Thanh toán</th>
+                      <th style={pageStyles.tableHeader}>Phương thức</th>
+                      <th style={pageStyles.tableHeader}>Trạng thái</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredBills.map((bill) => (
+                      <React.Fragment key={bill._id}>
+                        <tr
+                          onClick={() => toggleBillDetails(bill._id)}
+                          style={{
+                            cursor: "pointer",
+                            backgroundColor:
+                              selectedBillId === bill._id
+                                ? "#e8f5e8"
+                                : "transparent",
+                          }}
+                          onMouseEnter={(e) => {
+                            if (selectedBillId !== bill._id) {
+                              e.currentTarget.style.backgroundColor = "#f8f9fa";
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (selectedBillId !== bill._id) {
+                              e.currentTarget.style.backgroundColor =
+                                "transparent";
+                            }
+                          }}
+                        >
+                          <td style={pageStyles.tableCell}>
+                            {bill.billNumber}
+                          </td>
+                          <td style={pageStyles.tableCell}>
+                            {formatDate(bill.createdAt)}
+                          </td>
+                          <td style={pageStyles.tableCell}>{bill.seller}</td>
+                          <td style={pageStyles.tableCell}>
+                            {bill.totalAmount.toLocaleString()} VND
+                          </td>
+                          <td style={pageStyles.tableCell}>
+                            {bill.finalAmount.toLocaleString()} VND
+                          </td>
+                          <td style={pageStyles.tableCell}>
+                            {bill.paymentMethod}
+                          </td>
+                          <td style={pageStyles.tableCell}>
+                            {/* You may need to map statusId to actual status name */}
+                            Hoàn thành
                           </td>
                         </tr>
-                      )}
-                    </React.Fragment>
-                  ))}
-                </tbody>
-              </table>
+                        {selectedBillId === bill._id && (
+                          <tr>
+                            <td
+                              colSpan="7"
+                              style={{ padding: 0, border: "none" }}
+                            >
+                              <div style={pageStyles.billDetails}>
+                                <h5
+                                  style={{
+                                    color: "#2e7d32",
+                                    fontWeight: "600",
+                                    marginBottom: "1.5rem",
+                                  }}
+                                >
+                                  Chi tiết hóa đơn
+                                </h5>
+
+                                <div style={pageStyles.billInfo}>
+                                  <div style={pageStyles.infoItem}>
+                                    <span style={pageStyles.infoLabel}>
+                                      Mã hóa đơn:
+                                    </span>
+                                    <span style={pageStyles.infoValue}>
+                                      {bill.billNumber}
+                                    </span>
+                                  </div>
+                                  <div style={pageStyles.infoItem}>
+                                    <span style={pageStyles.infoLabel}>
+                                      Thời gian:
+                                    </span>
+                                    <span style={pageStyles.infoValue}>
+                                      {formatDate(bill.createdAt)}
+                                    </span>
+                                  </div>
+                                  <div style={pageStyles.infoItem}>
+                                    <span style={pageStyles.infoLabel}>
+                                      Người bán:
+                                    </span>
+                                    <span style={pageStyles.infoValue}>
+                                      {bill.seller}
+                                    </span>
+                                  </div>
+                                  <div style={pageStyles.infoItem}>
+                                    <span style={pageStyles.infoLabel}>
+                                      Phương thức:
+                                    </span>
+                                    <span style={pageStyles.infoValue}>
+                                      {bill.paymentMethod}
+                                    </span>
+                                  </div>
+                                  <div style={pageStyles.infoItem}>
+                                    <span style={pageStyles.infoLabel}>
+                                      Trạng thái:
+                                    </span>
+                                    <span style={pageStyles.infoValue}>
+                                      Hoàn thành
+                                    </span>
+                                  </div>
+                                </div>
+
+                                {/* Items Table */}
+                                {loadingDetails[bill._id] ? (
+                                  <div style={pageStyles.loadingText}>
+                                    Đang tải chi tiết...
+                                  </div>
+                                ) : billDetails[bill._id] ? (
+                                  <div
+                                    style={{
+                                      background: "white",
+                                      borderRadius: "6px",
+                                      overflow: "hidden",
+                                      marginBottom: "1rem",
+                                    }}
+                                  >
+                                    <table
+                                      style={{
+                                        width: "100%",
+                                        borderCollapse: "collapse",
+                                      }}
+                                    >
+                                      <thead>
+                                        <tr>
+                                          <th
+                                            style={{
+                                              ...pageStyles.tableHeader,
+                                              background: "#388e3c",
+                                            }}
+                                          >
+                                            Mã hàng
+                                          </th>
+                                          <th
+                                            style={{
+                                              ...pageStyles.tableHeader,
+                                              background: "#388e3c",
+                                            }}
+                                          >
+                                            Tên hàng
+                                          </th>
+                                          <th
+                                            style={{
+                                              ...pageStyles.tableHeader,
+                                              background: "#388e3c",
+                                            }}
+                                          >
+                                            Số lượng
+                                          </th>
+                                          <th
+                                            style={{
+                                              ...pageStyles.tableHeader,
+                                              background: "#388e3c",
+                                            }}
+                                          >
+                                            Đơn giá
+                                          </th>
+                                          <th
+                                            style={{
+                                              ...pageStyles.tableHeader,
+                                              background: "#388e3c",
+                                            }}
+                                          >
+                                            Thành tiền
+                                          </th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        {billDetails[bill._id].map(
+                                          (item, index) => (
+                                            <tr
+                                              key={item._id}
+                                              style={{
+                                                backgroundColor:
+                                                  index % 2 === 1
+                                                    ? "#f8f9fa"
+                                                    : "white",
+                                              }}
+                                            >
+                                              <td
+                                                style={{
+                                                  ...pageStyles.tableCell,
+                                                  padding: "0.75rem",
+                                                }}
+                                              >
+                                                {item.goods_id.barcode || "N/A"}
+                                              </td>
+                                              <td
+                                                style={{
+                                                  ...pageStyles.tableCell,
+                                                  padding: "0.75rem",
+                                                }}
+                                              >
+                                                {item.goods_name}
+                                              </td>
+                                              <td
+                                                style={{
+                                                  ...pageStyles.tableCell,
+                                                  padding: "0.75rem",
+                                                }}
+                                              >
+                                                {item.quantity}
+                                              </td>
+                                              <td
+                                                style={{
+                                                  ...pageStyles.tableCell,
+                                                  padding: "0.75rem",
+                                                }}
+                                              >
+                                                {item.unit_price.toLocaleString()}{" "}
+                                                VND
+                                              </td>
+                                              <td
+                                                style={{
+                                                  ...pageStyles.tableCell,
+                                                  padding: "0.75rem",
+                                                }}
+                                              >
+                                                {item.total_amount.toLocaleString()}{" "}
+                                                VND
+                                              </td>
+                                            </tr>
+                                          )
+                                        )}
+                                      </tbody>
+                                    </table>
+                                  </div>
+                                ) : null}
+
+                                {/* Total Summary */}
+                                {billDetails[bill._id] && (
+                                  <div style={pageStyles.totalSummary}>
+                                    <div style={pageStyles.summaryItem}>
+                                      <span>Tổng số lượng hàng:</span>
+                                      <span>
+                                        {billDetails[bill._id].reduce(
+                                          (acc, item) => acc + item.quantity,
+                                          0
+                                        )}
+                                      </span>
+                                    </div>
+                                    <div style={pageStyles.summaryItem}>
+                                      <span>Tổng số tiền:</span>
+                                      <span>
+                                        {bill.totalAmount.toLocaleString()} VND
+                                      </span>
+                                    </div>
+                                    <div style={pageStyles.summaryItem}>
+                                      <span>Số tiền khách cần trả:</span>
+                                      <span>
+                                        {bill.totalAmount.toLocaleString()} VND
+                                      </span>
+                                    </div>
+                                    <div
+                                      style={{
+                                        ...pageStyles.summaryItem,
+                                        fontWeight: "600",
+                                        fontSize: "1.1rem",
+                                        borderTop:
+                                          "1px solid rgba(255, 255, 255, 0.3)",
+                                        paddingTop: "0.5rem",
+                                        marginTop: "0.5rem",
+                                      }}
+                                    >
+                                      <span>Số tiền khách đã trả:</span>
+                                      <span>
+                                        {bill.finalAmount.toLocaleString()} VND
+                                      </span>
+                                    </div>
+                                  </div>
+                                )}
+
+                                <div style={pageStyles.summaryButtonContainer}>
+                                  <Link
+                                    to="/return-goods"
+                                    style={pageStyles.btnReturn}
+                                  >
+                                    Trả hàng
+                                  </Link>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
-        </div>
-      </Container>
-    </div>
-  );
+        </Container>
+      </div>
+    );
+
 };
 
 export default BillHistory;
