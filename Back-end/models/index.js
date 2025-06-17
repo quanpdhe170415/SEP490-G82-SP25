@@ -40,7 +40,7 @@ const db = {
   ReturnOrder,
   ReturnDetail,
   GoodsDisposal,
-  DisposalItem
+  DisposalItem,
   UserDetail,
   Session,
   ShiftType

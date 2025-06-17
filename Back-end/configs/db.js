@@ -260,49 +260,6 @@ const connectDB = async () => {
     }
 
 
-    // Seed dữ liệu cho Account nếu chưa có (cho trường imported_by)
-    const accountCount = await db.Account.countDocuments();
-    let accounts = [];
-    if (accountCount === 0) {
-      accounts = await db.Account.insertMany([
-        {
-          username: "admin1",
-          password: "hashed_password_1", // Thay bằng mật khẩu đã mã hóa trong thực tế
-          full_name: "Nguyễn Văn A",
-          email: "admin1@example.com",
-          phone: "0901234567",
-          is_active: true,
-        },
-        {
-          username: "admin2",
-          password: "hashed_password_2", // Thay bằng mật khẩu đã mã hóa trong thực tế
-          full_name: "Trần Thị B",
-          email: "admin2@example.com",
-          phone: "0912345678",
-          is_active: true,
-        },
-        {
-          username: "manager1",
-          password: "hashed_password_3",
-          full_name: "Lê Văn C",
-          email: "manager1@example.com",
-          phone: "0923456789",
-          is_active: true,
-        },
-        {
-          username: "staff1",
-          password: "hashed_password_4",
-          full_name: "Phạm Thị D",
-          email: "staff1@example.com",
-          phone: "0934567890",
-          is_active: true,
-        },
-      ]);
-      console.log("Seeded accounts!");
-    } else {
-      accounts = await db.Account.find();
-    }
-
     // Seed dữ liệu cho ImportBatch
     let importBatches = [];
     const importBatchCount = await db.ImportBatch.countDocuments();
