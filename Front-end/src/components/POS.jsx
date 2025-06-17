@@ -295,7 +295,7 @@ export default function POS() {
   return (
     <div className="min-vh-100 bg-light d-flex flex-row" style={{ fontFamily: 'Arial', position: 'relative' }}>
       {/* Sidebar */}
-      <div className="bg-white border-end p-3 d-flex flex-column" style={{ width: 180 }}>
+      {/* <div className="bg-white border-end p-3 d-flex flex-column" style={{ width: 180 }}>
         <div className="mb-4 text-center">
           <img src="https://via.placeholder.com/40" alt="logo" className="mb-2" />
           <div className="fw-bold">Tạp hóa Hải Chi</div>
@@ -328,7 +328,7 @@ export default function POS() {
         <div className="mt-auto text-center">
           <img src="https://via.placeholder.com/32" alt="avatar" className="rounded-circle" />
         </div>
-      </div>
+      </div> */}
       {/* Main POS */}
       <div className="flex-grow-1 p-0" style={{ paddingBottom: 90 }}>
         {/* Header POS mới */}
