@@ -20,6 +20,7 @@ import OpenShift from './components/OpenShift';
 import CloseShift from './components/CloseShift';
 import POS from './components/POS';
 import CashierSidebar from './components/CashierSidebar';
+import CreateGoodDisposal from './components/Create-Good-Disposal';
 
 
 
@@ -47,7 +48,7 @@ function App() {
         <Route path="/import-history" element={<ImportHistory />} />
 
         <Route path="/cashier/*" element={<CashierSidebar />} />
-        
+        <Route path="/create-disposal" element={<CreateGoodDisposal />} />
 
       </Routes>
     </Router>
