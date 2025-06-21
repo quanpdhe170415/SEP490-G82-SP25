@@ -50,7 +50,8 @@ const shiftSchema = new mongoose.Schema({
   notes: {
     type: String,
     default: null,
-  }
+  },
+  isHandoverConfirmed: { type: Boolean, default: false }
 },{timestamps: true});
 
 const Shift = mongoose.model('Shift', shiftSchema);

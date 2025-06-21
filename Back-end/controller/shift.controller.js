@@ -4,6 +4,77 @@ const Account = require('../models/account');
 const { generateShiftReportExcel } = require('./util');
 const Bill = require('../models/bill');
 
+exports.handoverShift = async (req, res) => {
+  try {
+    const { previous_shift_id, new_shift_id, previous_account_id, confirmation, handed_over_amount } = req.body;
+
+    // Validate input
+    if (!previous_shift_id || !new_shift_id || !handed_over_amount) {
+      return res.status(400).json({ message: 'previous_shift_id, new_shift_id, and handed_over_amount are required' });
+    }
+
+    // Find previous and new shifts
+    const previousShift = await Shift.findById(previous_shift_id);
+    const newShift = await Shift.findById(new_shift_id);
+    if (!previousShift || !newShift) {
+      return res.status(404).json({ message: 'One or both shifts not found' });
+    }
+    if (previousShift.status !== 'closed' || newShift.status !== 'open') {
+      return res.status(400).json({ message: 'Previous shift must be closed and new shift must be open' });
+    }
+
+    let updatedNotes = newShift.notes || '';
+    let handoverNotes = '';
+
+    // Hiển thị và so sánh số tiền ca trước
+    const prevFinalCash = previousShift.final_cash_amount || 0; // Cho phép 0
+    if (prevFinalCash !== handed_over_amount) {
+      const diffText = prevFinalCash > handed_over_amount ? `Thiếu ${prevFinalCash - handed_over_amount} VND` : `Số dư ${handed_over_amount - prevFinalCash} VND`;
+      handoverNotes = ` | Bàn giao: Số tiền cuối ca trước (${prevFinalCash} VND) ${diffText} so với số tiền bàn giao (${handed_over_amount} VND).`;
+      
+      // Kiểm tra xác nhận
+      if (!confirmation || !Array.isArray(confirmation) || confirmation.length < 2) {
+        updatedNotes += `${handoverNotes} | Cảnh báo: Chưa có xác nhận đầy đủ từ 2 nhân viên. Yêu cầu đối soát với quản lý.`;
+      } else {
+        const [prevAccountId, newAccountId] = confirmation;
+        if (prevAccountId !== previous_account_id || newAccountId !== newShift.account_id.toString()) {
+          updatedNotes += `${handoverNotes} | Cảnh báo: Xác nhận không khớp với nhân viên ca trước và ca mới.`;
+        } else {
+          updatedNotes += `${handoverNotes} | Xác nhận bàn giao từ ${prevAccountId} và ${newAccountId} hợp lệ.`;
+          newShift.isHandoverConfirmed = true; // Xác nhận thành công
+        }
+      }
+    } else {
+      handoverNotes = ` | Bàn giao: Số tiền cuối ca trước (${prevFinalCash} VND) khớp với số tiền bàn giao (${handed_over_amount} VND).`;
+      if (confirmation && Array.isArray(confirmation) && confirmation.length === 2) {
+        const [prevAccountId, newAccountId] = confirmation;
+        if (prevAccountId !== previous_account_id || newAccountId !== newShift.account_id.toString()) {
+          updatedNotes += `${handoverNotes} | Cảnh báo: Xác nhận không khớp với nhân viên ca trước và ca mới.`;
+        } else {
+          updatedNotes += `${handoverNotes} | Xác nhận bàn giao từ ${prevAccountId} và ${newAccountId} hợp lệ.`;
+          newShift.isHandoverConfirmed = true; // Xác nhận thành công
+        }
+      } else {
+        updatedNotes += `${handoverNotes} | Cảnh báo: Chưa có xác nhận đầy đủ từ 2 nhân viên. Yêu cầu đối soát với quản lý.`;
+      }
+    }
+
+    // Cập nhật notes và trạng thái xác nhận
+    newShift.notes = updatedNotes;
+    await newShift.save();
+
+    res.status(200).json({
+      message: 'Handover processed successfully',
+      previousFinalCash: prevFinalCash, // Hiển thị số tiền ca trước
+      handedOverAmount: handed_over_amount,
+      shiftId: new_shift_id,
+      notes: updatedNotes,
+      isHandoverConfirmed: newShift.isHandoverConfirmed,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error processing handover', error: error.message });
+  }
+};
 exports.openShift = async (req, res) => {
   try {
     const { account_id, initial_cash_amount, notes, denominations } = req.body;
@@ -22,20 +93,8 @@ exports.openShift = async (req, res) => {
     let cashDifference = initial_cash_amount - totalFromDenominations;
     let updatedNotes = notes || '';
     if (cashDifference !== 0) {
-      const differenceText = cashDifference > 0 ? `Thiếu ${cashDifference} VND`: `Số dư ${Math.abs(cashDifference)} VND`;
-updatedNotes += ` | Cảnh báo: ${differenceText} so với số tiền mặt ban đầu (${initial_cash_amount} VND). Tổng số mệnh giá: ${totalFromDenominations} VND.`;
-    }
-
-    // Find the previous shift (latest closed shift)
-    const previousShift = await Shift.findOne({ status: 'closed' }).sort({ shift_end_time: -1 });
-
-    if (previousShift && previousShift.final_cash_amount) {
-      const prevCashDifference = previousShift.final_cash_amount - initial_cash_amount;
-      if (prevCashDifference > 0) {
-        updatedNotes += ` |Cảnh báo: Số tiền mặt ban đầu (${initial_cash_amount} VND) ít hơn số tiền cuối cùng của ca trước (${previousShift.final_cash_amount} VND) là ${prevCashDifference} VND.`;
-      } else if (prevCashDifference < 0) {
-        updatedNotes += ` | Lưu ý: Số dư ${Math.abs(prevCashDifference)} VND so với số tiền cuối cùng của ca trước (${previousShift.final_cash_amount} VND).`;
-      }
+      const differenceText = cashDifference > 0 ? `Thiếu ${cashDifference} VND` : `Số dư ${Math.abs(cashDifference)} VND`;
+      updatedNotes += ` | Cảnh báo: ${differenceText} so với số tiền mặt ban đầu (${initial_cash_amount} VND). Tổng số mệnh giá: ${totalFromDenominations} VND.`;
     }
 
     // Create new Shift
@@ -45,6 +104,7 @@ updatedNotes += ` | Cảnh báo: ${differenceText} so với số tiền mặt ba
       initial_cash_amount,
       status: 'open',
       notes: updatedNotes,
+      isHandoverConfirmed: false, // Mặc định chưa xác nhận bàn giao
     });
     await shift.save();
 
@@ -66,10 +126,11 @@ updatedNotes += ` | Cảnh báo: ${differenceText} so với số tiền mặt ba
         year: '2-digit',
         hour: '2-digit',
         minute: '2-digit',
-        hour12: false, // Sử dụng giờ 24h
+        hour12: false,
       }).replace(/(\d+)\/(\d+)\/(\d+),/, '$2/$1/$3,'),
       notes: shift.notes,
       status: shift.status,
+      shiftId: shift._id,
     };
 
     res.status(201).json(response);
