@@ -9,7 +9,7 @@ const userDetailSchema = new mongoose.Schema({
   },
   full_name: {
     type: String,
-    required: true,
+    required: false,
     trim: true
   },
   gender: {
