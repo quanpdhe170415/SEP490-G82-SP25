@@ -6,6 +6,7 @@ const productRouter = require('./product.route');
 const shiftRouter = require('./shift.route');
 const paymentRouter = require('./pay.route');
 const returnOrderRoute = require("./returnorder.route");
+
 const goodsDisposalRoute = require('./goodsDisposal.route');
 const goodsRoute = require("./goods.route");
 const exportRoute = require("./export.route");

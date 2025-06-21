@@ -81,12 +81,89 @@ exports.checkTodayShift = async (req, res) => {
   }
 };
 
+
+exports.handoverShift = async (req, res) => {
+  try {
+    const { previous_shift_id, new_shift_id, previous_account_id, confirmation, handed_over_amount } = req.body;
+
+    // Validate input
+    if (!previous_shift_id || !new_shift_id || !handed_over_amount) {
+      return res.status(400).json({ message: 'previous_shift_id, new_shift_id, and handed_over_amount are required' });
+    }
+
+    // Find previous and new shifts
+    const previousShift = await Shift.findById(previous_shift_id);
+    const newShift = await Shift.findById(new_shift_id);
+    if (!previousShift || !newShift) {
+      return res.status(404).json({ message: 'One or both shifts not found' });
+    }
+    if (previousShift.status !== 'closed' || newShift.status !== 'open') {
+      return res.status(400).json({ message: 'Previous shift must be closed and new shift must be open' });
+    }
+
+    let updatedNotes = newShift.notes || '';
+    let handoverNotes = '';
+
+    // Hiển thị và so sánh số tiền ca trước
+    const prevFinalCash = previousShift.final_cash_amount || 0; // Cho phép 0
+    if (prevFinalCash !== handed_over_amount) {
+      const diffText = prevFinalCash > handed_over_amount ? `Thiếu ${prevFinalCash - handed_over_amount} VND` : `Số dư ${handed_over_amount - prevFinalCash} VND`;
+      handoverNotes = ` | Bàn giao: Số tiền cuối ca trước (${prevFinalCash} VND) ${diffText} so với số tiền bàn giao (${handed_over_amount} VND).`;
+      
+      // Kiểm tra xác nhận
+      if (!confirmation || !Array.isArray(confirmation) || confirmation.length < 2) {
+        updatedNotes += `${handoverNotes} | Cảnh báo: Chưa có xác nhận đầy đủ từ 2 nhân viên. Yêu cầu đối soát với quản lý.`;
+      } else {
+        const [prevAccountId, newAccountId] = confirmation;
+        if (prevAccountId !== previous_account_id || newAccountId !== newShift.account_id.toString()) {
+          updatedNotes += `${handoverNotes} | Cảnh báo: Xác nhận không khớp với nhân viên ca trước và ca mới.`;
+        } else {
+          updatedNotes += `${handoverNotes} | Xác nhận bàn giao từ ${prevAccountId} và ${newAccountId} hợp lệ.`;
+          newShift.isHandoverConfirmed = true; // Xác nhận thành công
+        }
+      }
+    } else {
+      handoverNotes = ` | Bàn giao: Số tiền cuối ca trước (${prevFinalCash} VND) khớp với số tiền bàn giao (${handed_over_amount} VND).`;
+      if (confirmation && Array.isArray(confirmation) && confirmation.length === 2) {
+        const [prevAccountId, newAccountId] = confirmation;
+        if (prevAccountId !== previous_account_id || newAccountId !== newShift.account_id.toString()) {
+          updatedNotes += `${handoverNotes} | Cảnh báo: Xác nhận không khớp với nhân viên ca trước và ca mới.`;
+        } else {
+          updatedNotes += `${handoverNotes} | Xác nhận bàn giao từ ${prevAccountId} và ${newAccountId} hợp lệ.`;
+          newShift.isHandoverConfirmed = true; // Xác nhận thành công
+        }
+      } else {
+        updatedNotes += `${handoverNotes} | Cảnh báo: Chưa có xác nhận đầy đủ từ 2 nhân viên. Yêu cầu đối soát với quản lý.`;
+      }
+    }
+
+    // Cập nhật notes và trạng thái xác nhận
+    newShift.notes = updatedNotes;
+    await newShift.save();
+
+    res.status(200).json({
+      message: 'Handover processed successfully',
+      previousFinalCash: prevFinalCash, // Hiển thị số tiền ca trước
+      handedOverAmount: handed_over_amount,
+      shiftId: new_shift_id,
+      notes: updatedNotes,
+      isHandoverConfirmed: newShift.isHandoverConfirmed,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error processing handover', error: error.message });
+  }
+};
 exports.openShift = async (req, res) => {
   try {
     const { account_id, initial_cash_amount, notes, denominations } = req.body;
 
     let totalFromDenominations = 0;
     let updatedNotes = notes || '';
+
+    if (cashDifference !== 0) {
+      const differenceText = cashDifference > 0 ? `Thiếu ${cashDifference} VND` : `Số dư ${Math.abs(cashDifference)} VND`;
+      updatedNotes += ` | Cảnh báo: ${differenceText} so với số tiền mặt ban đầu (${initial_cash_amount} VND). Tổng số mệnh giá: ${totalFromDenominations} VND.`;
+    }
 
     // Nếu có mệnh giá thì tính tổng và kiểm tra chênh lệch
     if (denominations && Array.isArray(denominations) && denominations.length > 0) {
@@ -113,6 +190,7 @@ exports.openShift = async (req, res) => {
       } else if (prevCashDifference < 0) {
         updatedNotes += ` | Lưu ý: Số dư ${Math.abs(prevCashDifference)} VND so với số tiền cuối cùng của ca trước (${previousShift.final_cash_amount} VND).`;
       }
+
     }
 
     // Tạo ca làm việc mới
@@ -125,6 +203,7 @@ exports.openShift = async (req, res) => {
       initial_cash_amount,
       status: 'open',
       notes: updatedNotes,
+      isHandoverConfirmed: false, // Mặc định chưa xác nhận bàn giao
     });
     await shift.save();
 
@@ -151,8 +230,10 @@ exports.openShift = async (req, res) => {
         minute: '2-digit',
         hour12: false,
       }).replace(/(\d+)\/(\d+)\/(\d+),/, '$2/$1/$3,'), // Format: MM/DD/YY
+
       notes: shift.notes,
       status: shift.status,
+      shiftId: shift._id,
     };
 
     res.status(201).json(response);
@@ -348,4 +429,5 @@ exports.getFullNameByShiftId = async (req, res) => {
       error: error.message,
     });
   }
+
 };
