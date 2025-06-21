@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import logo from "../assets/LOGOBIG.png";
-import { FaUserCircle } from "react-icons/fa"; // Icon user
+import logo from "../assets/logo.png";
+import { IconBase } from "react-icons"; // Icon user
 
 function Header() {
   const [token, setToken] = useState(localStorage.getItem("token"));
@@ -131,7 +131,7 @@ const navItems =
                     data-bs-toggle="dropdown"
                     aria-expanded="false"
                   >
-                    <FaUserCircle className="fs-4 me-2" />
+                    <IconBase className="fs-4 me-2" />
                     {accountDetail?.full_name || "Tài khoản"}
                   </button>
 

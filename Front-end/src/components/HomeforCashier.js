@@ -5,7 +5,7 @@ import logo from '../assets/logo.png';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const API_URL = process.env.REACT_URL_SERVER || 'http://localhost:9999/api/';
+const API_URL = process.env.REACT_APP_URL_SERVER || 'http://localhost:9999/api/';
 
 const HomeForCashier = () => {
   const navigate = useNavigate();
@@ -164,11 +164,11 @@ const HomeForCashier = () => {
   return (
     <div
       className="d-flex flex-column vh-100"
-      style={{
-        backgroundImage: `url(${background})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-      }}
+      // style={{
+      //   backgroundImage: `url(${background})`,
+      //   backgroundSize: 'cover',
+      //   backgroundPosition: 'center',
+      // }}
     >
       <ToastContainer />
       <div className="d-flex justify-content-between align-items-center p-3 bg-light shadow-sm w-100">
@@ -181,14 +181,14 @@ const HomeForCashier = () => {
 
       <div className="d-flex flex-grow-1" style={{ height: 'calc(100vh - 80px)' }}>
         {/* Navigator (1/10) */}
-        <div className="bg-white shadow-sm" style={{ width: '10%', padding: '10px' }}>
+        {/* <div className="bg-white shadow-sm" style={{ width: '10%', padding: '10px' }}>
           <ul className="list-unstyled">
             <li className="mb-2"><a href="#" onClick={() => navigateToSection('/return')} className="text-decoration-none text-dark">Yêu cầu trả hàng</a></li>
             <li className="mb-2"><a href="#" onClick={() => navigateToSection('/export')} className="text-decoration-none text-dark">Yêu cầu xuất hàng</a></li>
             <li className="mb-2"><a href="#" onClick={() => navigateToSection('/payment')} className="text-decoration-none text-dark">Thanh toán</a></li>
             <li className="mb-2"><a href="#" onClick={() => navigateToSection('/shift-end')} className="text-decoration-none text-dark">Kết ca</a></li>
           </ul>
-        </div>
+        </div> */}
 
         {/* Products (4.5/10) with Search Bar */}
         <div className="bg-white shadow-sm" style={{ width: '45%', padding: '10px', overflowY: 'auto' }}>

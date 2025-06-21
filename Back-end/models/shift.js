@@ -52,6 +52,7 @@ const shiftSchema = new mongoose.Schema({
     default: null,
   },
   isHandoverConfirmed: { type: Boolean, default: false }
+
 },{timestamps: true});
 
 const Shift = mongoose.model('Shift', shiftSchema);
