@@ -6,10 +6,6 @@ const billSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
-  seller: {
-    type: String,
-    required: true,
-  },
   totalAmount: {
     type: Number,
     required: true,
@@ -21,7 +17,6 @@ const billSchema = new mongoose.Schema({
   paymentMethod: {
     type: String,
     enum: ['Tiền mặt', 'Chuyển khoản ngân hàng'],
-    required: true,
   },
   statusId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -35,6 +30,11 @@ const billSchema = new mongoose.Schema({
   updatedAt: {
     type: Date,
     default: Date.now,
+  },
+  shift_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Shift',
+    required: false,
   },
 });
 
