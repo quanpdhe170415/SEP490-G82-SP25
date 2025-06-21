@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Link } from "react-router-dom";
-import { Container, Row, Col, Form, Table, Card, Button } from "react-bootstrap";
+import { Container } from "react-bootstrap";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
+import "./Css/BillHistory.css"; // Import your CSS file for styling
 
 const BillHistory = ({ employeeId }) => {
   const [fromDate, setFromDate] = useState("");
@@ -18,7 +19,7 @@ const BillHistory = ({ employeeId }) => {
     cash: false,
     transfer: false,
   });
-  const [showAllEmployees, setShowAllEmployees] = useState(false);
+  const [showAllEmployees, setShowAllEmployees] = useState(true);
   const [selectedBillId, setSelectedBillId] = useState(null);
   const [billData, setBillData] = useState([]);
   const [billDetails, setBillDetails] = useState({});
@@ -70,169 +71,6 @@ const BillHistory = ({ employeeId }) => {
     } finally {
       setLoadingDetails(prev => ({ ...prev, [billId]: false }));
     }
-  };
-
-  // Styles for the page
-  const pageStyles = {
-    billHistoryPage: {
-      fontFamily: 'Inter, sans-serif',
-      background: 'linear-gradient(135deg, #f0f9f0 0%, #e8f5e8 100%)',
-      minHeight: '100vh',
-      color: '#2e7d32',
-      display: 'flex',
-      flexDirection: 'column',
-    },
-    mainContent: {
-      padding: '1.5rem',
-      flex: 1,
-    },
-    pageRow: {
-      margin: 0,
-      display: 'flex',
-      gap: '1.5rem',
-      alignItems: 'flex-start',
-      flexWrap: 'wrap',
-    },
-    searchPanel: {
-      background: 'white',
-      border: 'none',
-      borderRadius: '12px',
-      boxShadow: '0 2px 10px rgba(0, 0, 0, 0.05)',
-      position: 'sticky',
-      top: '20px',
-      height: 'fit-content',
-      width: '300px',
-      flexShrink: 0,
-    },
-    searchPanelBody: {
-      padding: '2rem',
-    },
-    searchTitle: {
-      color: '#2e7d32',
-      fontWeight: '600',
-      marginBottom: '1.5rem',
-      fontSize: '1.25rem',
-    },
-    formLabel: {
-      fontWeight: '500',
-      color: '#555',
-      marginBottom: '0.5rem',
-    },
-    formControl: {
-      border: '1px solid #ddd',
-      borderRadius: '6px',
-      padding: '0.6rem 0.8rem',
-      transition: 'border-color 0.2s ease',
-      width: '100%',
-      marginBottom: '1rem',
-    },
-    contentArea: {
-      background: 'rgba(255, 255, 255, 0.95)',
-      borderRadius: '12px',
-      padding: '2rem',
-      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
-      flex: 2,
-      minWidth: '300px',
-    },
-    pageTitle: {
-      fontSize: '1.8rem',
-      fontWeight: '600',
-      color: '#2e7d32',
-      marginBottom: '1.5rem',
-      textAlign: 'center',
-    },
-    billTableWrapper: {
-      background: 'white',
-      borderRadius: '12px',
-      overflow: 'hidden',
-      boxShadow: '0 2px 10px rgba(0, 0, 0, 0.05)',
-    },
-    tableHeader: {
-      background: '#4caf50',
-      color: 'white',
-      fontWeight: '600',
-      padding: '1rem',
-      border: 'none',
-      textTransform: 'uppercase',
-      fontSize: '0.8rem',
-      letterSpacing: '0.5px',
-    },
-    tableCell: {
-      padding: '1rem',
-      borderBottom: '1px solid #f0f0f0',
-      transition: 'background-color 0.2s ease',
-    },
-    billDetails: {
-      background: '#f8f9fa',
-      borderRadius: '8px',
-      padding: '1.5rem',
-      margin: '1rem 0',
-      border: '1px solid #e9ecef',
-    },
-    billInfo: {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-      gap: '1rem',
-      marginBottom: '1.5rem',
-      padding: '1rem',
-      background: 'white',
-      borderRadius: '6px',
-    },
-    infoItem: {
-      display: 'flex',
-      flexDirection: 'column',
-    },
-    infoLabel: {
-      fontSize: '0.75rem',
-      fontWeight: '600',
-      color: '#666',
-      textTransform: 'uppercase',
-      letterSpacing: '0.5px',
-      marginBottom: '0.25rem',
-    },
-    infoValue: {
-      fontWeight: '500',
-      color: '#333',
-    },
-    totalSummary: {
-      background: '#4caf50',
-      color: 'white',
-      padding: '1rem',
-      borderRadius: '8px',
-      marginTop: '1rem',
-      marginLeft: 'auto',
-      width: '400px',
-      maxWidth: '100%',
-    },
-    summaryItem: {
-      marginBottom: '0.5rem',
-      fontWeight: '500',
-      display: 'flex',
-      justifyContent: 'space-between',
-      padding: '0.25rem 0',
-    },
-    summaryButtonContainer: {
-      display: 'flex',
-      justifyContent: 'flex-end',
-      marginTop: '1rem',
-    },
-    btnReturn: {
-      background: '#f44336',
-      border: 'none',
-      padding: '0.6rem 1.2rem',
-      borderRadius: '6px',
-      fontWeight: '500',
-      color: 'white',
-      textDecoration: 'none',
-      display: 'inline-block',
-      marginTop: '1rem',
-    },
-    loadingText: {
-      textAlign: 'center',
-      color: '#666',
-      fontStyle: 'italic',
-      padding: '2rem',
-    },
   };
 
   // Helper function to format date
@@ -359,20 +197,20 @@ const BillHistory = ({ employeeId }) => {
 
   if (loading) {
     return (
-      <div style={pageStyles.billHistoryPage}>
+      <div className="bill-history-page">
         <Header />
-        <Container fluid style={pageStyles.mainContent}>
-          <div style={pageStyles.loadingText}>Đang tải dữ liệu...</div>
+        <Container fluid className="main-content">
+          <div className="loading-text">Đang tải dữ liệu...</div>
         </Container>
       </div>
     );
   }
 
   return (
-    <div style={pageStyles.billHistoryPage}>
+    <div className="bill-history-page">
       <Header />
-      <Container fluid style={pageStyles.mainContent}>
-        <div style={pageStyles.pageRow}>
+      <Container fluid className="main-content">
+        <div className="page-row">
           {/* Sidebar */}
           <Sidebar
             activeItem="bill-history"
@@ -381,15 +219,15 @@ const BillHistory = ({ employeeId }) => {
           />
 
           {/* Search Panel */}
-          <div style={pageStyles.searchPanel}>
-            <div style={pageStyles.searchPanelBody}>
-              <h5 style={pageStyles.searchTitle}>Tìm kiếm hóa đơn</h5>
+          <div className="search-panel">
+            <div className="search-panel-body">
+              <h5 className="search-title">Tìm kiếm hóa đơn</h5>
 
               {/* Date Filter */}
-              <div style={{ marginBottom: "1rem" }}>
-                <label style={pageStyles.formLabel}>Lọc theo ngày</label>
+              <div className="filter-section">
+                <label className="form-label">Lọc theo ngày</label>
                 <select
-                  style={pageStyles.formControl}
+                  className="form-control"
                   value={dateFilter}
                   onChange={(e) => setDateFilter(e.target.value)}
                 >
@@ -401,21 +239,21 @@ const BillHistory = ({ employeeId }) => {
               </div>
 
               {/* Custom Date Range */}
-              <div style={{ marginBottom: "1rem" }}>
-                <label style={pageStyles.formLabel}>Thời gian từ</label>
+              <div className="filter-section">
+                <label className="form-label">Thời gian từ</label>
                 <input
                   type="datetime-local"
-                  style={pageStyles.formControl}
+                  className="form-control"
                   value={fromDate}
                   onChange={(e) => setFromDate(e.target.value)}
                   max={new Date().toISOString().slice(0, 16)}
                 />
               </div>
-              <div style={{ marginBottom: "1rem" }}>
-                <label style={pageStyles.formLabel}>Đến</label>
+              <div className="filter-section">
+                <label className="form-label">Đến</label>
                 <input
                   type="datetime-local"
-                  style={pageStyles.formControl}
+                  className="form-control"
                   value={toDate}
                   onChange={(e) => setToDate(e.target.value)}
                   max={new Date().toISOString().slice(0, 16)}
@@ -423,14 +261,15 @@ const BillHistory = ({ employeeId }) => {
               </div>
 
               {/* Status Filter */}
-              <div style={{ marginBottom: "1rem" }}>
-                <label style={pageStyles.formLabel}>Trạng thái</label>
+              <div className="filter-section">
+                <label className="form-label">Trạng thái</label>
                 <div>
                   {["paid", "refunded", "cancelled"].map((status) => (
-                    <div key={status} style={{ marginBottom: "0.5rem" }}>
-                      <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer" }}>
+                    <div key={status} className="checkbox-wrapper">
+                      <label className="checkbox-label">
                         <input
                           type="checkbox"
+                          className="checkbox-input"
                           checked={statusSearch[status]}
                           onChange={() => handleStatusChange(status)}
                         />
@@ -442,12 +281,13 @@ const BillHistory = ({ employeeId }) => {
               </div>
 
               {/* Employee Filter */}
-              <div style={{ marginBottom: "1rem" }}>
-                <label style={pageStyles.formLabel}>Hiển thị hóa đơn</label>
+              <div className="filter-section">
+                <label className="form-label">Hiển thị hóa đơn</label>
                 <div>
-                  <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer" }}>
+                  <label className="checkbox-label">
                     <input
                       type="checkbox"
+                      className="checkbox-input"
                       checked={showAllEmployees}
                       onChange={() => setShowAllEmployees(!showAllEmployees)}
                     />
@@ -457,14 +297,15 @@ const BillHistory = ({ employeeId }) => {
               </div>
 
               {/* Payment Method Filter */}
-              <div>
-                <label style={pageStyles.formLabel}>Phương thức thanh toán</label>
+              <div className="filter-section">
+                <label className="form-label">Phương thức thanh toán</label>
                 <div>
                   {["cash", "transfer"].map((method) => (
-                    <div key={method} style={{ marginBottom: "0.5rem" }}>
-                      <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer" }}>
+                    <div key={method} className="checkbox-wrapper">
+                      <label className="checkbox-label">
                         <input
                           type="checkbox"
+                          className="checkbox-input"
                           checked={paymentMethodSearch[method]}
                           onChange={() => handlePaymentMethodChange(method)}
                         />
@@ -478,102 +319,95 @@ const BillHistory = ({ employeeId }) => {
           </div>
 
           {/* Main Content Area */}
-          <div style={pageStyles.contentArea}>
-            <h2 style={pageStyles.pageTitle}>Lịch sử hóa đơn (Trả hàng)</h2>
+          <div className="content-area">
+            <h2 className="page-title">Lịch sử hóa đơn (Trả hàng)</h2>
 
             {/* Bill Table */}
-            <div style={pageStyles.billTableWrapper}>
+            <div className="bill-table-wrapper">
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead>
                   <tr>
-                    <th style={pageStyles.tableHeader}>Mã hóa đơn</th>
-                    <th style={pageStyles.tableHeader}>Thời gian</th>
-                    <th style={pageStyles.tableHeader}>Người bán</th>
-                    <th style={pageStyles.tableHeader}>Tổng tiền</th>
-                    <th style={pageStyles.tableHeader}>Thanh toán</th>
-                    <th style={pageStyles.tableHeader}>Phương thức</th>
-                    <th style={pageStyles.tableHeader}>Trạng thái</th>
+                    <th className="table-header">Mã hóa đơn</th>
+                    <th className="table-header">Thời gian</th>
+                    <th className="table-header">Người bán</th>
+                    <th className="table-header">Tổng tiền</th>
+                    <th className="table-header">Thanh toán</th>
+                    <th className="table-header">Phương thức</th>
+                    <th className="table-header">Trạng thái</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredBills.map((bill) => (
                     <React.Fragment key={bill._id}>
                       <tr
+                        className={`table-row-clickable ${selectedBillId === bill._id ? 'table-row-selected' : ''}`}
                         onClick={() => toggleBillDetails(bill._id)}
-                        style={{
-                          cursor: "pointer",
-                          backgroundColor: selectedBillId === bill._id ? "#e8f5e8" : "transparent",
-                        }}
                         onMouseEnter={(e) => {
                           if (selectedBillId !== bill._id) {
-                            e.currentTarget.style.backgroundColor = "#f8f9fa";
+                            e.currentTarget.classList.add('table-row-hover');
                           }
                         }}
                         onMouseLeave={(e) => {
-                          if (selectedBillId !== bill._id) {
-                            e.currentTarget.style.backgroundColor = "transparent";
-                          }
+                          e.currentTarget.classList.remove('table-row-hover');
                         }}
                       >
-                        <td style={pageStyles.tableCell}>{bill.billNumber}</td>
-                        <td style={pageStyles.tableCell}>{formatDate(bill.createdAt)}</td>
-                        <td style={pageStyles.tableCell}>{bill.shift_id.account_id.full_name}</td>
-                        <td style={pageStyles.tableCell}>{bill.totalAmount.toLocaleString()} VND</td>
-                        <td style={pageStyles.tableCell}>{bill.finalAmount.toLocaleString()} VND</td>
-                        <td style={pageStyles.tableCell}>{bill.paymentMethod}</td>
-                        <td style={pageStyles.tableCell}>{bill.statusId.name}</td>
+                        <td className="table-cell">{bill.billNumber}</td>
+                        <td className="table-cell">{formatDate(bill.createdAt)}</td>
+                        <td className="table-cell">{bill.shift_id.account_id.full_name}</td>
+                        <td className="table-cell">{bill.totalAmount.toLocaleString()} VND</td>
+                        <td className="table-cell">{bill.finalAmount.toLocaleString()} VND</td>
+                        <td className="table-cell">{bill.paymentMethod}</td>
+                        <td className="table-cell">{bill.statusId.name}</td>
                       </tr>
                       {selectedBillId === bill._id && (
                         <tr>
                           <td colSpan="7" style={{ padding: 0, border: "none" }}>
-                            <div style={pageStyles.billDetails}>
-                              <h5 style={{ color: "#2e7d32", fontWeight: "600", marginBottom: "1.5rem" }}>
-                                Chi tiết hóa đơn
-                              </h5>
-                              <div style={pageStyles.billInfo}>
-                                <div style={pageStyles.infoItem}>
-                                  <span style={pageStyles.infoLabel}>Mã hóa đơn:</span>
-                                  <span style={pageStyles.infoValue}>{bill.billNumber}</span>
+                            <div className="bill-details">
+                              <h5 className="bill-details-title">Chi tiết hóa đơn</h5>
+                              <div className="bill-info">
+                                <div className="info-item">
+                                  <span className="info-label">Mã hóa đơn:</span>
+                                  <span className="info-value">{bill.billNumber}</span>
                                 </div>
-                                <div style={pageStyles.infoItem}>
-                                  <span style={pageStyles.infoLabel}>Thời gian:</span>
-                                  <span style={pageStyles.infoValue}>{formatDate(bill.createdAt)}</span>
+                                <div className="info-item">
+                                  <span className="info-label">Thời gian:</span>
+                                  <span className="info-value">{formatDate(bill.createdAt)}</span>
                                 </div>
-                                <div style={pageStyles.infoItem}>
-                                  <span style={pageStyles.infoLabel}>Người bán:</span>
-                                  <span style={pageStyles.infoValue}>{bill.shift_id.account_id.full_name}</span>
+                                <div className="info-item">
+                                  <span className="info-label">Người bán:</span>
+                                  <span className="info-value">{bill.shift_id.account_id.full_name}</span>
                                 </div>
-                                <div style={pageStyles.infoItem}>
-                                  <span style={pageStyles.infoLabel}>Phương thức:</span>
-                                  <span style={pageStyles.infoValue}>{bill.paymentMethod}</span>
+                                <div className="info-item">
+                                  <span className="info-label">Phương thức:</span>
+                                  <span className="info-value">{bill.paymentMethod}</span>
                                 </div>
-                                <div style={pageStyles.infoItem}>
-                                  <span style={pageStyles.infoLabel}>Trạng thái:</span>
-                                  <span style={pageStyles.infoValue}>{bill.statusId.name}</span>
+                                <div className="info-item">
+                                  <span className="info-label">Trạng thái:</span>
+                                  <span className="info-value">{bill.statusId.name}</span>
                                 </div>
                               </div>
                               {loadingDetails[bill._id] ? (
-                                <div style={pageStyles.loadingText}>Đang tải chi tiết...</div>
+                                <div className="loading-text">Đang tải chi tiết...</div>
                               ) : billDetails[bill._id] ? (
-                                <div style={{ background: "white", borderRadius: "6px", overflow: "hidden", marginBottom: "1rem" }}>
-                                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                                <div className="bill-items-table">
+                                  <table>
                                     <thead>
                                       <tr>
-                                        <th style={{ ...pageStyles.tableHeader, background: "#388e3c" }}>Mã hàng</th>
-                                        <th style={{ ...pageStyles.tableHeader, background: "#388e3c" }}>Tên hàng</th>
-                                        <th style={{ ...pageStyles.tableHeader, background: "#388e3c" }}>Số lượng</th>
-                                        <th style={{ ...pageStyles.tableHeader, background: "#388e3c" }}>Đơn giá</th>
-                                        <th style={{ ...pageStyles.tableHeader, background: "#388e3c" }}>Thành tiền</th>
+                                        <th className="bill-items-header">Mã hàng</th>
+                                        <th className="bill-items-header">Tên hàng</th>
+                                        <th className="bill-items-header">Số lượng</th>
+                                        <th className="bill-items-header">Đơn giá</th>
+                                        <th className="bill-items-header">Thành tiền</th>
                                       </tr>
                                     </thead>
                                     <tbody>
                                       {billDetails[bill._id].map((item, index) => (
-                                        <tr key={item._id} style={{ backgroundColor: index % 2 === 1 ? "#f8f9fa" : "white" }}>
-                                          <td style={{ ...pageStyles.tableCell, padding: "0.75rem" }}>{item.goods_id.barcode || "N/A"}</td>
-                                          <td style={{ ...pageStyles.tableCell, padding: "0.75rem" }}>{item.goods_name}</td>
-                                          <td style={{ ...pageStyles.tableCell, padding: "0.75rem" }}>{item.quantity}</td>
-                                          <td style={{ ...pageStyles.tableCell, padding: "0.75rem" }}>{item.unit_price.toLocaleString()} VND</td>
-                                          <td style={{ ...pageStyles.tableCell, padding: "0.75rem" }}>{item.total_amount.toLocaleString()} VND</td>
+                                        <tr key={item._id} className={index % 2 === 1 ? "bill-items-row-even" : ""}>
+                                          <td className="bill-items-cell">{item.goods_id.barcode || "N/A"}</td>
+                                          <td className="bill-items-cell">{item.goods_name}</td>
+                                          <td className="bill-items-cell">{item.quantity}</td>
+                                          <td className="bill-items-cell">{item.unit_price.toLocaleString()} VND</td>
+                                          <td className="bill-items-cell">{item.total_amount.toLocaleString()} VND</td>
                                         </tr>
                                       ))}
                                     </tbody>
@@ -581,27 +415,27 @@ const BillHistory = ({ employeeId }) => {
                                 </div>
                               ) : null}
                               {billDetails[bill._id] && (
-                                <div style={pageStyles.totalSummary}>
-                                  <div style={pageStyles.summaryItem}>
+                                <div className="bill-total-summary">
+                                  <div className="bill-summary-item">
                                     <span>Tổng số lượng hàng:</span>
                                     <span>{billDetails[bill._id].reduce((acc, item) => acc + item.quantity, 0)}</span>
                                   </div>
-                                  <div style={pageStyles.summaryItem}>
+                                  <div className="bill-summary-item">
                                     <span>Tổng số tiền:</span>
                                     <span>{bill.totalAmount.toLocaleString()} VND</span>
                                   </div>
-                                  <div style={pageStyles.summaryItem}>
+                                  <div className="bill-summary-item">
                                     <span>Số tiền khách cần trả:</span>
                                     <span>{bill.totalAmount.toLocaleString()} VND</span>
                                   </div>
-                                  <div style={{ ...pageStyles.summaryItem, fontWeight: "600", fontSize: "1.1rem", borderTop: "1px solid rgba(255, 255, 255, 0.3)", paddingTop: "0.5rem", marginTop: "0.5rem" }}>
+                                  <div className="bill-summary-item summary-item-final">
                                     <span>Số tiền khách đã trả:</span>
                                     <span>{bill.finalAmount.toLocaleString()} VND</span>
                                   </div>
                                 </div>
                               )}
-                              <div style={pageStyles.summaryButtonContainer}>
-                                <Link to="/return-goods" style={pageStyles.btnReturn}>Trả hàng</Link>
+                              <div className="summary-button-container">
+                                <Link to="/return-goods" className="btn-return">Trả hàng</Link>
                               </div>
                             </div>
                           </td>
