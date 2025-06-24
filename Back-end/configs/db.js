@@ -32,12 +32,13 @@ const connectDB = async () => {
       db.DisposalItem.createCollection(),
       db.Session.createCollection(),
       db.ShiftType.createCollection(),
+      db.UserDetail.createCollection(),
     ]);
     console.log("All collections ensured!");
 
- let shiftTypes = [];
+    let shiftTypes = [];
     const shiftTypeCount = await db.ShiftType.countDocuments();
-    console.log(ShiftType count: ${shiftTypeCount});
+    console.log(`ShiftType count: ${shiftTypeCount}`);
     if (shiftTypeCount === 0) {
       shiftTypes = await db.ShiftType.insertMany([
         {
@@ -62,7 +63,7 @@ const connectDB = async () => {
     // Seed dữ liệu cho Role nếu chưa có
     let roles = [];
     const roleCount = await db.Role.countDocuments();
-    console.log(Role count: ${roleCount});
+    console.log(`Role count: ${roleCount}`);
     if (roleCount === 0) {
       roles = await db.Role.insertMany([
         {
@@ -75,7 +76,8 @@ const connectDB = async () => {
         },
         {
           name: "Manager",
-          code: "MANAGER",},
+          code: "MANAGER",
+        },
         {
           name: "WarehouseStaff",
           code: "WAREHOUSE_STAFF",
@@ -100,7 +102,7 @@ const connectDB = async () => {
     // Seed dữ liệu cho Account nếu chưa có
     let accounts = [];
     const accountCount = await db.Account.countDocuments();
-    console.log(Account count: ${accountCount});
+    console.log(`Account count: ${accountCount}`);
     if (accountCount === 0) {
       const password1 = await bcrypt.hash("123456", 10);
       const password2 = await bcrypt.hash("123456", 10);
@@ -154,10 +156,57 @@ const connectDB = async () => {
       );
     }
 
+    const defaultUserDetails = [
+      {
+        full_name: "Nguyễn Văn A",
+        gender: "male",
+        phone_number: "0901234567",
+        c_id: "CMT001",
+        address: "Hà Nội",
+      },
+      {
+        full_name: "Trần Thị B",
+        gender: "female",
+        phone_number: "0912345678",
+        c_id: "CMT002",
+        address: "Đà Nẵng",
+      },
+      {
+        full_name: "Lê Văn C",
+        gender: "male",
+        phone_number: "0987654321",
+        c_id: "CMT003",
+        address: "TP.HCM",
+      },
+      {
+        full_name: "Phạm Thị D",
+        gender: "female",
+        phone_number: "0976543210",
+        c_id: "CMT004",
+        address: "Cần Thơ",
+      },
+    ];
+    let userDetails = [];
+    const userDetailCount = await db.UserDetail.countDocuments();
+    console.log(`UserDetail count: ${userDetailCount}`);
+
+    if (userDetailCount === 0 && accounts.length > 0) {
+      userDetails = await db.UserDetail.insertMany(
+        accounts.map((acc, idx) => ({
+          user_id: acc._id,                           // Liên kết 1-1
+          ...defaultUserDetails[idx],                 // Trộn dữ liệu mẫu
+        }))
+      );
+      console.log("Seeded user details:", userDetails.map(u => u.full_name));
+    } else {
+      userDetails = await db.UserDetail.find();
+      console.log("Existing user details:", userDetails.map(u => u.full_name));
+    }
+
     // Seed dữ liệu cho Shift nếu chưa có
     let shifts = [];
     const shiftCount = await db.Shift.countDocuments();
-    console.log(Shift count: ${shiftCount});
+    console.log(`Shift count: ${shiftCount}`);
     if (shiftCount === 0 && accounts.length > 0) {
       shifts = await db.Shift.insertMany([
         {
@@ -204,7 +253,7 @@ const connectDB = async () => {
     // Seed dữ liệu cho Category nếu chưa có
     let categories = [];
     const categoryCount = await db.Category.countDocuments();
-    console.log(Category count: ${categoryCount});
+    console.log(`Category count: ${categoryCount}`);
     if (categoryCount === 0) {
       categories = await db.Category.insertMany([
         { category_name: "Đồ uống", description: "Các loại nước giải khát" },
@@ -218,7 +267,7 @@ const connectDB = async () => {
     // Seed dữ liệu cho Goods nếu chưa có
     let goods = [];
     const goodsCount = await db.Goods.countDocuments();
-    console.log(Goods count: ${goodsCount});
+    console.log(`Goods count: ${goodsCount}`);
     if (goodsCount === 0 && categories.length > 0) {
       goods = await db.Goods.insertMany([
         {
@@ -281,7 +330,7 @@ const connectDB = async () => {
     // Seed dữ liệu cho ImportBatch
     let importBatches = [];
     const importBatchCount = await db.ImportBatch.countDocuments();
-    console.log(ImportBatch count: ${importBatchCount});
+    console.log(`ImportBatch count: ${importBatchCount}`);
     if (importBatchCount > 0) {
       await db.ImportBatch.deleteMany({});
       console.log("Cleared existing import batches!");
@@ -326,7 +375,7 @@ const connectDB = async () => {
 
     // Seed dữ liệu cho ImportDetail
     const importDetailCount = await db.ImportDetail.countDocuments();
-    console.log(ImportDetail count: ${importDetailCount});
+    console.log(`ImportDetail count: ${importDetailCount}`);
     if (importDetailCount > 0) {
       await db.ImportDetail.deleteMany({});
       console.log("Cleared existing import details!");
@@ -367,7 +416,7 @@ const connectDB = async () => {
     // Seed dữ liệu cho Status nếu chưa có
     let statuses = [];
     const statusCount = await db.Status.countDocuments();
-    console.log(Status count: ${statusCount});
+    console.log(`Status count: ${statusCount}`);
     if (statusCount === 0) {
       statuses = await db.Status.insertMany([
         {
@@ -387,7 +436,7 @@ const connectDB = async () => {
     // Seed dữ liệu cho Bill
     let bills = [];
     const billCount = await db.Bill.countDocuments();
-    console.log(Bill count: ${billCount});
+    console.log(`Bill count: ${billCount}`);
     if (billCount > 0) {
       await db.Bill.deleteMany({});
       console.log("Cleared existing bills!");
@@ -438,7 +487,7 @@ const connectDB = async () => {
 
     // Seed dữ liệu cho BillDetail
     const billDetailCount = await db.BillDetail.countDocuments();
-    console.log(BillDetail count: ${billDetailCount});
+    console.log(`BillDetail count: ${billDetailCount}`);
     if (billDetailCount > 0) {
       await db.BillDetail.deleteMany({});
       console.log("Cleared existing bill details!");
@@ -583,7 +632,7 @@ const connectDB = async () => {
 
     console.log("=== DATABASE SEEDING COMPLETED ===");
     console.log("All collections have been seeded with sample data!");
-    
+
   } catch (error) {
     console.error("MongoDB connection failed: ", error);
     process.exit(1);
