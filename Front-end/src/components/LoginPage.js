@@ -29,7 +29,6 @@ const LoginPage = () => {
       });
 
       const data = await response.json();
-
       if (response.ok) {
         // ✅ Lưu vào localStorage
         localStorage.setItem('token', data.token);

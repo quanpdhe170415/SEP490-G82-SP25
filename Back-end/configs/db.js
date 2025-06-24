@@ -32,10 +32,11 @@ const connectDB = async () => {
       db.DisposalItem.createCollection(),
       db.Session.createCollection(),
       db.ShiftType.createCollection(),
+      db.UserDetail.createCollection(),
     ]);
     console.log("All collections ensured!");
 
- let shiftTypes = [];
+    let shiftTypes = [];
     const shiftTypeCount = await db.ShiftType.countDocuments();
     console.log(`ShiftType count: ${shiftTypeCount}`);
     if (shiftTypeCount === 0) {
@@ -75,7 +76,8 @@ const connectDB = async () => {
         },
         {
           name: "Manager",
-          code: "MANAGER",},
+          code: "MANAGER",
+        },
         {
           name: "WarehouseStaff",
           code: "WAREHOUSE_STAFF",
@@ -152,6 +154,53 @@ const connectDB = async () => {
         "Existing accounts:",
         accounts.map((a) => a.username)
       );
+    }
+
+    const defaultUserDetails = [
+      {
+        full_name: "Nguyễn Văn A",
+        gender: "male",
+        phone_number: "0901234567",
+        c_id: "CMT001",
+        address: "Hà Nội",
+      },
+      {
+        full_name: "Trần Thị B",
+        gender: "female",
+        phone_number: "0912345678",
+        c_id: "CMT002",
+        address: "Đà Nẵng",
+      },
+      {
+        full_name: "Lê Văn C",
+        gender: "male",
+        phone_number: "0987654321",
+        c_id: "CMT003",
+        address: "TP.HCM",
+      },
+      {
+        full_name: "Phạm Thị D",
+        gender: "female",
+        phone_number: "0976543210",
+        c_id: "CMT004",
+        address: "Cần Thơ",
+      },
+    ];
+    let userDetails = [];
+    const userDetailCount = await db.UserDetail.countDocuments();
+    console.log(`UserDetail count: ${userDetailCount}`);
+
+    if (userDetailCount === 0 && accounts.length > 0) {
+      userDetails = await db.UserDetail.insertMany(
+        accounts.map((acc, idx) => ({
+          user_id: acc._id,                           // Liên kết 1-1
+          ...defaultUserDetails[idx],                 // Trộn dữ liệu mẫu
+        }))
+      );
+      console.log("Seeded user details:", userDetails.map(u => u.full_name));
+    } else {
+      userDetails = await db.UserDetail.find();
+      console.log("Existing user details:", userDetails.map(u => u.full_name));
     }
 
     // Seed dữ liệu cho Shift nếu chưa có
@@ -583,7 +632,7 @@ const connectDB = async () => {
 
     console.log("=== DATABASE SEEDING COMPLETED ===");
     console.log("All collections have been seeded with sample data!");
-    
+
   } catch (error) {
     console.error("MongoDB connection failed: ", error);
     process.exit(1);

@@ -130,6 +130,9 @@ exports.createBill = async (req, res) => {
 // Lấy danh sách tất cả hóa đơn
 exports.getAllBills = async (req, res) => {
   try {
+    const {userId} = req.body;
+    console.log("userId", userId);
+    
     // Lấy tất cả hóa đơn, populate statusId và account_id từ shift_id
     const bills = await Bill.find()
       .populate("statusId", "name")

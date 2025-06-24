@@ -12,8 +12,6 @@ const exportRoute = require("./export.route");
 const importController = require("./import.route");
 
 
-
-
 router.use("/product", productRouter);
 router.use("/goods", goodsRoute);
 router.use("/auth", authenRouter);
