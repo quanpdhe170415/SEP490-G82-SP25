@@ -312,21 +312,19 @@ const BillHistory = () => {
 
   if (loading) {
     return (
-      <div style={pageStyles.billHistoryPage}>
-        <Header />
-        <Container fluid style={pageStyles.mainContent}>
-          <div style={pageStyles.loadingText}>Đang tải dữ liệu...</div>
+      <div className="bill-history-page">
+        <Container fluid className="main-content">
+          <div className="loading-text">Đang tải dữ liệu...</div>
         </Container>
       </div>
     );
   }
 
   return (
-    <div style={pageStyles.billHistoryPage}>
+    <div className="bill-history-page">
       
-
-      <Container fluid style={pageStyles.mainContent}>
-        <div style={pageStyles.pageRow}>
+      <Container fluid className="main-content">
+        <div className="page-row">
           {/* Sidebar */}
           {/* <Sidebar
             activeItem="bill-history"
