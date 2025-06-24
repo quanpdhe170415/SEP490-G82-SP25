@@ -6,12 +6,12 @@ import Header from "./Header";
 import Sidebar from "./Sidebar";
 import "./Css/BillHistory.css"; // Import your CSS file for styling
 
-const BillHistory = ({ employeeId }) => {
+const BillHistory = () => {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [statusSearch, setStatusSearch] = useState({
-    paid: true, // Default to show paid bills
+    paid: true, // Mặc định hiển thị hóa đơn đã thanh toán
     refunded: false,
     cancelled: false,
   });
@@ -19,13 +19,16 @@ const BillHistory = ({ employeeId }) => {
     cash: false,
     transfer: false,
   });
-  const [showAllEmployees, setShowAllEmployees] = useState(true);
+  // Thay đổi: Mặc định không hiển thị hóa đơn của tất cả nhân viên
+  const [showAllEmployees, setShowAllEmployees] = useState(false);
   const [selectedBillId, setSelectedBillId] = useState(null);
   const [billData, setBillData] = useState([]);
   const [billDetails, setBillDetails] = useState({});
   const [loading, setLoading] = useState(true);
   const [loadingDetails, setLoadingDetails] = useState({});
-  const [dateFilter, setDateFilter] = useState("today"); // Default to today
+  const [dateFilter, setDateFilter] = useState("today"); // Mặc định là hôm nay
+  // Lấy userId của người dùng đang đăng nhập từ localStorage
+  const [userId, setUserId] = useState(localStorage.getItem("userId") || null);
 
   // Fetch bills from API
   useEffect(() => {
@@ -39,10 +42,10 @@ const BillHistory = ({ employeeId }) => {
       const result = await response.json();
 
       if (result.success) {
-        // Filter bills to only include those from the last 3 days
+        // Lọc hóa đơn trong 3 ngày gần nhất
         const threeDaysAgo = new Date();
         threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
-        const filteredBills = result.data.filter(bill => 
+        const filteredBills = result.data.filter(bill =>
           new Date(bill.createdAt) >= threeDaysAgo
         );
         setBillData(filteredBills);
@@ -73,32 +76,32 @@ const BillHistory = ({ employeeId }) => {
     }
   };
 
-  // Helper function to format date
+  // Hàm helper để định dạng ngày
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('vi-VN') + ' ' + date.toLocaleTimeString('vi-VN');
   };
 
-  // Helper function to normalize payment method for filtering
+  // Hàm helper để chuẩn hóa phương thức thanh toán
   const normalizePaymentMethod = (method) => {
     if (method === "Tiền mặt") return "cash";
     if (method === "Chuyển khoản ngân hàng") return "transfer";
     return method.toLowerCase();
   };
 
-  // Helper function to normalize status for filtering
+  // Hàm helper để chuẩn hóa trạng thái
   const normalizeStatus = (status) => {
     if (status === "Đã thanh toán") return "paid";
-    if (status === "Đã hoàn lại") return "refunded";
+    if (status === "Đã trả hàng") return "refunded";
     if (status === "Đã hủy") return "cancelled";
     return status.toLowerCase();
   };
 
-  // Filter bills based on selected filters
+  // Lọc hóa đơn dựa trên các bộ lọc đã chọn
   const filterBills = () => {
     let filteredBills = billData;
 
-    // Apply date filter
+    // Áp dụng bộ lọc ngày
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(today.getDate() - 1);
@@ -108,31 +111,31 @@ const BillHistory = ({ employeeId }) => {
     threeDaysAgo.setDate(today.getDate() - 3);
 
     if (dateFilter === "today") {
-      filteredBills = filteredBills.filter(bill => 
+      filteredBills = filteredBills.filter(bill =>
         new Date(bill.createdAt).toDateString() === today.toDateString()
       );
     } else if (dateFilter === "yesterday") {
-      filteredBills = filteredBills.filter(bill => 
+      filteredBills = filteredBills.filter(bill =>
         new Date(bill.createdAt).toDateString() === yesterday.toDateString()
       );
     } else if (dateFilter === "dayBefore") {
-      filteredBills = filteredBills.filter(bill => 
-        new Date(bill.createdAt).toDateString() === dayBefore.toDateString()
-      );
+        filteredBills = filteredBills.filter(bill =>
+            new Date(bill.createdAt).toDateString() === dayBefore.toDateString()
+        );
     } else if (dateFilter === "lastThreeDays") {
-      filteredBills = filteredBills.filter(bill => 
+      filteredBills = filteredBills.filter(bill =>
         new Date(bill.createdAt) >= threeDaysAgo
       );
     }
 
-    // Filter by employee unless showAllEmployees is true
-    if (!showAllEmployees) {
-      filteredBills = filteredBills.filter(bill => 
-        bill.shift_id.account_id._id === employeeId
+    // Thay đổi: Lọc theo nhân viên trừ khi showAllEmployees là true
+    if (!showAllEmployees && userId) {
+      filteredBills = filteredBills.filter(bill =>
+        bill.shift_id && bill.shift_id.account_id && bill.shift_id.account_id._id === userId
       );
     }
 
-    // Apply custom date range if set
+    // Áp dụng khoảng ngày tùy chỉnh nếu được đặt
     if (fromDate) {
       filteredBills = filteredBills.filter(bill => new Date(bill.createdAt) >= new Date(fromDate));
     }
@@ -140,15 +143,15 @@ const BillHistory = ({ employeeId }) => {
       filteredBills = filteredBills.filter(bill => new Date(bill.createdAt) <= new Date(toDate));
     }
 
-    // Apply status filter
+    // Áp dụng bộ lọc trạng thái
     const activeStatuses = Object.keys(statusSearch).filter(status => statusSearch[status]);
     if (activeStatuses.length > 0) {
-      filteredBills = filteredBills.filter(bill => 
+      filteredBills = filteredBills.filter(bill =>
         activeStatuses.includes(normalizeStatus(bill.statusId.name))
       );
     }
 
-    // Apply payment method filter
+    // Áp dụng bộ lọc phương thức thanh toán
     const activeMethods = Object.keys(paymentMethodSearch).filter(method => paymentMethodSearch[method]);
     if (activeMethods.length > 0) {
       filteredBills = filteredBills.filter(bill =>
@@ -187,7 +190,7 @@ const BillHistory = ({ employeeId }) => {
   const getStatusLabel = (status) => {
     const statusMap = {
       paid: "Đã thanh toán",
-      refunded: "Đã hoàn lại",
+      refunded: "Đã trả hàng",
       cancelled: "Đã hủy",
     };
     return statusMap[status] || status;
