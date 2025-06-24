@@ -449,7 +449,7 @@ const ImportHistory = () => {
     const statusMap = {
       pending: "Chờ nhận hàng",
       received: "Đã nhận hàng",
-      cancelled: "Đã hủy",
+      cancelled: "Đã trả",
     };
     return statusMap[status] || "Khác";
   };
