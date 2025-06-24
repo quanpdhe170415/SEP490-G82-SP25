@@ -1,15 +1,5 @@
 import React, { useState, useEffect } from 'react';
-
-// --- ICONS (as self-contained React Components) ---
-const Plus = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M5 12h14"/><path d="M12 5v14"/></svg>;
-const Trash2 = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>;
-const Upload = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>;
-const X = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg>;
-const AlertTriangle = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>;
-const CheckCircle2 = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>;
-const Package = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M16.5 9.4a.5.5 0 0 1 0 .8L12 13.3l-4.5-3.1a.5.5 0 0 1 0-.8l4.5-3.1a.5.5 0 0 1 .5 0l4.5 3.1Z"/><path d="M12 22V12"/><path d="m21 12-9 6.5-9-6.5"/><path d="M3 12v-2c0-1.1.9-2 2-2h14a2 2 0 0 1 2 2v2"/><path d="M3 10.5V8l9-6.5 9 6.5v2.5"/></svg>;
-const Calendar = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>;
-const FileText = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></svg>;
+import './Css/Create-Goods-Disposal.css'; // Import the provided CSS file
 
 // --- Mock Data ---
 const MOCK_PRODUCTS = {
@@ -68,16 +58,13 @@ function CreateGoodDisposal() {
             creationDate: getTodayDate(),
             notes: '',
         });
-        // Clear existing rows and add a single new one
-        setRows([]); 
-        addNewRow(true); // `true` to indicate it's the initial row
+        setRows([]);
+        addNewRow(true);
     };
 
-    // Add this to the top of your component
     useEffect(() => {
         resetForm();
     }, []);
-
 
     const validateForm = (isDraft = false) => {
         if (rows.length === 0) {
@@ -88,11 +75,9 @@ function CreateGoodDisposal() {
         setIsFormValid(allRowsValid);
     };
 
-    // Update the validation effect
     useEffect(() => {
         validateForm();
     }, [rows]);
-    
 
     // --- ROW & FORM HANDLERS ---
     const addNewRow = (isInitial = false) => {
@@ -109,7 +94,7 @@ function CreateGoodDisposal() {
             setRows(prevRows => [...prevRows, newRow]);
         }
     };
-    
+
     const removeRow = (id) => {
         if (rows.length > 1) {
             setRows(prevRows => prevRows.filter(row => row.id !== id));
@@ -140,7 +125,7 @@ function CreateGoodDisposal() {
             return row;
         }));
     };
-    
+
     const handleEvidenceChange = (id, files) => {
         const fileList = Array.from(files);
         setRows(prevRows => prevRows.map(row => {
@@ -188,7 +173,7 @@ function CreateGoodDisposal() {
         setToast({ show: true, message });
         setTimeout(() => setToast({ show: false, message: '' }), 3000);
     };
-    
+
     const handleSubmit = (e) => {
         e.preventDefault();
         let firstErrorFound = false;
@@ -211,7 +196,7 @@ function CreateGoodDisposal() {
             showToast('Thông tin chưa hợp lệ. Vui lòng kiểm tra lại.');
         }
     };
-    
+
     const handleSaveDraft = (e) => {
         e.preventDefault();
         setModal({
@@ -220,7 +205,7 @@ function CreateGoodDisposal() {
             message: `Phiếu ${voucherInfo.id} đã được lưu vào danh sách nháp.`
         });
     };
-    
+
     const handleCancel = () => {
         setModal({ type: 'confirmCancel' });
     };
@@ -230,132 +215,244 @@ function CreateGoodDisposal() {
         setModal({ type: null });
         showToast('Đã hủy phiếu thành công.');
     };
-    
+
     // --- RENDER ---
     return (
         <>
             <CustomStyles />
             <div className="min-h-screen bg-gray-100 font-sans">
-                <div className="container mx-auto p-4 md:p-6 max-w-7xl">
+                <div className="container p-4 md:p-6 max-w-7xl">
                     {/* Header */}
-                    <header className="bg-white rounded-lg shadow-sm p-5 mb-6 border border-gray-200">
+                    <header className="card p-5 mb-6">
                         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
                             <h1 className="text-2xl font-bold text-gray-800 mb-4 sm:mb-0">
                                 Tạo Phiếu Xuất Hủy
                             </h1>
                             <div className="flex items-center space-x-2">
-                                <button onClick={handleCancel} className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 transition-colors">Hủy bỏ</button>
-                                <button onClick={handleSaveDraft} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700 transition-colors">Lưu nháp</button>
-                                <button onClick={handleSubmit} disabled={!isFormValid} className={`px-4 py-2 text-sm font-medium text-white rounded-md shadow-sm transition-colors ${isFormValid ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400 cursor-not-allowed'}`}>Gửi duyệt</button>
+                                <button onClick={handleCancel} className="btn btn-secondary">Hủy bỏ</button>
+                                <button onClick={handleSaveDraft} className="btn btn-primary">Lưu nháp</button>
+                                <button onClick={handleSubmit} disabled={!isFormValid} className={`btn ${isFormValid ? 'btn-success' : 'btn:disabled'}`}>Gửi duyệt</button>
                             </div>
                         </div>
                     </header>
 
                     <form className="space-y-6" onSubmit={handleSubmit}>
                         {/* General Info */}
-                        <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-200">
-                            <h2 className="text-lg font-semibold text-gray-700 border-b border-gray-200 pb-3 mb-4">Thông tin chung</h2>
+                        <div className="card p-5">
+                            <h2 className="text-lg font-semibold text-gray-700 border-b pb-3 mb-4">Thông tin chung</h2>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
                                     <label htmlFor="voucher-id" className="block text-sm font-medium text-gray-600 mb-1">Số phiếu*</label>
-                                    <input type="text" id="voucher-id" name="id" value={voucherInfo.id} className="w-full bg-gray-100 border border-gray-300 rounded-md px-3 py-2 text-sm text-gray-600" readOnly />
+                                    <input type="text" id="voucher-id" name="id" value={voucherInfo.id} className="form-control bg-gray-100 text-gray-600" readOnly />
                                 </div>
                                 <div>
                                     <label htmlFor="creation-date" className="block text-sm font-medium text-gray-600 mb-1">Ngày lập*</label>
-                                    <input type="date" id="creation-date" name="creationDate" value={voucherInfo.creationDate} onChange={handleVoucherInfoChange} className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" />
+                                    <input type="date" id="creation-date" name="creationDate" value={voucherInfo.creationDate} onChange={handleVoucherInfoChange} className="form-control" />
                                 </div>
                                 <div className="md:col-span-3">
                                     <label htmlFor="notes" className="block text-sm font-medium text-gray-600 mb-1">Ghi chú chung</label>
-                                    <textarea id="notes" name="notes" value={voucherInfo.notes} onChange={handleVoucherInfoChange} rows="2" className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm" placeholder="Ghi chú chung cho toàn bộ phiếu (nếu có)..."></textarea>
+                                    <textarea id="notes" name="notes" value={voucherInfo.notes} onChange={handleVoucherInfoChange} rows="2" className="form-control" placeholder="Ghi chú chung cho toàn bộ phiếu (nếu có)..."></textarea>
                                 </div>
                             </div>
                         </div>
 
                         {/* Products Table */}
-                        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-                             <div className="px-5 py-3 border-b border-gray-200 bg-gray-50">
+                        <div className="card overflow-hidden">
+                            <div className="card-header">
                                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
                                     <h2 className="text-lg font-semibold text-gray-700 mb-2 sm:mb-0">Chi tiết hàng hóa hủy</h2>
-                                    <button type="button" onClick={() => addNewRow(false)} className="flex items-center text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-md shadow-sm transition-colors">
-                                        <Plus className="w-4 h-4 mr-2" /> Thêm sản phẩm
+                                    <button type="button" onClick={() => addNewRow(false)} className="btn btn-primary">
+                                        <span className="icon-plus mr-2"></span> Thêm sản phẩm
                                     </button>
                                 </div>
                             </div>
                             <div className="overflow-x-auto">
-                                <table className="min-w-full">
-                                    <thead className="bg-gray-50 text-xs font-medium text-gray-500 uppercase">
+                                <table className="table">
+                                    <thead>
                                         <tr>
                                             {['Barcode*', 'Tên sản phẩm', 'Lô/Serie', 'SL Hủy*', 'Hạn sử dụng', 'Lý do*', 'Bằng chứng*', ''].map(header => (
-                                                <th key={header} scope="col" className="px-4 py-3 text-left tracking-wider">{header === '' ? <span className="sr-only">Xóa</span> : header}</th>
+                                                <th key={header} scope="col" className="text-left">{header === '' ? <span className="sr-only">Xóa</span> : header}</th>
                                             ))}
                                         </tr>
                                     </thead>
-                                    <tbody className="bg-white divide-y divide-gray-200">
+                                    <tbody className="divide-y">
                                         {rows.map((row) => (
                                             <tr key={row.id} className="align-top hover:bg-gray-50">
                                                 {/* Barcode */}
-                                                <td className="px-4 py-3"><input type="text" value={row.sku} onChange={(e) => handleRowChange(row.id, 'sku', e.target.value)} placeholder="Nhập Barcode..." className={`w-full text-sm p-2 border rounded-md ${row.errors.sku ? 'border-red-500' : 'border-gray-300'}`} /></td>
+                                                <td className="px-4 py-3">
+                                                    <input
+                                                        type="text"
+                                                        value={row.sku}
+                                                        onChange={(e) => handleRowChange(row.id, 'sku', e.target.value)}
+                                                        placeholder="Nhập Barcode..."
+                                                        className={`form-control ${row.errors.sku ? 'is-invalid' : ''}`}
+                                                    />
+                                                </td>
                                                 {/* Product Info */}
-                                                <td className="px-4 py-3"><p className="text-sm text-gray-800">{row.productName || '---'}</p><p className="text-xs text-gray-500 mt-1">Tồn: {row.stock}</p></td>
+                                                <td className="px-4 py-3">
+                                                    <p className="text-sm text-gray-800">{row.productName || '---'}</p>
+                                                    <p className="text-xs text-gray-500 mt-1">Tồn: {row.stock}</p>
+                                                </td>
                                                 {/* Lot/Serial */}
-                                                <td className="px-4 py-3">{row.hasLot && <input type="text" value={row.lot} onChange={(e) => handleRowChange(row.id, 'lot', e.target.value)} placeholder="Nhập Lô/Serie" className="w-full text-sm p-2 border border-gray-300 rounded-md" />}</td>
+                                                <td className="px-4 py-3">
+                                                    {row.hasLot && (
+                                                        <input
+                                                            type="text"
+                                                            value={row.lot}
+                                                            onChange={(e) => handleRowChange(row.id, 'lot', e.target.value)}
+                                                            placeholder="Nhập Lô/Serie"
+                                                            className="form-control"
+                                                        />
+                                                    )}
+                                                </td>
                                                 {/* Quantity */}
-                                                <td className="px-4 py-3"><input type="number" min="1" value={row.quantity} onChange={(e) => handleRowChange(row.id, 'quantity', e.target.value)} placeholder="SL" className={`w-24 text-sm p-2 border rounded-md ${row.errors.quantity ? 'border-red-500' : 'border-gray-300'}`} />{row.errors.quantity && <p className="text-xs text-red-600 mt-1">{row.errors.quantity}</p>}</td>
+                                                <td className="px-4 py-3">
+                                                    <input
+                                                        type="number"
+                                                        min="1"
+                                                        value={row.quantity}
+                                                        onChange={(e) => handleRowChange(row.id, 'quantity', e.target.value)}
+                                                        placeholder="SL"
+                                                        className={`form-control w-24 ${row.errors.quantity ? 'is-invalid' : ''}`}
+                                                    />
+                                                    {row.errors.quantity && <p className="text-xs text-red-600 mt-1">{row.errors.quantity}</p>}
+                                                </td>
                                                 {/* HSD */}
-                                                <td className="px-4 py-3">{row.hasHsd && <input type="date" value={row.hsd} onChange={(e) => handleRowChange(row.id, 'hsd', e.target.value)} className="w-full text-sm p-2 border border-gray-300 rounded-md" />}</td>
+                                                <td className="px-4 py-3">
+                                                    {row.hasHsd && (
+                                                        <input
+                                                            type="date"
+                                                            value={row.hsd}
+                                                            onChange={(e) => handleRowChange(row.id, 'hsd', e.target.value)}
+                                                            className="form-control"
+                                                        />
+                                                    )}
+                                                </td>
                                                 {/* Reason */}
                                                 <td className="px-4 py-3">
-                                                    <select value={row.reason} onChange={(e) => handleRowChange(row.id, 'reason', e.target.value)} className={`w-full text-sm p-2 border rounded-md ${row.errors.reason ? 'border-red-500' : 'border-gray-300'}`}>
+                                                    <select
+                                                        value={row.reason}
+                                                        onChange={(e) => handleRowChange(row.id, 'reason', e.target.value)}
+                                                        className={`form-control ${row.errors.reason ? 'is-invalid' : ''}`}
+                                                    >
                                                         <option value="">-- Chọn --</option>
                                                         <option value="HET_HAN">Hết hạn</option>
                                                         <option value="HONG_VO">Hỏng vỡ</option>
                                                         <option value="LOI_NCC">Lỗi NCC</option>
                                                         <option value="KHAC">Khác</option>
                                                     </select>
-                                                    {row.reason === 'KHAC' && <input type="text" value={row.reasonOther} onChange={(e) => handleRowChange(row.id, 'reasonOther', e.target.value)} placeholder="Nhập lý do khác..." className={`w-full text-sm p-2 border rounded-md mt-2 ${row.errors.reasonOther ? 'border-red-500' : 'border-gray-300'}`} />}
+                                                    {row.reason === 'KHAC' && (
+                                                        <input
+                                                            type="text"
+                                                            value={row.reasonOther}
+                                                            onChange={(e) => handleRowChange(row.id, 'reasonOther', e.target.value)}
+                                                            placeholder="Nhập lý do khác..."
+                                                            className={`form-control mt-2 ${row.errors.reasonOther ? 'is-invalid' : ''}`}
+                                                        />
+                                                    )}
                                                 </td>
                                                 {/* Evidence */}
                                                 <td className="px-4 py-3">
-                                                    <label className={`cursor-pointer flex items-center justify-center w-full h-10 bg-gray-50 text-gray-600 rounded-md border-2 border-dashed hover:bg-gray-100 ${row.errors.evidence ? 'border-red-400' : 'border-gray-300'}`}><Upload className="w-4 h-4 mr-2" /><span>Tải lên</span><input type="file" onChange={(e) => handleEvidenceChange(row.id, e.target.files)} className="hidden" multiple /></label>
-                                                    <div className="mt-2 space-y-1">{row.evidence.map((file, index) => (<div key={index} className="flex items-center justify-between text-xs bg-gray-100 px-2 py-1 rounded"><span className="truncate pr-2">{file.name}</span><button type="button" onClick={() => removeEvidenceFile(row.id, index)} className="text-gray-500 hover:text-red-500"><X className="w-4 h-4" /></button></div>))}</div>
+                                                    <label
+                                                        className={`cursor-pointer flex items-center justify-center w-full h-10 bg-gray-50 text-gray-600 rounded-md border-2 border-dashed hover:bg-gray-100 ${row.errors.evidence ? 'border-red-400' : 'border-gray-300'}`}
+                                                    >
+                                                        <span className="icon-upload mr-2"></span>
+                                                        <span>Tải lên</span>
+                                                        <input
+                                                            type="file"
+                                                            onChange={(e) => handleEvidenceChange(row.id, e.target.files)}
+                                                            className="hidden"
+                                                            multiple
+                                                        />
+                                                    </label>
+                                                    <div className="mt-2 space-y-1">
+                                                        {row.evidence.map((file, index) => (
+                                                            <div key={index} className="flex items-center justify-between text-xs bg-gray-100 px-2 py-1 rounded">
+                                                                <span className="truncate pr-2">{file.name}</span>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => removeEvidenceFile(row.id, index)}
+                                                                    className="text-gray-500 hover:text-red-500"
+                                                                >
+                                                                    <span className="icon-x w-4 h-4"></span>
+                                                                </button>
+                                                            </div>
+                                                        ))}
+                                                    </div>
                                                 </td>
                                                 {/* Remove Button */}
-                                                <td className="px-4 py-3 text-right">{rows.length > 1 && <button type="button" onClick={() => removeRow(row.id)} className="text-gray-400 hover:text-red-500 p-1 rounded-full hover:bg-red-50"><Trash2 className="w-5 h-5" /></button>}</td>
+                                                <td className="px-4 py-3 text-right">
+                                                    {rows.length > 1 && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => removeRow(row.id)}
+                                                            className="text-gray-400 hover:text-red-500 p-1 rounded-full hover:bg-red-50"
+                                                        >
+                                                            <span className="icon-trash w-5 h-5"></span>
+                                                        </button>
+                                                    )}
+                                                </td>
                                             </tr>
                                         ))}
                                     </tbody>
                                 </table>
-                                {rows.length === 0 && <div className="text-center py-8"><p className="text-gray-500">Vui lòng thêm sản phẩm để tạo phiếu hủy.</p></div>}
+                                {rows.length === 0 && (
+                                    <div className="text-center py-8">
+                                        <p className="text-gray-500">Vui lòng thêm sản phẩm để tạo phiếu hủy.</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </form>
 
                     {/* Modals & Notifications */}
-                    {modal.type && <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-4">
-                        <div className="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full text-center">
-                            {modal.type === 'confirmCancel' && <>
-                                <div className="flex items-center justify-center w-12 h-12 mx-auto bg-yellow-100 rounded-full mb-4"><AlertTriangle className="h-6 w-6 text-yellow-500"/></div>
-                                <h3 className="text-lg font-semibold text-gray-800">Xác nhận hủy</h3>
-                                <p className="text-sm text-gray-600 mt-2 mb-6">Bạn có chắc muốn hủy phiếu này? Hành động này không thể hoàn tác.</p>
-                                <div className="flex space-x-2">
-                                    <button onClick={() => setModal({ type: null })} className="flex-1 px-4 py-2 bg-gray-200 text-gray-800 font-medium rounded-md hover:bg-gray-300">Không</button>
-                                    <button onClick={confirmCancelAction} className="flex-1 px-4 py-2 bg-red-600 text-white font-medium rounded-md hover:bg-red-700">Xác nhận</button>
-                                </div>
-                            </>}
-                            {modal.type === 'success' && <>
-                                <div className="flex items-center justify-center w-12 h-12 mx-auto bg-green-100 rounded-full mb-4"><CheckCircle2 className="h-6 w-6 text-green-500"/></div>
-                                <h3 className="text-lg font-semibold text-gray-800">{modal.title}</h3>
-                                <p className="text-sm text-gray-600 mt-2 mb-6">{modal.message}</p>
-                                <button onClick={() => setModal({ type: null })} className="w-full px-4 py-2 bg-green-600 text-white font-medium rounded-md hover:bg-green-700">OK</button>
-                            </>}
+                    {modal.type && (
+                        <div className="modal-overlay">
+                            <div className="modal-content">
+                                {modal.type === 'confirmCancel' && (
+                                    <>
+                                        <div className="flex items-center justify-center w-12 h-12 mx-auto bg-yellow-100 rounded-full mb-4">
+                                            <span className="icon-alert-triangle w-6 h-6 text-yellow-500"></span>
+                                        </div>
+                                        <h3 className="text-lg font-semibold text-gray-800">Xác nhận hủy</h3>
+                                        <p className="text-sm text-gray-600 mt-2 mb-6">
+                                            Bạn có chắc muốn hủy phiếu này? Hành động này không thể hoàn tác.
+                                        </p>
+                                        <div className="flex space-x-2">
+                                            <button onClick={() => setModal({ type: null })} className="flex-1 btn btn-secondary">
+                                                Không
+                                            </button>
+                                            <button onClick={confirmCancelAction} className="flex-1 btn btn-danger">
+                                                Xác nhận
+                                            </button>
+                                        </div>
+                                    </>
+                                )}
+                                {modal.type === 'success' && (
+                                    <>
+                                        <div className="flex items-center justify-center w-12 h-12 mx-auto bg-green-100 rounded-full mb-4">
+                                            <span className="icon-check-circle w-6 h-6 text-green-500"></span>
+                                        </div>
+                                        <h3 className="text-lg font-semibold text-gray-800">{modal.title}</h3>
+                                        <p className="text-sm text-gray-600 mt-2 mb-6">{modal.message}</p>
+                                        <button onClick={() => setModal({ type: null })} className="w-full btn btn-success">
+                                            OK
+                                        </button>
+                                    </>
+                                )}
+                            </div>
                         </div>
-                    </div>}
-                    {toast.show && <div className="fixed bottom-5 right-5 bg-red-600 text-white p-4 rounded-lg shadow-lg flex items-center animate-slide-in-right"><AlertTriangle className="w-5 h-5 mr-3"/> <p className="text-sm font-medium">{toast.message}</p></div>}
+                    )}
+                    {toast.show && (
+                        <div className="toast animate-slide-in-right">
+                            <span className="icon-alert-triangle w-5 h-5 mr-3"></span>
+                            <p className="text-sm font-medium">{toast.message}</p>
+                        </div>
+                    )}
                 </div>
             </div>
         </>
     );
 }
 
-// Default export
 export default CreateGoodDisposal;
