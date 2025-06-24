@@ -362,8 +362,8 @@ const connectDB = async () => {
           supplier: "Công ty TNHH DEF",
           import_date: new Date("2025-05-10T08:00:00Z"),
           imported_by: accounts[0]._id,
-          total_value: 570000,
-          status: "completed",
+          total_value: 270000,
+          status: "cancelled",
           notes: "Lô hàng có một số sản phẩm hết hạn",
           conditions_checked: true,
         },
@@ -406,7 +406,19 @@ const connectDB = async () => {
           manufacturing_date: new Date("2025-02-01"),
           notes: "Chờ kiểm tra chất lượng",
           meets_conditions: false,
-        }
+        },
+        {
+          import_batch_id: importBatches[2]._id, // PN003
+          goods_id: goods[0]._id, 
+          quantity_imported: 30,
+          unit_import_price: 9000,
+          total_amount: 9000 * 30,
+          expiry_date: new Date("2025-12-31"),
+          manufacturing_batch_number: "LOT003",
+          manufacturing_date: new Date("2025-03-15"),
+          notes: "Bị hư hỏng khi vận chuyển",
+          meets_conditions: false,
+        },
       ];
 
       importDetails = await db.ImportDetail.insertMany(importDetails);
