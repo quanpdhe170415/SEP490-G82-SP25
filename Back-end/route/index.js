@@ -12,7 +12,6 @@ const exportRoute = require("./export.route");
 const importController = require("./import.route");
 
 
-const importController = require("./import.route");
 
 
 router.use("/product", productRouter);
