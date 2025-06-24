@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 require("dotenv").config();
+const bcrypt = require("bcryptjs");
 
 const db = require("../models");
 
@@ -9,6 +10,7 @@ const connectDB = async () => {
       dbName: process.env.DB_NAME,
     });
     console.log("MongoDB connected successfully");
+
     // Đảm bảo các collection được tạo ra
     await Promise.all([
       db.Account.createCollection(),
@@ -26,12 +28,183 @@ const connectDB = async () => {
       db.BillDetail.createCollection(),
       db.ReturnOrder.createCollection(),
       db.ReturnDetail.createCollection(),
+      db.GoodsDisposal.createCollection(),
+      db.DisposalItem.createCollection(),
+      db.Session.createCollection(),
+      db.ShiftType.createCollection(),
     ]);
     console.log("All collections ensured!");
 
+ let shiftTypes = [];
+    const shiftTypeCount = await db.ShiftType.countDocuments();
+    console.log(ShiftType count: ${shiftTypeCount});
+    if (shiftTypeCount === 0) {
+      shiftTypes = await db.ShiftType.insertMany([
+        {
+          name: "Ca sáng",
+          start_time: "08:00",
+          end_time: "15:00",
+          notes: "Ca sáng từ 8h đến 15h",
+        },
+        {
+          name: "Ca chiều",
+          start_time: "15:00",
+          end_time: "22:00",
+          notes: "Ca chiều từ 15h đến 22h",
+        },
+      ]);
+      console.log("Seeded shift types:", shiftTypes.map(s => s.name));
+    } else {
+      shiftTypes = await db.ShiftType.find();
+      console.log("Existing shift types:", shiftTypes.map(s => s.name));
+    }
+
+    // Seed dữ liệu cho Role nếu chưa có
+    let roles = [];
+    const roleCount = await db.Role.countDocuments();
+    console.log(Role count: ${roleCount});
+    if (roleCount === 0) {
+      roles = await db.Role.insertMany([
+        {
+          name: "Admin",
+          code: "ADMIN",
+        },
+        {
+          name: "Staff",
+          code: "STAFF",
+        },
+        {
+          name: "Manager",
+          code: "MANAGER",},
+        {
+          name: "WarehouseStaff",
+          code: "WAREHOUSE_STAFF",
+        },
+      ]);
+      console.log(
+        "Seeded roles:",
+        roles.map((r) => ({ name: r.name, code: r.code }))
+      );
+    } else {
+      roles = await db.Role.find();
+      console.log(
+        "Existing roles:",
+        roles.map((r) => ({ name: r.name, code: r.code }))
+      );
+    }
+
+    if (!roles.length) {
+      throw new Error("No roles available for seeding Account");
+    }
+
+    // Seed dữ liệu cho Account nếu chưa có
+    let accounts = [];
+    const accountCount = await db.Account.countDocuments();
+    console.log(Account count: ${accountCount});
+    if (accountCount === 0) {
+      const password1 = await bcrypt.hash("123456", 10);
+      const password2 = await bcrypt.hash("123456", 10);
+      accounts = await db.Account.insertMany([
+        {
+          username: "admin1",
+          password: password1, // Thay bằng mật khẩu đã mã hóa
+          full_name: "Nguyễn Văn A",
+          email: "admin1@example.com",
+          phone: "0901234567",
+          is_active: true,
+          role_id: roles.find((r) => r.name === "Admin")._id,
+        },
+        {
+          username: "admin2",
+          password: password2, // Thay bằng mật khẩu đã mã hóa
+          full_name: "Trần Thị B",
+          email: "admin2@example.com",
+          phone: "0912345678",
+          is_active: true,
+          role_id: roles.find((r) => r.name === "Staff")._id,
+        },
+        {
+          username: "manager1",
+          password: password1, // Thay bằng mật khẩu đã mã hóa
+          full_name: "Lê Văn C",
+          email: "a@gmail.com",
+          phone: "0987654321",
+          is_active: true,
+          role_id: roles.find((r) => r.name === "Manager")._id,
+        },
+        {
+          username: "staff1",
+          password: password2, // Thay bằng mật khẩu đã mã hóa
+          full_name: "Phạm Thị D",
+          email: "b@gmail.com",
+          phone: "0976543210",
+          is_active: true,
+          role_id: roles.find((r) => r.name === "WarehouseStaff")._id,
+        },
+      ]);
+      console.log(
+        "Seeded accounts:",
+        accounts.map((a) => a.username)
+      );
+    } else {
+      accounts = await db.Account.find();
+      console.log(
+        "Existing accounts:",
+        accounts.map((a) => a.username)
+      );
+    }
+
+    // Seed dữ liệu cho Shift nếu chưa có
+    let shifts = [];
+    const shiftCount = await db.Shift.countDocuments();
+    console.log(Shift count: ${shiftCount});
+    if (shiftCount === 0 && accounts.length > 0) {
+      shifts = await db.Shift.insertMany([
+        {
+          account_id: accounts[0]._id, // Nguyễn Văn A
+          shift_start_time: new Date("2025-06-14T08:00:00Z"),
+          shift_end_time: new Date("2025-06-14T14:00:00Z"),
+          initial_cash_amount: 500000,
+          final_cash_amount: 520000,
+          cash_transactions: 10,
+          transfer_transactions: 5,
+          cash_change_given: 20000,
+          total_transactions: 15,
+          cash_surplus: 0,
+          status: "closed",
+          notes: "Ca sáng ngày 14/06/2025",
+        },
+        {
+          account_id: accounts[1]._id, // Trần Thị B
+          shift_start_time: new Date("2025-06-14T14:00:00Z"),
+          shift_end_time: new Date("2025-06-14T20:00:00Z"),
+          initial_cash_amount: 500000,
+          final_cash_amount: 510000,
+          cash_transactions: 8,
+          transfer_transactions: 3,
+          cash_change_given: 15000,
+          total_transactions: 11,
+          cash_surplus: 0,
+          status: "closed",
+          notes: "Ca chiều ngày 14/06/2025",
+        },
+      ]);
+      console.log(
+        "Seeded shifts:",
+        shifts.map((s) => s.notes)
+      );
+    } else {
+      shifts = await db.Shift.find();
+      console.log(
+        "Existing shifts:",
+        shifts.map((s) => s.notes)
+      );
+    }
+
     // Seed dữ liệu cho Category nếu chưa có
-    const categoryCount = await db.Category.countDocuments();
     let categories = [];
+    const categoryCount = await db.Category.countDocuments();
+    console.log(Category count: ${categoryCount});
     if (categoryCount === 0) {
       categories = await db.Category.insertMany([
         { category_name: "Đồ uống", description: "Các loại nước giải khát" },
@@ -43,8 +216,9 @@ const connectDB = async () => {
     }
 
     // Seed dữ liệu cho Goods nếu chưa có
-    const goodsCount = await db.Goods.countDocuments();
     let goods = [];
+    const goodsCount = await db.Goods.countDocuments();
+    console.log(Goods count: ${goodsCount});
     if (goodsCount === 0 && categories.length > 0) {
       goods = await db.Goods.insertMany([
         {
@@ -81,44 +255,35 @@ const connectDB = async () => {
           image_url:
             "https://product.hstatic.net/200000495609/product/snack-tom-cay-oishi-du-vi-goi-lon-68g-banh-keo-an-vat-imnuts_d3ff6a241a9e4bb28aea097f9eca7166.jpg",
         },
+        {
+          goods_name: "Bánh mì sandwich",
+          barcode: "8931111222333",
+          unit_of_measure: "chiếc",
+          description: "Bánh mì kẹp thịt nguội",
+          category_id: categories[1]._id,
+          selling_price: 25000,
+          average_import_price: 18000,
+          last_import_price: 19000,
+          last_import_date: new Date(),
+          stock_quantity: 30,
+          display_quantity: 8,
+          minimum_stock_quantity: 5,
+          is_active: true,
+          image_url: "https://example.com/sandwich.jpg",
+        },
       ]);
       console.log("Seeded goods!");
     } else {
       goods = await db.Goods.find();
     }
 
-    // Seed dữ liệu cho Account nếu chưa có (cho trường imported_by)
-    const accountCount = await db.Account.countDocuments();
-    let accounts = [];
-    if (accountCount === 0) {
-      accounts = await db.Account.insertMany([
-        {
-          username: "admin1",
-          password: "hashed_password_1", // Thay bằng mật khẩu đã mã hóa trong thực tế
-          full_name: "Nguyễn Văn A",
-          email: "admin1@example.com",
-          phone: "0901234567",
-          is_active: true,
-        },
-        {
-          username: "admin2",
-          password: "hashed_password_2", // Thay bằng mật khẩu đã mã hóa trong thực tế
-          full_name: "Trần Thị B",
-          email: "admin2@example.com",
-          phone: "0912345678",
-          is_active: true,
-        },
-      ]);
-      console.log("Seeded accounts!");
-    } else {
-      accounts = await db.Account.find();
-    }
 
     // Seed dữ liệu cho ImportBatch
-    const importBatchCount = await db.ImportBatch.countDocuments();
     let importBatches = [];
+    const importBatchCount = await db.ImportBatch.countDocuments();
+    console.log(ImportBatch count: ${importBatchCount});
     if (importBatchCount > 0) {
-      await db.ImportBatch.deleteMany({}); // Xóa tất cả dữ liệu hiện có
+      await db.ImportBatch.deleteMany({});
       console.log("Cleared existing import batches!");
     }
     if (goods.length >= 2 && accounts.length > 0) {
@@ -143,6 +308,16 @@ const connectDB = async () => {
           notes: "Đang chờ kiểm tra hàng",
           conditions_checked: false,
         },
+        {
+          import_receipt_number: "PN003",
+          supplier: "Công ty TNHH DEF",
+          import_date: new Date("2025-05-10T08:00:00Z"),
+          imported_by: accounts[0]._id,
+          total_value: 570000,
+          status: "completed",
+          notes: "Lô hàng có một số sản phẩm hết hạn",
+          conditions_checked: true,
+        },
       ]);
       console.log("Seeded import batches!");
     } else {
@@ -151,12 +326,14 @@ const connectDB = async () => {
 
     // Seed dữ liệu cho ImportDetail
     const importDetailCount = await db.ImportDetail.countDocuments();
+    console.log(ImportDetail count: ${importDetailCount});
     if (importDetailCount > 0) {
       await db.ImportDetail.deleteMany({});
       console.log("Cleared existing import details!");
     }
+    let importDetails = [];
     if (importBatches.length > 0 && goods.length >= 2) {
-      const importDetails = [
+      importDetails = [
         {
           import_batch_id: importBatches[0]._id, // PN001
           goods_id: goods[0]._id, // Coca Cola
@@ -180,124 +357,93 @@ const connectDB = async () => {
           manufacturing_date: new Date("2025-02-01"),
           notes: "Chờ kiểm tra chất lượng",
           meets_conditions: false,
-        },
+        }
       ];
 
-      await db.ImportDetail.insertMany(importDetails);
+      importDetails = await db.ImportDetail.insertMany(importDetails);
       console.log("Seeded import details!");
     }
 
     // Seed dữ liệu cho Status nếu chưa có
-    // Loại bỏ seeding Status vì ImportBatch sử dụng enum trực tiếp
-    const statusCount = await db.Status.countDocuments();
     let statuses = [];
+    const statusCount = await db.Status.countDocuments();
+    console.log(Status count: ${statusCount});
     if (statusCount === 0) {
       statuses = await db.Status.insertMany([
         {
           name: "Đã thanh toán",
           description: "Hóa đơn đã được thanh toán đầy đủ",
         },
-        { name: "Đã trả hàng", description: "Hóa đơn đã bị trả hàng" },
+        {
+          name: "Đã trả hàng",
+          description: "Hóa đơn đã bị trả hàng",
+        },
       ]);
       console.log("Seeded statuses!");
     } else {
       statuses = await db.Status.find();
     }
 
-    // Seed dữ liệu cho Account (cần có để tạo shift)
-    // Đã seed Account ở trên, không cần seed lại hoặc khai báo lại biến
-
-    // Seed dữ liệu cho Shift
-    const shiftCount = await db.Shift.countDocuments();
-    let shifts = [];
-    if (shiftCount === 0 && accounts.length > 0) {
-      shifts = await db.Shift.insertMany([
-        {
-          account_id: accounts[0]._id,
-          shift_start_time: new Date("2025-06-12T16:21:46.176Z"),
-          shift_end_time: new Date("2025-06-14T12:16:44.008Z"),
-          initial_cash_amount: 800000,
-          final_cash_amount: 860000,
-          cash_transactions: 2,
-          transfer_transactions: 0,
-          cash_change_given: 0,
-          total_transactions: 2,
-          cash_surplus: 0,
-          status: "closed",
-          notes: "Ca mở với 800,000 VND ngày 12/06/2025",
-          created_at: new Date("2025-06-12T16:21:46.176Z"),
-          updated_at: new Date("2025-06-12T16:21:46.176Z"),
-          updatedAt: new Date("2025-06-14T12:16:44.014Z"),
-        },
-        {
-          account_id: accounts[0]._id,
-          shift_start_time: new Date("2025-06-14T12:19:45.568Z"),
-          shift_end_time: new Date("2025-06-14T12:33:40.517Z"),
-          initial_cash_amount: 800000,
-          final_cash_amount: 820000,
-          cash_transactions: 1,
-          transfer_transactions: 0,
-          cash_change_given: 0,
-          total_transactions: 1,
-          cash_surplus: 0,
-          status: "closed",
-          notes: " |Cảnh báo: Số tiền mặt ban đầu (800000 VND) ít hơn số tiền cuối cùng của ca trước (860000 VND) là 60000 VND.",
-          createdAt: new Date("2025-06-14T12:19:45.569Z"),
-          updatedAt: new Date("2025-06-14T12:33:40.518Z"),
-        },
-      ]);
-      console.log("Seeded shifts!");
-    } else {
-      shifts = await db.Shift.find();
-    }
-
-    // Seed dữ liệu cho Bill (cập nhật lại để xóa dữ liệu cũ và thêm dữ liệu mới)
-    const billCount = await db.Bill.countDocuments();
+    // Seed dữ liệu cho Bill
     let bills = [];
+    const billCount = await db.Bill.countDocuments();
+    console.log(Bill count: ${billCount});
     if (billCount > 0) {
-      await db.Bill.deleteMany({}); // Xóa tất cả dữ liệu hiện có
+      await db.Bill.deleteMany({});
       console.log("Cleared existing bills!");
     }
-    
+
     if (statuses.length > 0 && shifts.length > 0) {
-      bills = await db.Bill.insertMany([
-        // Dữ liệu bill mới từ shift
-        {
-          billNumber: "INV-20250613-180",
-          customerName: "Tran Van B",
-          customerPhone: "0901234567",
-          totalAmount: 40000,
-          discount: 0,
-          finalAmount: 40000,
-          statusId: statuses[0]._id, // Đã thanh toán
+      const statusPaid = statuses.find((s) => s.name === "Đã thanh toán");
+      const statusReturned = statuses.find((s) => s.name === "Đã trả hàng");
+      const shiftMorning = shifts.find((s) => s.notes === "Ca sáng ngày 14/06/2025");
+      const shiftAfternoon = shifts.find((s) => s.notes === "Ca chiều ngày 14/06/2025");
+      const billsToInsert = [];
+      if (statusPaid && shiftMorning) {
+        billsToInsert.push({
+          billNumber: "HD001",
+          seller: "Nguyễn Văn A",
+          totalAmount: 22000,
+          finalAmount: 22000,
           paymentMethod: "Tiền mặt",
-          notes: "",
-          shift_id: shifts[0]._id, // Liên kết với shift đầu tiên
-          createdAt: new Date("2025-06-13T17:41:54.505Z"),
-          updatedAt: new Date("2025-06-13T17:41:54.505Z"),
-        },
-        {
-          billNumber: "INV-20250613-209",
-          customerName: "Tran Van B",
-          customerPhone: "0901234567",
-          totalAmount: 20000,
-          discount: 0,
-          finalAmount: 20000,
-          statusId: statuses[0]._id, // Đã thanh toán
-          paymentMethod: "Tiền mặt",
-          notes: "",
-          shift_id: shifts[0]._id, // Liên kết với shift đầu tiên
-          createdAt: new Date("2025-06-13T17:52:11.942Z"),
-          updatedAt: new Date("2025-06-13T17:52:11.942Z"),
-        },
-      ]);
-      console.log("Seeded bills with shift data!");
+          statusId: statusPaid._id,
+          shift_id: shiftMorning._id,
+        });
+      } else {
+        console.warn("Không tìm thấy status 'Đã thanh toán' hoặc shift 'Ca sáng ngày 14/06/2025', bỏ qua HD001");
+      }
+      if (statusReturned && shiftAfternoon) {
+        billsToInsert.push({
+          billNumber: "HD002",
+          seller: "Trần Thị B",
+          totalAmount: 15000,
+          finalAmount: 15000,
+          paymentMethod: "Chuyển khoản ngân hàng",
+          statusId: statusReturned._id,
+          shift_id: shiftAfternoon._id,
+        });
+      } else {
+        console.warn("Không tìm thấy status 'Đã trả hàng' hoặc shift 'Ca chiều ngày 14/06/2025', bỏ qua HD002");
+      }
+      if (billsToInsert.length > 0) {
+        bills = await db.Bill.insertMany(billsToInsert);
+        console.log("Seeded bills!");
+      } else {
+        bills = [];
+        console.warn("Không có bill nào được seed!");
+      }
     } else {
       bills = await db.Bill.find();
     }
 
     // Seed dữ liệu cho BillDetail
-    if (bills.length >= 4 && goods.length >= 2) {
+    const billDetailCount = await db.BillDetail.countDocuments();
+    console.log(BillDetail count: ${billDetailCount});
+    if (billDetailCount > 0) {
+      await db.BillDetail.deleteMany({});
+      console.log("Cleared existing bill details!");
+    }
+    if (bills.length > 0 && goods.length >= 2) {
       const billDetails = [
         // Chi tiết cho HD001
         {
@@ -306,6 +452,7 @@ const connectDB = async () => {
           goods_name: goods[0].goods_name,
           quantity: 2,
           unit_price: 5000,
+          total_amount: 2 * 5000,
         },
         {
           bill_id: bills[0]._id, // HD001
@@ -313,6 +460,7 @@ const connectDB = async () => {
           goods_name: goods[1].goods_name,
           quantity: 1,
           unit_price: 12000,
+          total_amount: 1 * 12000,
         },
         // Chi tiết cho HD002
         {
@@ -321,39 +469,123 @@ const connectDB = async () => {
           goods_name: goods[1].goods_name,
           quantity: 1,
           unit_price: 15000,
+          total_amount: 1 * 15000,
         },
         // Chi tiết cho INV-20250613-180
-        {
-          bill_id: bills[2]._id, // INV-20250613-180
-          goods_id: goods[0]._id, // Coca Cola
-          goods_name: goods[0].goods_name,
-          quantity: 4,
-          unit_price: 10000,
-        },
-        // Chi tiết cho INV-20250613-209
-        {
-          bill_id: bills[3]._id, // INV-20250613-209
-          goods_id: goods[1]._id, // Snack Oishi
-          goods_name: goods[1].goods_name,
-          quantity: 2,
-          unit_price: 10000,
-        },
+        // {
+        //   bill_id: bills[2]._id, // INV-20250613-180
+        //   goods_id: goods[0]._id, // Coca Cola
+        //   goods_name: goods[0].goods_name,
+        //   quantity: 4,
+        //   unit_price: 10000,
+        // },
+        // // Chi tiết cho INV-20250613-209
+        // {
+        //   bill_id: bills[3]._id, // INV-20250613-209
+        //   goods_id: goods[1]._id, // Snack Oishi
+        //   goods_name: goods[1].goods_name,
+        //   quantity: 2,
+        //   unit_price: 10000,
+        // },
       ];
-
-      // Tính và thêm total_amount cho từng item
-      billDetails.forEach((item) => {
-        item.total_amount = item.quantity * item.unit_price;
-        item.createdAt = new Date();
-        item.updatedAt = new Date();
-      });
 
       await db.BillDetail.insertMany(billDetails);
       console.log("Seeded bill details with new data!");
     } else {
       console.warn("Not enough bills or goods to seed bill details. Skipping bill details seeding.");
     }
+
+    // Seed dữ liệu cho DisposalItem
+    const disposalItemCount = await db.DisposalItem.countDocuments();
+    let disposalItems = [];
+    if (disposalItemCount > 0) {
+      await db.DisposalItem.deleteMany({});
+      console.log("Cleared existing disposal items!");
+    }
+    // if (goods.length > 0 && importBatches.length > 0 && importDetails.length > 0) {
+    //   disposalItems = await db.DisposalItem.insertMany([
+    //     {
+    //       goods_id: goods[0]._id, // Coca Cola
+    //       product_name: goods[0].goods_name,
+    //       batch_number: "LOT001",
+    //       unit_of_measure: goods[0].unit_of_measure,
+    //       quantity_disposed: 5,
+    //       cost_price: 8500,
+    //       item_disposal_reason: "Bao bì bị hỏng trong quá trình vận chuyển",
+    //       item_images: [
+    //         "https://example.com/damaged_cola_1.jpg",
+    //         "https://example.com/damaged_cola_2.jpg"
+    //       ],
+    //       import_batch_number: importBatches[0]._id,
+    //       import_detail_id: importDetails[0]._id,
+    //     },
+    //     {
+    //       goods_id: goods[1]._id, // Snack Oishi
+    //       product_name: goods[1].goods_name,
+    //       batch_number: "LOT002",
+    //       unit_of_measure: goods[1].unit_of_measure,
+    //       quantity_disposed: 3,
+    //       cost_price: 9500,
+    //       item_disposal_reason: "Sản phẩm bị ẩm mốc",
+    //       item_images: [
+    //         "https://example.com/moldy_snack_1.jpg"
+    //       ],
+    //       import_batch_number: importBatches[1]._id,
+    //       import_detail_id: importDetails[1]._id,
+    //     },
+    //   ]);
+    //   console.log("Seeded disposal items!");
+    // }
+
+    // Seed dữ liệu cho GoodsDisposal
+    const goodsDisposalCount = await db.GoodsDisposal.countDocuments();
+    if (goodsDisposalCount > 0) {
+      await db.GoodsDisposal.deleteMany({});
+      console.log("Cleared existing goods disposals!");
+    }
+    if (disposalItems.length > 0 && accounts.length >= 3) {
+      const goodsDisposals = await db.GoodsDisposal.insertMany([
+        {
+          disposal_number: "HUY001",
+          created_by: accounts[3]._id, // Phạm Thị D (staff1)
+          disposal_date: new Date("2025-06-16T14:30:00Z"),
+          reason_for_disposal: "Hủy hàng hết hạn sử dụng theo quy định",
+          disposal_items: [disposalItems[0]._id], // Bánh mì sandwich hết hạn
+          total_disposal_value: 15 * 19000, // 285,000
+          status: "approved",
+          approved_by: accounts[2]._id, // Lê Văn C (manager1)
+          confirmed_by: accounts[0]._id, // Nguyễn Văn A (admin1)
+          notes: "Hủy 15 chiếc bánh mì hết hạn, đã được phê duyệt và xác nhận thực hiện",
+        },
+        {
+          disposal_number: "HUY002",
+          created_by: accounts[1]._id, // Trần Thị B (admin2)
+          disposal_date: new Date("2025-06-15T10:00:00Z"),
+          reason_for_disposal: "Hàng hóa bị hỏng trong quá trình vận chuyển và bảo quản",
+          disposal_items: [disposalItems[1]._id, disposalItems[2]._id], // Coca Cola hỏng + Snack ẩm mốc
+          total_disposal_value: (5 * 8500) + (3 * 9500), // 42,500 + 28,500 = 71,000
+          status: "pending",
+          notes: "Chờ phê duyệt hủy hàng bị hỏng",
+        },
+        {
+          disposal_number: "HUY003",
+          created_by: accounts[3]._id, // Phạm Thị D (staff1)
+          disposal_date: new Date("2025-06-17T09:15:00Z"),
+          reason_for_disposal: "Kiểm tra định kỳ phát hiện hàng có dấu hiệu hư hỏng",
+          disposal_items: [], // Chưa có items cụ thể
+          total_disposal_value: 0,
+          status: "cancelled",
+          notes: "Đã hủy phiếu này do phát hiện hàng vẫn còn sử dụng được",
+        },
+      ]);
+      console.log("Seeded goods disposals!");
+    }
+
+    console.log("=== DATABASE SEEDING COMPLETED ===");
+    console.log("All collections have been seeded with sample data!");
+    
   } catch (error) {
-    console.error("MongoDB in-memory connection failed: ", error);
+    console.error("MongoDB connection failed: ", error);
     process.exit(1);
   }
 };
