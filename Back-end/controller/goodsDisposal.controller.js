@@ -19,7 +19,7 @@ exports.getListDisposal = async (req, res) => {
       })
       .populate({
         path: 'disposal_items',
-        select: 'goods_id product_name batch_number unit_of_measure quantity_disposed cost_price item_disposal_reason',
+        select: 'goods_id barcode product_name batch_number unit_of_measure quantity_disposed cost_price item_disposal_reason',
         populate: {
           path: 'goods_id',
           select: 'goods_name barcode unit_of_measure'
@@ -44,6 +44,7 @@ exports.getListDisposal = async (req, res) => {
       updatedAt: disposal.updatedAt,
       // Summary of disposal items for quick overview
       items_summary: disposal.disposal_items.map(item => ({
+        barcode: item.goods_id.barcode,
         product_name: item.product_name,
         quantity_disposed: item.quantity_disposed,
         unit_of_measure: item.unit_of_measure

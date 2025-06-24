@@ -32,10 +32,11 @@ const connectDB = async () => {
       db.DisposalItem.createCollection(),
       db.Session.createCollection(),
       db.ShiftType.createCollection(),
+      db.UserDetail.createCollection(),
     ]);
     console.log("All collections ensured!");
 
- let shiftTypes = [];
+    let shiftTypes = [];
     const shiftTypeCount = await db.ShiftType.countDocuments();
     console.log(`ShiftType count: ${shiftTypeCount}`);
     if (shiftTypeCount === 0) {
@@ -75,7 +76,8 @@ const connectDB = async () => {
         },
         {
           name: "Manager",
-          code: "MANAGER",},
+          code: "MANAGER",
+        },
         {
           name: "WarehouseStaff",
           code: "WAREHOUSE_STAFF",
@@ -123,6 +125,24 @@ const connectDB = async () => {
           is_active: true,
           role_id: roles.find((r) => r.name === "Staff")._id,
         },
+        {
+          username: "manager1",
+          password: password1, // Thay bằng mật khẩu đã mã hóa
+          full_name: "Lê Văn C",
+          email: "a@gmail.com",
+          phone: "0987654321",
+          is_active: true,
+          role_id: roles.find((r) => r.name === "Manager")._id,
+        },
+        {
+          username: "staff1",
+          password: password2, // Thay bằng mật khẩu đã mã hóa
+          full_name: "Phạm Thị D",
+          email: "b@gmail.com",
+          phone: "0976543210",
+          is_active: true,
+          role_id: roles.find((r) => r.name === "WarehouseStaff")._id,
+        },
       ]);
       console.log(
         "Seeded accounts:",
@@ -134,6 +154,53 @@ const connectDB = async () => {
         "Existing accounts:",
         accounts.map((a) => a.username)
       );
+    }
+
+    const defaultUserDetails = [
+      {
+        full_name: "Nguyễn Văn A",
+        gender: "male",
+        phone_number: "0901234567",
+        c_id: "CMT001",
+        address: "Hà Nội",
+      },
+      {
+        full_name: "Trần Thị B",
+        gender: "female",
+        phone_number: "0912345678",
+        c_id: "CMT002",
+        address: "Đà Nẵng",
+      },
+      {
+        full_name: "Lê Văn C",
+        gender: "male",
+        phone_number: "0987654321",
+        c_id: "CMT003",
+        address: "TP.HCM",
+      },
+      {
+        full_name: "Phạm Thị D",
+        gender: "female",
+        phone_number: "0976543210",
+        c_id: "CMT004",
+        address: "Cần Thơ",
+      },
+    ];
+    let userDetails = [];
+    const userDetailCount = await db.UserDetail.countDocuments();
+    console.log(`UserDetail count: ${userDetailCount}`);
+
+    if (userDetailCount === 0 && accounts.length > 0) {
+      userDetails = await db.UserDetail.insertMany(
+        accounts.map((acc, idx) => ({
+          user_id: acc._id,                           // Liên kết 1-1
+          ...defaultUserDetails[idx],                 // Trộn dữ liệu mẫu
+        }))
+      );
+      console.log("Seeded user details:", userDetails.map(u => u.full_name));
+    } else {
+      userDetails = await db.UserDetail.find();
+      console.log("Existing user details:", userDetails.map(u => u.full_name));
     }
 
     // Seed dữ liệu cho Shift nếu chưa có
@@ -339,19 +406,7 @@ const connectDB = async () => {
           manufacturing_date: new Date("2025-02-01"),
           notes: "Chờ kiểm tra chất lượng",
           meets_conditions: false,
-        },
-        {
-          import_batch_id: importBatches[2]._id, // PN003
-          goods_id: goods[2]._id, // Bánh mì sandwich
-          quantity_imported: 30,
-          unit_import_price: 19000,
-          total_amount: 19000 * 30,
-          expiry_date: new Date("2025-05-12"), // Đã hết hạn
-          manufacturing_batch_number: "LOT003",
-          manufacturing_date: new Date("2025-04-10"),
-          notes: "Sản phẩm có dấu hiệu hết hạn",
-          meets_conditions: true,
-        },
+        }
       ];
 
       importDetails = await db.ImportDetail.insertMany(importDetails);
@@ -496,55 +551,40 @@ const connectDB = async () => {
       await db.DisposalItem.deleteMany({});
       console.log("Cleared existing disposal items!");
     }
-    if (goods.length > 0 && importBatches.length > 0 && importDetails.length > 0) {
-      disposalItems = await db.DisposalItem.insertMany([
-        {
-          goods_id: goods[2]._id, // Bánh mì sandwich (hết hạn)
-          product_name: goods[2].goods_name,
-          batch_number: "LOT003",
-          unit_of_measure: goods[2].unit_of_measure,
-          quantity_disposed: 15,
-          cost_price: 19000,
-          item_disposal_reason: "Hết hạn sử dụng",
-          item_images: [
-            "https://example.com/expired_sandwich_1.jpg",
-            "https://example.com/expired_sandwich_2.jpg"
-          ],
-          import_batch_number: importBatches[2]._id,
-          import_detail_id: importDetails[2]._id,
-        },
-        {
-          goods_id: goods[0]._id, // Coca Cola
-          product_name: goods[0].goods_name,
-          batch_number: "LOT001",
-          unit_of_measure: goods[0].unit_of_measure,
-          quantity_disposed: 5,
-          cost_price: 8500,
-          item_disposal_reason: "Bao bì bị hỏng trong quá trình vận chuyển",
-          item_images: [
-            "https://example.com/damaged_cola_1.jpg",
-            "https://example.com/damaged_cola_2.jpg"
-          ],
-          import_batch_number: importBatches[0]._id,
-          import_detail_id: importDetails[0]._id,
-        },
-        {
-          goods_id: goods[1]._id, // Snack Oishi
-          product_name: goods[1].goods_name,
-          batch_number: "LOT002",
-          unit_of_measure: goods[1].unit_of_measure,
-          quantity_disposed: 3,
-          cost_price: 9500,
-          item_disposal_reason: "Sản phẩm bị ẩm mốc",
-          item_images: [
-            "https://example.com/moldy_snack_1.jpg"
-          ],
-          import_batch_number: importBatches[1]._id,
-          import_detail_id: importDetails[1]._id,
-        },
-      ]);
-      console.log("Seeded disposal items!");
-    }
+    // if (goods.length > 0 && importBatches.length > 0 && importDetails.length > 0) {
+    //   disposalItems = await db.DisposalItem.insertMany([
+    //     {
+    //       goods_id: goods[0]._id, // Coca Cola
+    //       product_name: goods[0].goods_name,
+    //       batch_number: "LOT001",
+    //       unit_of_measure: goods[0].unit_of_measure,
+    //       quantity_disposed: 5,
+    //       cost_price: 8500,
+    //       item_disposal_reason: "Bao bì bị hỏng trong quá trình vận chuyển",
+    //       item_images: [
+    //         "https://example.com/damaged_cola_1.jpg",
+    //         "https://example.com/damaged_cola_2.jpg"
+    //       ],
+    //       import_batch_number: importBatches[0]._id,
+    //       import_detail_id: importDetails[0]._id,
+    //     },
+    //     {
+    //       goods_id: goods[1]._id, // Snack Oishi
+    //       product_name: goods[1].goods_name,
+    //       batch_number: "LOT002",
+    //       unit_of_measure: goods[1].unit_of_measure,
+    //       quantity_disposed: 3,
+    //       cost_price: 9500,
+    //       item_disposal_reason: "Sản phẩm bị ẩm mốc",
+    //       item_images: [
+    //         "https://example.com/moldy_snack_1.jpg"
+    //       ],
+    //       import_batch_number: importBatches[1]._id,
+    //       import_detail_id: importDetails[1]._id,
+    //     },
+    //   ]);
+    //   console.log("Seeded disposal items!");
+    // }
 
     // Seed dữ liệu cho GoodsDisposal
     const goodsDisposalCount = await db.GoodsDisposal.countDocuments();
@@ -592,7 +632,7 @@ const connectDB = async () => {
 
     console.log("=== DATABASE SEEDING COMPLETED ===");
     console.log("All collections have been seeded with sample data!");
-    
+
   } catch (error) {
     console.error("MongoDB connection failed: ", error);
     process.exit(1);
