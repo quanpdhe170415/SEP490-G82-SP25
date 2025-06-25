@@ -139,9 +139,9 @@ export default function POS() {
           <span style={{fontSize:22}}>🔔</span>
         </Col>
       </Row>
-      <Row className="pos-container" style={{margin:0, height:'calc(100vh - 60px)'}}>
+      <Row className="pos-container justify-content-center" style={{margin:0, height:'calc(100vh - 60px)'}}>
         {/* Sidebar */}
-        <Col xs={3} className="sidebar bg-white border-end d-flex flex-column p-0" style={{height:'100%'}}>
+        <Col xs={3} style={{height:'100%', minWidth: '270px', maxWidth: '320px'}} className="sidebar bg-white border-end d-flex flex-column p-0">
           <div className="sidebar-section p-3 border-bottom">
             <div className="section-title fw-bold mb-3">Thống kê ca làm việc</div>
             <div className="d-flex flex-column gap-3">
@@ -185,10 +185,10 @@ export default function POS() {
           </div>
         </Col>
         {/* Main Area */}
-        <Col xs={7} className="main-area d-flex flex-column p-0 bg-light" style={{height:'100%'}}>
+        <Col xs={5} style={{height:'100%', maxWidth: '100%', minWidth: 0, flex: 1}} className="main-area d-flex flex-column p-0 bg-light">
           <div className="search-section bg-white border-bottom">
-            <div className="search-bar position-relative p-3" ref={searchInputRef}>
-              <InputGroup>
+            <div className="search-bar position-relative p-3 d-flex align-items-center" ref={searchInputRef}>
+              <InputGroup className="flex-grow-1">
                 <InputGroup.Text className="bg-white border-end-0"><span role="img" aria-label="search">🔍</span></InputGroup.Text>
                 <Form.Control
                   className="search-input border-start-0"
@@ -198,42 +198,45 @@ export default function POS() {
                   onFocus={() => setSearchOverlay(true)}
                 />
               </InputGroup>
-              <div className={`search-overlay position-absolute w-100 bg-white border rounded shadow ${searchOverlay ? "d-block" : "d-none"}`} style={{zIndex:100, left:0, top:'100%'}}>
-                <div className="search-filters border-bottom p-3">
-                  <Row className="filter-row g-2 mb-2">
-                    <Col><Form.Select className="filter-select"><option>Tất cả danh mục</option></Form.Select></Col>
-                    <Col><Form.Select className="filter-select"><option>Danh mục con</option></Form.Select></Col>
-                  </Row>
-                </div>
-                <div className="search-results">
-                  <ListGroup variant="flush">
-                    <ListGroup.Item className="search-result-item d-flex align-items-center" action onClick={() => addToCart(products[1])}>
-                      <div className="result-icon me-2">🥤</div>
-                      <div className="result-info flex-grow-1">
-                        <div className="result-name fw-semibold">Nước ngọt Coca Cola 330ml</div>
-                        <div className="result-category text-muted small">Nước uống &gt; Nước ngọt</div>
-                      </div>
-                      <div className="result-price fw-bold text-success">12,000₫</div>
-                    </ListGroup.Item>
-                    <ListGroup.Item className="search-result-item d-flex align-items-center" action onClick={() => addToCart(products[4])}>
-                      <div className="result-icon me-2">🥛</div>
-                      <div className="result-info flex-grow-1">
-                        <div className="result-name fw-semibold">Sữa tươi TH True Milk</div>
-                        <div className="result-category text-muted small">Nước uống &gt; Sữa</div>
-                      </div>
-                      <div className="result-price fw-bold text-success">25,000₫</div>
-                    </ListGroup.Item>
-                    <ListGroup.Item className="search-result-item d-flex align-items-center" action onClick={() => addToCart(products[0])}>
-                      <div className="result-icon me-2">💧</div>
-                      <div className="result-info flex-grow-1">
-                        <div className="result-name fw-semibold">Nước suối Aquafina 500ml</div>
-                        <div className="result-category text-muted small">Nước uống &gt; Nước suối</div>
-                      </div>
-                      <div className="result-price fw-bold text-success">8,000₫</div>
-                    </ListGroup.Item>
+              <Button
+                variant="outline-warning"
+                className="ms-2"
+                style={{whiteSpace:'nowrap', fontWeight:'bold'}}
+                onClick={() => setShowModal(true)}
+              >
+                🔥 Bán chạy
+              </Button>
+              {/* Modal sản phẩm bán chạy */}
+              <Modal show={showModal} onHide={() => setShowModal(false)} centered size="md">
+                <Modal.Header closeButton>
+                  <Modal.Title>Danh sách sản phẩm bán chạy</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                  <ListGroup>
+                    {products.slice(0, 5).map((p, idx) => (
+                      <ListGroup.Item key={p.id} className="d-flex align-items-center justify-content-between">
+                        <div className="d-flex align-items-center gap-2">
+                          <span style={{fontSize:20}}>{p.icon}</span>
+                          <div>
+                            <span className="fw-semibold">{p.name}</span>
+                            <div className="text-muted small" style={{fontSize:12}}>
+                              {`Đơn/tuần: ${10 + idx * 3} | SL/đơn: ${2 + idx}`}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="d-flex align-items-center gap-2">
+                          <span className="fw-bold text-success">{p.price.toLocaleString()}₫</span>
+                          <Button
+                            variant="link"
+                            style={{fontSize:13, color: p.pinned ? '#ffc107' : '#888', opacity: p.pinned ? 1 : 0.4, fontWeight: p.pinned ? 'bold' : 'normal', textDecoration: 'underline', padding:0, whiteSpace:'nowrap'}}
+                            onClick={() => togglePin(p.id)}
+                          >{p.pinned ? 'Bỏ ghim' : 'Ghim sản phẩm'}</Button>
+                        </div>
+                      </ListGroup.Item>
+                    ))}
                   </ListGroup>
-                </div>
-              </div>
+                </Modal.Body>
+              </Modal>
             </div>
             <div className="category-tabs d-flex gap-2 flex-wrap px-3 pt-2 bg-white border-bottom">
               {categories.map((cat) => (
@@ -249,21 +252,36 @@ export default function POS() {
               ))}
             </div>
           </div>
-          <div className="product-grid flex-grow-1 p-3" style={{overflowY:'auto', display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(140px, 1fr))', gap:12}}>
-            {filteredProducts.map((p) => (
-              <Card key={p.id} className={`product-card h-100 position-relative${p.pinned ? " border-warning bg-warning bg-opacity-10" : ""}`} style={{cursor:'pointer'}} onClick={e => { if (!e.target.classList.contains("pin-btn")) addToCart(p); }}>
-                <Button variant="link" className={`pin-btn position-absolute top-0 end-0${p.pinned ? " text-warning" : " text-secondary"}`} style={{fontSize:18}} onClick={e => { e.stopPropagation(); togglePin(p.id); }}>📌</Button>
-                <Card.Body className="d-flex flex-column align-items-center justify-content-center p-2">
-                  <div className="product-image mb-2" style={{fontSize:32}}>{p.icon}</div>
-                  <div className="product-name fw-semibold text-center mb-1" style={{fontSize:13, minHeight:32}}>{p.name}</div>
-                  <div className="product-price fw-bold text-success" style={{fontSize:14}}>{p.price.toLocaleString()}₫</div>
+          <div className="product-grid flex-grow-1 p-3" style={{overflowY:'auto', display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(120px, 1fr))', gap:10}}>
+            {products.filter(p => p.pinned).length === 0 ? (
+              <div className="text-center text-muted" style={{gridColumn:'1/-1', paddingTop:40}}>
+                Chưa có sản phẩm nào được ghim. Hãy tìm kiếm và ghim sản phẩm để hiển thị ở đây.
+              </div>
+            ) : products.filter(p => p.pinned).map((p) => (
+              <Card
+                key={p.id}
+                className="product-card h-100 position-relative border-warning bg-warning bg-opacity-10"
+                style={{cursor:'pointer', minHeight: 150, maxHeight: 170, display:'flex', alignItems:'center', justifyContent:'center', padding:'8px 4px'}}
+                onClick={e => { if (!e.target.classList.contains("pin-btn")) addToCart(p); }}
+              >
+                <Button
+                  variant="link"
+                  className="pin-btn position-absolute top-0 end-0"
+                  style={{fontSize:13, color: p.pinned ? '#ffc107' : '#888', opacity: p.pinned ? 1 : 0.4, transition:'opacity 0.2s', fontWeight: p.pinned ? 'bold' : 'normal', textDecoration: 'underline'}}
+                  onClick={e => { e.stopPropagation(); togglePin(p.id); }}
+                  title={p.pinned ? "Bỏ ghim" : "Ghim sản phẩm"}
+                >{p.pinned ? 'Đã ghim' : 'Ghim sản phẩm'}</Button>
+                <Card.Body className="d-flex flex-column align-items-center justify-content-center p-1" style={{gap:4}}>
+                  <div className="product-image mb-1" style={{fontSize:28}}>{p.icon}</div>
+                  <div className="product-name fw-semibold text-center mb-1" style={{fontSize:12, minHeight:28, lineHeight:'14px'}}>{p.name}</div>
+                  <div className="product-price fw-bold text-success" style={{fontSize:13}}>{p.price.toLocaleString()}₫</div>
                 </Card.Body>
               </Card>
             ))}
           </div>
         </Col>
         {/* Cart Area */}
-        <Col xs={3} className="cart-area bg-white border-start d-flex flex-column p-0" style={{height:'100%'}}>
+        <Col xs={4} style={{height:'100%', minWidth: '350px', maxWidth: '440px', marginRight: 0, marginLeft: 'auto'}} className="cart-area bg-white border-start d-flex flex-column p-0">
           <div className="cart-header d-flex justify-content-between align-items-center p-3 border-bottom">
             <div className="cart-title fw-bold fs-5">Hóa đơn 1</div>
             <Button variant="outline-primary" size="sm" style={{fontSize:14, padding:'2px 10px'}}>+</Button>
@@ -314,6 +332,56 @@ export default function POS() {
           </div>
         </Col>
       </Row>
+      <div className={`search-overlay position-absolute w-100 bg-white border rounded shadow ${searchOverlay ? "d-block" : "d-none"}`} style={{zIndex:100, left:0, top:'100%'}}>
+        <div className="search-filters border-bottom p-3">
+          <Row className="filter-row g-2 mb-2">
+            <Col><Form.Select className="filter-select"><option>Tất cả danh mục</option></Form.Select></Col>
+            <Col><Form.Select className="filter-select"><option>Danh mục con</option></Form.Select></Col>
+          </Row>
+        </div>
+        {search.trim() !== "" && (
+          <div className="search-results">
+            <ListGroup variant="flush">
+              {products.filter(
+                (p) =>
+                  (activeCategory === "Tất cả" || p.category === activeCategory) &&
+                  (p.name.toLowerCase().includes(search.toLowerCase()) || search === "")
+              ).map((p) => (
+                <ListGroup.Item key={p.id} className="search-result-item d-flex align-items-center" action onClick={() => addToCart(p)} style={{paddingTop: 12, paddingBottom: 12}}>
+                  <div className="result-icon me-2" style={{fontSize:20}}>{p.icon}</div>
+                  <div className="result-info flex-grow-1" style={{minWidth:0}}>
+                    <div className="result-name fw-semibold" style={{fontSize:15}}>{p.name}</div>
+                    <div className="result-category text-muted small" style={{fontSize:13}}>{p.category}</div>
+                  </div>
+                  <div style={{display:'flex', alignItems:'center', justifyContent:'flex-end', gap:8, minWidth:180}}>
+                    <div className="result-price fw-bold text-success text-end" style={{fontSize:15, minWidth:80, whiteSpace:'nowrap'}}>{p.price.toLocaleString()}₫</div>
+                    <Button
+                      variant="link"
+                      className={`pin-btn ms-2 flex-shrink-0`}
+                      style={{
+                        fontSize: 13,
+                        color: p.pinned ? '#ffc107' : '#888',
+                        opacity: p.pinned ? 1 : 0.4,
+                        fontWeight: p.pinned ? 'bold' : 'normal',
+                        textDecoration: 'underline',
+                        transition: 'color 0.2s, opacity 0.2s',
+                        minWidth: 80,
+                        textAlign: 'right',
+                        whiteSpace: 'nowrap',
+                        padding: 0
+                      }}
+                      onClick={e => { e.stopPropagation(); togglePin(p.id); }}
+                      title={p.pinned ? "Bỏ ghim" : "Ghim sản phẩm"}
+                      onMouseEnter={e => { if (p.pinned) e.currentTarget.style.color = '#dc3545'; }}
+                      onMouseLeave={e => { if (p.pinned) e.currentTarget.style.color = '#ffc107'; }}
+                    >{p.pinned ? 'Bỏ ghim' : 'Ghim sản phẩm'}</Button>
+                  </div>
+                </ListGroup.Item>
+              ))}
+            </ListGroup>
+          </div>
+        )}
+      </div>
     </Container>
   );
 }
