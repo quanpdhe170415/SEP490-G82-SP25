@@ -110,27 +110,27 @@ useEffect(() => {
     // eslint-disable-next-line
   }, []);
 
+
   const handleOpenShift = async () => {
     setLoading(true);
     setMessage("");
     setError("");
     try {
+      // If denominations are not required, just use an empty array or remove related logic
+      const denominationsArr = [];
       if (!userId) {
-        setError("Không tìm thấy thông tin tài khoản.");
+        setError("Vui lòng nhập Account ID");
         setLoading(false);
         return;
       }
-      if (!totalCash || isNaN(totalCash) || totalCash < 0) {
-        setError("Vui lòng nhập tổng số tiền mặt hợp lệ");
-        setLoading(false);
-        return;
-      }
+      // Remove check for denominationsArr.length === 0 if not needed
       const payload = {
         account_id: userId,
         initial_cash_amount: totalCash,
         notes,
+        denominations: denominationsArr,
       };
-      const res = await fetch(`${process.env.REACT_APP_URL_SERVER}/shift/openshift`, {
+      const res = await fetch("http://localhost:9999/api/shift/openshift", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -142,9 +142,7 @@ useEffect(() => {
         throw new Error(err.message || "Mở ca thất bại");
       }
       setMessage("Mở ca thành công!");
-      // Sau khi mở ca thành công, có thể chuyển hướng luôn nếu muốn
-      setTimeout(() => navigate("/POS"), 1000);
-} catch (err) {
+    } catch (err) {
       setError(err.message || "Có lỗi xảy ra khi mở ca");
     } finally {
       setLoading(false);
@@ -244,6 +242,19 @@ useEffect(() => {
                   />
                 </div>
                 <div className="text-end text-secondary small">{notes.length}/200 ký tự</div>
+              </li>
+              <li className="list-group-item bg-white">
+                <div className="mb-2 text-secondary d-flex justify-content-between align-items-center">
+                  <span>Ghi chú:</span>
+                  <input
+                    type="text"
+                    className="form-control form-control-sm ms-2"
+                    style={{ maxWidth: 300 }}
+                    value={notes}
+                    onChange={e => setNotes(e.target.value)}
+                    placeholder="Ghi chú (nếu có)"
+                  />
+                </div>
               </li>
               <li className="list-group-item d-flex justify-content-between align-items-center bg-white">
                 <span className="text-secondary">Thời gian mở ca:</span>

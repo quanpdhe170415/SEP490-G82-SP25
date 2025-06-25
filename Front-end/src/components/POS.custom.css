@@ -1,0 +1,17 @@
+.cart-items, .recent-orders {
+  scrollbar-width: thin;
+  scrollbar-color: #ccc transparent;
+  overflow-y: overlay;
+}
+.cart-items::-webkit-scrollbar, .recent-orders::-webkit-scrollbar {
+  width: 8px;
+  background: transparent;
+}
+.cart-items::-webkit-scrollbar-thumb, .recent-orders::-webkit-scrollbar-thumb {
+  background: rgba(180,180,180,0.25);
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+.cart-items::-webkit-scrollbar-thumb:hover, .recent-orders::-webkit-scrollbar-thumb:hover {
+  background: rgba(120,120,120,0.35);
+}
