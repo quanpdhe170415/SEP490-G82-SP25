@@ -8,11 +8,6 @@ import BillHistoryPage from './components/BillHistoryPage';
 import ReturnGoods from './components/ReturnGoods';
 import ForgotPassword from './components/ForgotPassword';
 import HomeForCashier from './components/HomeforCashier';
-
-
-
-
-
 import GoodsDisposal from './components/GoodsDisposal';
 import ImportHistory from "./components/ImportHistory";
 import GoodsDisposalDetail from './components/GoodsDisposalDetail';
@@ -20,10 +15,7 @@ import OpenShift from './components/OpenShift';
 import CloseShift from './components/CloseShift';
 import POS from './components/POS';
 import CashierSidebar from './components/CashierSidebar';
-import Sidebar2 from './components/Sidebar2';
-
-
-
+import Sidebar2 from './components/Sidebar2'
 
 function App() {
   return (
