@@ -2,14 +2,11 @@ const mongoose = require('mongoose');
 
 const ImportBatchSchema = new mongoose.Schema(
   {
+    //số lô nhập
     import_receipt_number: {
       type: String,
       required: true,
       unique: true,
-    },
-    supplier: {
-      type: String,
-      required: true,
     },
     import_date: {
       type: Date,
@@ -24,21 +21,10 @@ const ImportBatchSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    status: {
-      type: String,
-      enum: ["pending", "completed", "cancelled"],
-      default: "pending",
-      required: true,
-    },
     notes: {
       type: String,
       required: false,
-    },
-    conditions_checked: {
-      type: Boolean,
-      default: false,   
-      required: true,
-    },
+    }
   },
   {
     timestamps: true,

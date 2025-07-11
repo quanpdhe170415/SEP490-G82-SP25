@@ -58,11 +58,6 @@ const goodsSchema = new mongoose.Schema({
         type: Date,
        
     },
-    stock_quantity: {
-        type: Number,
-       
-        default: 0
-    },
     display_quantity: {
         type: Number,
     },
