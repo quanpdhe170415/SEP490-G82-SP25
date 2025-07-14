@@ -201,7 +201,6 @@ const BillHistory = () => {
   if (loading) {
     return (
       <div className="bill-history-page">
-        <Header />
         <Container fluid className="main-content">
           <div className="loading-text">Đang tải dữ liệu...</div>
         </Container>
@@ -211,7 +210,7 @@ const BillHistory = () => {
 
   return (
     <div className="bill-history-page">
-      <Header />
+      
       <Container fluid className="main-content">
         <div className="page-row">
           {/* Sidebar */}
