@@ -34,13 +34,13 @@ export default function SidebarWH({ isCollapsed, onToggle }) {
         title: "Xuất hủy",
         url: "/xuat-kho/xuat-huy",
         icon: "🗑️",
-        isActive: true,
+        
       },
     ],
     tonKho: [
       {
         title: "Kiểm kê kho",
-        url: "/ton-kho/kiem-ke",
+        url: "/inventory/inventory-schedule",
         icon: "📊",
       },
       {
