@@ -1,0 +1,405 @@
+/* WarehouseInspection.css */
+.warehouse-inspection {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #f5f5f5;
+  color: #333;
+  min-height: 100vh;
+}
+
+/* Search and Filters */
+.search-section {
+  background: white;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.search-filters {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.filter-select {
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  width: 150px;
+  background: white;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.date-range-inputs {
+  display: none;
+  gap: 8px;
+  align-items: center;
+}
+
+.date-range-inputs.active {
+  display: flex;
+}
+
+.date-input {
+  padding: 6px 8px;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  font-size: 13px;
+  width: 130px;
+}
+
+/* View Container */
+.view-container {
+  padding: 24px;
+}
+
+.view-section {
+  display: none;
+}
+
+.view-section.active {
+  display: block;
+}
+
+/* Status Groups Grid Layout - 2x2 */
+.status-groups-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 450px);
+  gap: 16px;
+  max-width: 1400px;
+}
+
+.status-group {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  overflow: hidden;
+  height: 450px;
+  display: flex;
+  flex-direction: column;
+}
+
+.status-group-header {
+  padding: 12px 16px;
+  border-bottom: 2px solid #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.status-group-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-group-count {
+  background: #e5e7eb;
+  color: #374151;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  min-width: 20px;
+  text-align: center;
+}
+
+.status-group-content {
+  padding: 0;
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.status-group-content:after {
+  content: '';
+  flex: 1;
+}
+
+/* Status Group Colors */
+.status-group.in-progress .status-group-header {
+  background: linear-gradient(to right, #dcfce7, #ffffff);
+  border-bottom-color: #10b981;
+}
+
+.status-group.in-progress .status-group-count {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-group.upcoming .status-group-header {
+  background: linear-gradient(to right, #fef3c7, #ffffff);
+  border-bottom-color: #f59e0b;
+}
+
+.status-group.upcoming .status-group-count {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-group.overdue .status-group-header {
+  background: linear-gradient(to right, #fee2e2, #ffffff);
+  border-bottom-color: #ef4444;
+}
+
+.status-group.overdue .status-group-count {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.status-group.completed .status-group-header {
+  background: linear-gradient(to right, #e0f2fe, #ffffff);
+  border-bottom-color: #0369a1;
+}
+
+.status-group.completed .status-group-count {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+/* Compact Inspection Items */
+.inspection-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f5f5f5;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.inspection-item:last-child {
+  border-bottom: none;
+}
+
+.inspection-item:hover {
+  background: #f8f9fa;
+}
+
+.inspection-item.multi-day {
+  background: linear-gradient(to right, #fef3c7, #ffffff);
+  border-left: 3px solid #f59e0b;
+}
+
+.inspection-item.continued {
+  background: linear-gradient(to right, #fee2e2, #ffffff);
+  border-left: 3px solid #ef4444;
+}
+
+.date-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 45px;
+  margin-right: 10px;
+}
+
+.date-number {
+  font-size: 18px;
+  font-weight: bold;
+  color: #4f46e5;
+  line-height: 1;
+}
+
+.date-day {
+  font-size: 9px;
+  color: #6b7280;
+  margin-top: 1px;
+}
+
+.date-range {
+  font-size: 8px;
+  color: #f59e0b;
+  font-weight: 500;
+  margin-top: 1px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.inspection-details {
+  flex: 1;
+  margin-right: 10px;
+}
+
+.inspection-title {
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 3px;
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.inspection-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin-bottom: 4px;
+}
+
+.inspection-time {
+  color: #4f46e5;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.inspection-location {
+  color: #6b7280;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.management-note {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 3px;
+  padding: 4px 6px;
+  margin-top: 4px;
+  font-size: 10px;
+  color: #dc2626;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.progress-section {
+  margin-top: 4px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 3px;
+  background: #f3f4f6;
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 2px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #10b981;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 9px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+.status-section {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.status-badge {
+  padding: 3px 6px;
+  border-radius: 10px;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.2px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  white-space: nowrap;
+}
+
+/* Status Colors */
+.status-in-progress {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.status-upcoming {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-urgent {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.status-overdue {
+  background: #fecaca;
+  color: #991b1b;
+}
+
+.status-completed {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.status-planned {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .status-groups-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .status-groups-grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(4, 400px);
+    gap: 12px;
+  }
+  
+  .status-group {
+    height: 400px;
+  }
+
+  .inspection-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .date-section {
+    align-items: flex-start;
+    margin-right: 0;
+  }
+
+  .status-section {
+    align-items: flex-start;
+  }
+
+  .search-filters {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
