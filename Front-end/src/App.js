@@ -18,12 +18,14 @@ import CashierSidebar from './components/CashierSidebar';
 import Sidebar2 from './components/Sidebar2'
 import Page from './pages/page';
 import { UIProvider } from './contexts/UIContext';
+
 function App() {
   return (
     <UIProvider>
       <Router>
         <Routes>
           <Route path="/openshift" element={<OpenShift />} />
+
         <Route path="/closeshift" element={<CloseShift />} />
         <Route path="/POS" element={<POS />} />
         <Route path="/" element={<LoginPage />} />
@@ -42,6 +44,7 @@ function App() {
 
         <Route path="/cashier/*" element={<Sidebar2 />} />
         <Route path="/page" element={<Page />} />
+
 
       </Routes>
     </Router>
