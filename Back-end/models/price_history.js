@@ -20,14 +20,6 @@ const PriceHistorySchema = new mongoose.Schema({
         type: Number,
         required: true
     },
-    quantity: {
-        type: Number,
-        required: true
-    },
-    import_date: {
-        type: Date,
-        required: true
-    },
     previous_average_price: {
         type: Number,
         required: true

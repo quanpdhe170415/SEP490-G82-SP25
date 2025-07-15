@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Link } from "react-router-dom";
-import { ToastContainer, toast } from "react-toastify"; // Import Toastify
-import "react-toastify/dist/ReactToastify.css"; // Import Toastify styles
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import {
   Container,
   Row,
@@ -25,6 +25,7 @@ const ImportHistory = () => {
     cancelled: false,
   });
   const [supplierSearch, setSupplierSearch] = useState({});
+  const [supplierNameSearch, setSupplierNameSearch] = useState("");
   const [selectedPurchaseId, setSelectedPurchaseId] = useState(null);
   const [purchaseData, setPurchaseData] = useState([]);
   const [purchaseDetails, setPurchaseDetails] = useState({});
@@ -47,8 +48,8 @@ const ImportHistory = () => {
         setPurchaseData(result.data);
       }
     } catch (error) {
-      console.error("Error fetching purchases:", error);
-      toast.error("Lỗi khi tải dữ liệu nhập hàng!"); // Show error toast
+      console.error("Lỗi khi tải dữ liệu nhập hàng:", error);
+      toast.error("Lỗi khi tải dữ liệu nhập hàng!");
     } finally {
       setLoading(false);
     }
@@ -57,7 +58,9 @@ const ImportHistory = () => {
   const fetchPurchaseDetails = async (importId) => {
     try {
       setLoadingDetails((prev) => ({ ...prev, [importId]: true }));
-      const response = await fetch(`http://localhost:9999/api/import/${importId}`);
+      const response = await fetch(
+        `http://localhost:9999/api/import/${importId}`
+      );
       const result = await response.json();
 
       if (result.success) {
@@ -75,11 +78,11 @@ const ImportHistory = () => {
           })),
         }));
       } else {
-        toast.error("Lỗi khi tải chi tiết đơn nhập!"); // Show error toast
+        toast.error("Lỗi khi tải chi tiết đơn nhập!");
       }
     } catch (error) {
-      console.error("Error fetching purchase details:", error);
-      toast.error("Lỗi khi tải chi tiết đơn nhập!"); // Show error toast
+      console.error("Lỗi khi tải chi tiết đơn nhập:", error);
+      toast.error("Lỗi khi tải chi tiết đơn nhập!");
     } finally {
       setLoadingDetails((prev) => ({ ...prev, [importId]: false }));
     }
@@ -97,20 +100,22 @@ const ImportHistory = () => {
   const savePurchaseDetails = async (importId) => {
     try {
       setLoadingDetails((prev) => ({ ...prev, [importId]: true }));
-      const response = await fetch(`http://localhost:9999/api/import/${importId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          items: editableItems[importId],
-          status: "received",
-        }),
-      });
+      const response = await fetch(
+        `http://localhost:9999/api/import/${importId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            items: editableItems[importId],
+            status: "received",
+          }),
+        }
+      );
       const result = await response.json();
 
       if (result.success) {
-        // Show success toast
         toast.success("Cập nhật thông tin thành công!", {
           position: "top-right",
           autoClose: 3000,
@@ -120,7 +125,6 @@ const ImportHistory = () => {
           draggable: true,
         });
 
-        // Update purchase status in purchaseData
         setPurchaseData((prev) =>
           prev.map((purchase) =>
             purchase._id === importId
@@ -128,7 +132,6 @@ const ImportHistory = () => {
               : purchase
           )
         );
-        // Update purchase details
         setPurchaseDetails((prev) => ({
           ...prev,
           [importId]: prev[importId].map((item) => {
@@ -138,25 +141,26 @@ const ImportHistory = () => {
             return {
               ...item,
               expiry_date: updatedItem.expiry_date,
-              manufacturing_batch_number: updatedItem.manufacturing_batch_number,
+              manufacturing_batch_number:
+                updatedItem.manufacturing_batch_number,
               manufacturing_date: updatedItem.manufacturing_date,
             };
           }),
         }));
-        setSelectedPurchaseId(null); // Close details after saving
+        setSelectedPurchaseId(null);
       } else {
-        console.error("Error saving purchase details:", result.message);
-        toast.error("Lỗi khi lưu chi tiết đơn nhập!"); // Show error toast
+        console.error("Lỗi khi lưu chi tiết đơn nhập:", result.message);
+        toast.error("Lỗi khi lưu chi tiết đơn nhập!");
       }
     } catch (error) {
-      console.error("Error saving purchase details:", error);
-      toast.error("Lỗi khi lưu chi tiết đơn nhập!"); // Show error toast
+      console.error("Lỗi khi lưu chi tiết đơn nhập:", error);
+      toast.error("Lỗi khi lưu chi tiết đơn nhập!");
     } finally {
       setLoadingDetails((prev) => ({ ...prev, [importId]: false }));
     }
   };
 
-  // Styles for the page (unchanged)
+  // Styles for the page
   const pageStyles = {
     purchaseHistoryPage: {
       fontFamily: "Inter, sans-serif",
@@ -355,7 +359,7 @@ const ImportHistory = () => {
     },
   };
 
-  // Helper function to format date (only date, no time)
+  // Helper function to format date
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     const date = new Date(dateString);
@@ -366,6 +370,16 @@ const ImportHistory = () => {
   const filterPurchases = () => {
     let filteredPurchases = purchaseData;
 
+    // Tính ngày cách đây 10 ngày từ ngày hiện tại
+    const tenDaysAgo = new Date();
+    tenDaysAgo.setDate(tenDaysAgo.getDate() - 60);
+
+    // Lọc các đơn nhập trong 10 ngày gần nhất
+    filteredPurchases = filteredPurchases.filter(
+      (purchase) => new Date(purchase.createdAt) >= tenDaysAgo
+    );
+
+    // Các bộ lọc khác (giữ nguyên để hỗ trợ lọc bổ sung nếu cần)
     if (fromDate) {
       filteredPurchases = filteredPurchases.filter(
         (purchase) => new Date(purchase.createdAt) >= new Date(fromDate)
@@ -392,6 +406,14 @@ const ImportHistory = () => {
     if (activeSuppliers.length > 0) {
       filteredPurchases = filteredPurchases.filter((purchase) =>
         activeSuppliers.includes(purchase.supplierId)
+      );
+    }
+
+    if (supplierNameSearch) {
+      filteredPurchases = filteredPurchases.filter((purchase) =>
+        purchase.supplierName
+          .toLowerCase()
+          .includes(supplierNameSearch.toLowerCase())
       );
     }
 
@@ -427,7 +449,7 @@ const ImportHistory = () => {
     const statusMap = {
       pending: "Chờ nhận hàng",
       received: "Đã nhận hàng",
-      cancelled: "Đã hủy",
+      cancelled: "Đã trả hàng",
     };
     return statusMap[status] || "Khác";
   };
@@ -462,6 +484,18 @@ const ImportHistory = () => {
           <div style={pageStyles.searchPanel}>
             <div style={pageStyles.searchPanelBody}>
               <h5 style={pageStyles.searchTitle}>Tìm kiếm</h5>
+
+              {/* Supplier Name Search */}
+              <div style={{ marginBottom: "1rem" }}>
+                <label style={pageStyles.formLabel}>Nhà cung cấp</label>
+                <input
+                  type="text"
+                  style={pageStyles.formControl}
+                  value={supplierNameSearch}
+                  onChange={(e) => setSupplierNameSearch(e.target.value)}
+                  placeholder="Nhập tên nhà cung cấp..."
+                />
+              </div>
 
               {/* Time Range */}
               <div style={{ marginBottom: "1rem" }}>
@@ -784,7 +818,7 @@ const ImportHistory = () => {
                                                 "N/A"
                                               )}
                                             </td>
-                                           <td
+                                            <td
                                               style={{
                                                 ...pageStyles.tableCellSmall,
                                               }}
@@ -843,28 +877,30 @@ const ImportHistory = () => {
                                   </div>
                                 </div>
                               )}
-                              <div style={pageStyles.summaryButtonContainer}>
-                                {purchase.status === "pending" ? (
-                                  <button
-                                    style={pageStyles.btnSave}
-                                    onClick={() =>
-                                      savePurchaseDetails(purchase._id)
-                                    }
-                                    disabled={loadingDetails[purchase._id]}
-                                  >
-                                    {loadingDetails[purchase._id]
-                                      ? "Đang lưu..."
-                                      : "Lưu hóa đơn"}
-                                  </button>
-                                ) : (
-                                  <Link
-                                    to="/return-purchase"
-                                    style={pageStyles.btnReturn}
-                                  >
-                                    Trả hàng nhập
-                                  </Link>
-                                )}
-                              </div>
+                              {purchase.status !== "cancelled" && (
+                                <div style={pageStyles.summaryButtonContainer}>
+                                  {purchase.status === "pending" ? (
+                                    <button
+                                      style={pageStyles.btnSave}
+                                      onClick={() =>
+                                        savePurchaseDetails(purchase._id)
+                                      }
+                                      disabled={loadingDetails[purchase._id]}
+                                    >
+                                      {loadingDetails[purchase._id]
+                                        ? "Đang lưu..."
+                                        : "Lưu hóa đơn"}
+                                    </button>
+                                  ) : (
+                                    <Link
+                                      to="/return-purchase"
+                                      style={pageStyles.btnReturn}
+                                    >
+                                      Trả hàng nhập
+                                    </Link>
+                                  )}
+                                </div>
+                              )}
                             </div>
                           </td>
                         </tr>
@@ -877,7 +913,7 @@ const ImportHistory = () => {
           </div>
         </div>
       </Container>
-      <ToastContainer /> {/* Add ToastContainer to render toasts */}
+      <ToastContainer />
     </div>
   );
 };
