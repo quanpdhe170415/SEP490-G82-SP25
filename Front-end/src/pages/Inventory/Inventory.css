@@ -753,14 +753,17 @@ body {
 }
 
 .header-left {
-  flex: 1;
+   display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Đảm bảo căn trái */
+
 }
 
 .header-title {
   font-size: 1.75rem; /* Giảm từ 2rem xuống 1.75rem */
   font-weight: 700;
   color: #1f2937;
-  margin-bottom: 0.5rem; /* Giảm từ 0.75rem xuống 0.5rem */
+  margin-bottom: 0.25rem; /* Giảm từ 0.75rem xuống 0.5rem */
 }
 
 .header-info {
@@ -1333,7 +1336,9 @@ body {
     align-items: flex-start;
     justify-content: space-between;
   }
-
+  .header-left {
+    flex: 1;
+  }
   .header-right {
     flex-direction: row;
     align-items: center;

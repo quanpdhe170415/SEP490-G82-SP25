@@ -318,9 +318,10 @@ const Inventory = () => {
           <div className="warehouse-content">
             {/* Header */}
             <div className="warehouse-header">
+              
               <div className="header-top">
                 <div className="header-left">
-                  <h1 className="header-title">Thực Thi Kiểm Kho</h1>
+                  <h1 className="header-title">Thực Thi Kiểm Kho </h1>
                   <div className="header-info">
                     <span>
                       <strong>Mã kiểm kho:</strong> KK2025-001
@@ -334,9 +335,6 @@ const Inventory = () => {
                   </div>
                 </div>
                 <div className="header-right">
-                  {/* <div className="progress-badge">
-                    {completionPercentage}% hoàn thành
-                  </div> */}
                   <button onClick={exportReport} className="btn btn-outline">
                     <FileDown size={16} />
                     Xuất báo cáo

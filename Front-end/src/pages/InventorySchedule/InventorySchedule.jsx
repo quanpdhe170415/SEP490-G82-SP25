@@ -1,25 +1,23 @@
+"use client";
 
-
-"use client"
-
-import { useState, useEffect } from "react"
-import "./InventorySchedule.css"
-import SidebarWH from "../../components/common/Sidebar_wh"
-import HeaderWH from "../../components/common/Header_wh"
+import { useState, useEffect } from "react";
+import "./InventorySchedule.css";
+import SidebarWH from "../../components/common/Sidebar_wh";
+import HeaderWH from "../../components/common/Header_wh";
 
 const InventorySchedule = () => {
-  const [timeFilter, setTimeFilter] = useState("today")
-  const [statusFilter, setStatusFilter] = useState("all")
-  const [startDate, setStartDate] = useState("2025-06-01")
-  const [endDate, setEndDate] = useState("2025-06-30")
-  const [inspections, setInspections] = useState([])
-  const [reports, setReports] = useState([])
-  const [isCollapsed, setIsCollapsed] = useState(false)
-  const [reportFilter, setReportFilter] = useState("all")
+  const [timeFilter, setTimeFilter] = useState("today");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [startDate, setStartDate] = useState("2025-06-01");
+  const [endDate, setEndDate] = useState("2025-06-30");
+  const [inspections, setInspections] = useState([]);
+  const [reports, setReports] = useState([]);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [reportFilter, setReportFilter] = useState("all");
 
   const toggleSidebar = () => {
-    setIsCollapsed(!isCollapsed)
-  }
+    setIsCollapsed(!isCollapsed);
+  };
 
   // Sample inspection data
   const initialInspections = [
@@ -85,7 +83,7 @@ const InventorySchedule = () => {
       status: "completed",
       badge: "Hoàn tất",
     },
-  ]
+  ];
 
   // Sample reports data
   const initialReports = [
@@ -129,157 +127,157 @@ const InventorySchedule = () => {
       signedAt: null,
       confirmedAt: null,
     },
-  ]
+  ];
 
   useEffect(() => {
-    setInspections(initialInspections)
-    setReports(initialReports)
-  }, [])
+    setInspections(initialInspections);
+    setReports(initialReports);
+  }, []);
 
   const formatDate = (dateString) => {
-    const date = new Date(dateString)
-    const day = date.getDate()
-    const dayNames = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"]
-    const dayName = dayNames[date.getDay()]
-    return { day, dayName }
-  }
+    const date = new Date(dateString);
+    const day = date.getDate();
+    const dayNames = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
+    const dayName = dayNames[date.getDay()];
+    return { day, dayName };
+  };
 
   const filterInspections = () => {
-    const today = new Date("2025-06-26")
-    const weekStart = new Date(today)
-    weekStart.setDate(today.getDate() - today.getDay() + 1)
-    const weekEnd = new Date(weekStart)
-    weekEnd.setDate(weekStart.getDate() + 6)
-    const monthStart = new Date(today.getFullYear(), today.getMonth(), 1)
-    const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0)
+    const today = new Date("2025-06-26");
+    const weekStart = new Date(today);
+    weekStart.setDate(today.getDate() - today.getDay() + 1);
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 6);
+    const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+    const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
 
     return inspections.filter((item) => {
-      const itemDate = new Date(item.date)
-      let showByTime = true
-      let showByStatus = true
+      const itemDate = new Date(item.date);
+      let showByTime = true;
+      let showByStatus = true;
 
       if (timeFilter === "today") {
-        showByTime = itemDate.toDateString() === today.toDateString()
+        showByTime = itemDate.toDateString() === today.toDateString();
       } else if (timeFilter === "week") {
-        showByTime = itemDate >= weekStart && itemDate <= weekEnd
+        showByTime = itemDate >= weekStart && itemDate <= weekEnd;
       } else if (timeFilter === "month") {
-        showByTime = itemDate >= monthStart && itemDate <= monthEnd
+        showByTime = itemDate >= monthStart && itemDate <= monthEnd;
       } else if (timeFilter === "custom" && startDate && endDate) {
-        const start = new Date(startDate)
-        const end = new Date(endDate)
-        showByTime = itemDate >= start && itemDate <= end
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        showByTime = itemDate >= start && itemDate <= end;
       }
 
       if (statusFilter !== "all") {
-        showByStatus = item.status === statusFilter
+        showByStatus = item.status === statusFilter;
       }
 
-      return showByTime && showByStatus
-    })
-  }
+      return showByTime && showByStatus;
+    });
+  };
 
   const filterReports = () => {
-    if (reportFilter === "all") return reports
-    return reports.filter((report) => report.status === reportFilter)
-  }
+    if (reportFilter === "all") return reports;
+    return reports.filter((report) => report.status === reportFilter);
+  };
 
   const groupInspectionsByStatus = () => {
-    const filtered = filterInspections()
+    const filtered = filterInspections();
     const groups = {
       "in-progress": [],
       upcoming: [],
       overdue: [],
       completed: [],
-    }
+    };
 
     filtered.forEach((item) => {
       if (groups[item.status]) {
-        groups[item.status].push(item)
+        groups[item.status].push(item);
       }
-    })
+    });
 
     Object.keys(groups).forEach((status) => {
-      groups[status].sort((a, b) => new Date(a.date) - new Date(b.date))
-    })
+      groups[status].sort((a, b) => new Date(a.date) - new Date(b.date));
+    });
 
-    return groups
-  }
+    return groups;
+  };
 
   const navigateToInspection = (inspectionId) => {
-    console.log("Navigating to inspection:", inspectionId)
-    alert(`Chuyển hướng đến trang thực thi kiểm kho: ${inspectionId}`)
-  }
+    console.log("Navigating to inspection:", inspectionId);
+    alert(`Chuyển hướng đến trang thực thi kiểm kho: ${inspectionId}`);
+  };
 
   const viewReport = (reportId) => {
-    console.log("Viewing report:", reportId)
-    alert(`Xem chi tiết biên bản: ${reportId}`)
-  }
+    console.log("Viewing report:", reportId);
+    alert(`Xem chi tiết biên bản: ${reportId}`);
+  };
 
   const getStatusIcon = (status) => {
     switch (status) {
       case "in-progress":
-        return "🔄"
+        return "🔄";
       case "upcoming":
-        return "⏰"
+        return "⏰";
       case "overdue":
-        return "⚠️"
+        return "⚠️";
       case "completed":
-        return "✅"
+        return "✅";
       default:
-        return "📋"
+        return "📋";
     }
-  }
+  };
 
   const getStatusTitle = (status) => {
     switch (status) {
       case "in-progress":
-        return "Đang kiểm"
+        return "Đang kiểm";
       case "upcoming":
-        return "Sắp tới"
+        return "Sắp tới";
       case "overdue":
-        return "Quá hạn"
+        return "Quá hạn";
       case "completed":
-        return "Đã hoàn tất"
+        return "Đã hoàn tất";
       default:
-        return "Không xác định"
+        return "Không xác định";
     }
-  }
+  };
 
   const getReportStatusIcon = (status) => {
     switch (status) {
       case "unsigned":
-        return "📝"
+        return "📝";
       case "signed-pending":
-        return "⏳"
+        return "⏳";
       case "signed-confirmed":
-        return "✅"
+        return "✅";
       default:
-        return "📄"
+        return "📄";
     }
-  }
+  };
 
   const getReportStatusTitle = (status) => {
     switch (status) {
       case "unsigned":
-        return "Chưa ký"
+        return "Chưa ký";
       case "signed-pending":
-        return "Đã ký chờ xác nhận"
+        return "Đã ký chờ xác nhận";
       case "signed-confirmed":
-        return "Đã ký và xác nhận"
+        return "Đã ký và xác nhận";
       default:
-        return "Không xác định"
+        return "Không xác định";
     }
-  }
+  };
 
   const getStatusBadgeClass = (item) => {
-    if (item.isUrgent) return "status-urgent"
-    if (item.badge === "Sắp tới") return "status-planned"
-    if (item.badge === "Kế hoạch") return "status-planned"
-    return `status-${item.status}`
-  }
+    if (item.isUrgent) return "status-urgent";
+    if (item.badge === "Sắp tới") return "status-planned";
+    if (item.badge === "Kế hoạch") return "status-planned";
+    return `status-${item.status}`;
+  };
 
   const InspectionItem = ({ item }) => {
-    const { day, dayName } = formatDate(item.date)
+    const { day, dayName } = formatDate(item.date);
     return (
       <div
         className={`inspection-item ${item.isMultiDay ? "multi-day" : ""}`}
@@ -288,7 +286,9 @@ const InventorySchedule = () => {
         <div className="date-section">
           <div className="date-number">{day}</div>
           <div className="date-day">{dayName}</div>
-          {item.dateRange && <div className="date-range">⏱ {item.dateRange}</div>}
+          {item.dateRange && (
+            <div className="date-range">⏱ {item.dateRange}</div>
+          )}
         </div>
         <div className="inspection-details">
           <div className="inspection-title">{item.title}</div>
@@ -315,16 +315,17 @@ const InventorySchedule = () => {
             {item.status === "overdue" && "❌"}
             {item.status === "completed" && "✅"}
             {item.badge === "Sắp tới" && "📅"}
-            {item.badge === "Kế hoạch" && "📋"} {item.badge || getStatusTitle(item.status)}
+            {item.badge === "Kế hoạch" && "📋"}{" "}
+            {item.badge || getStatusTitle(item.status)}
           </div>
         </div>
       </div>
-    )
-  }
+    );
+  };
 
   const StatusGroup = ({ status, items }) => {
-    if (statusFilter !== "all" && statusFilter !== status) return null
-    if (items.length === 0) return null
+    if (statusFilter !== "all" && statusFilter !== status) return null;
+    if (items.length === 0) return null;
 
     return (
       <div className={`status-group ${status}`}>
@@ -340,12 +341,15 @@ const InventorySchedule = () => {
           ))}
         </div>
       </div>
-    )
-  }
+    );
+  };
 
   const ReportCard = ({ report }) => {
     return (
-      <div className={`report-card report-${report.status}`} onClick={() => viewReport(report.id)}>
+      <div
+        className={`report-card report-${report.status}`}
+        onClick={() => viewReport(report.id)}
+      >
         <div className="report-card-header">
           <div className="report-card-title">{report.title}</div>
           <div className="report-datetime-group">
@@ -356,7 +360,8 @@ const InventorySchedule = () => {
 
         <div className="report-status-section">
           <div className={`report-status-badge status-${report.status}`}>
-            {getReportStatusIcon(report.status)} {getReportStatusTitle(report.status)}
+            {getReportStatusIcon(report.status)}{" "}
+            {getReportStatusTitle(report.status)}
           </div>
         </div>
 
@@ -364,23 +369,27 @@ const InventorySchedule = () => {
           {report.signedAt && (
             <div className="timestamp-item">
               <span className="timestamp-icon">✍️</span>
-              <span className="timestamp-value">{new Date(report.signedAt).toLocaleDateString("vi-VN")}</span>
+              <span className="timestamp-value">
+                {new Date(report.signedAt).toLocaleDateString("vi-VN")}
+              </span>
             </div>
           )}
 
           {report.confirmedAt && (
             <div className="timestamp-item">
               <span className="timestamp-icon">✅</span>
-              <span className="timestamp-value">{new Date(report.confirmedAt).toLocaleDateString("vi-VN")}</span>
+              <span className="timestamp-value">
+                {new Date(report.confirmedAt).toLocaleDateString("vi-VN")}
+              </span>
             </div>
           )}
         </div>
       </div>
-    )
-  }
+    );
+  };
 
-  const groupedInspections = groupInspectionsByStatus()
-  const filteredReports = filterReports()
+  const groupedInspections = groupInspectionsByStatus();
+  const filteredReports = filterReports();
 
   return (
     <div className="d-flex" style={{ height: "100vh" }}>
@@ -404,7 +413,11 @@ const InventorySchedule = () => {
             <div className="search-filters">
               <div className="filter-group">
                 <span className="filter-label">Thời gian:</span>
-                <select className="filter-select" value={timeFilter} onChange={(e) => setTimeFilter(e.target.value)}>
+                <select
+                  className="filter-select"
+                  value={timeFilter}
+                  onChange={(e) => setTimeFilter(e.target.value)}
+                >
                   <option value="today">Hôm nay</option>
                   <option value="week">Tuần này</option>
                   <option value="month">Tháng này</option>
@@ -455,13 +468,25 @@ const InventorySchedule = () => {
                 <div className="row g-3">
                   {/* Column 1 */}
                   <div className="col-6">
-                    <StatusGroup status="in-progress" items={groupedInspections["in-progress"]} />
-                    <StatusGroup status="overdue" items={groupedInspections["overdue"]} />
+                    <StatusGroup
+                      status="in-progress"
+                      items={groupedInspections["in-progress"]}
+                    />
+                    <StatusGroup
+                      status="overdue"
+                      items={groupedInspections["overdue"]}
+                    />
                   </div>
                   {/* Column 2 */}
                   <div className="col-6">
-                    <StatusGroup status="upcoming" items={groupedInspections["upcoming"]} />
-                    <StatusGroup status="completed" items={groupedInspections["completed"]} />
+                    <StatusGroup
+                      status="upcoming"
+                      items={groupedInspections["upcoming"]}
+                    />
+                    <StatusGroup
+                      status="completed"
+                      items={groupedInspections["completed"]}
+                    />
                   </div>
                 </div>
               </div>
@@ -493,7 +518,9 @@ const InventorySchedule = () => {
                       <div className="no-reports-text">Không có biên bản</div>
                     </div>
                   ) : (
-                    filteredReports.map((report) => <ReportCard key={report.id} report={report} />)
+                    filteredReports.map((report) => (
+                      <ReportCard key={report.id} report={report} />
+                    ))
                   )}
                 </div>
               </div>
@@ -502,7 +529,7 @@ const InventorySchedule = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default InventorySchedule
+export default InventorySchedule;
