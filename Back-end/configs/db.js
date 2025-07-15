@@ -556,6 +556,65 @@ const connectDB = async () => {
       console.warn("Not enough bills or goods to seed bill details. Skipping bill details seeding.");
     }
 
+// Tạo thêm 10 bill mới
+if (statuses.length > 0 && shifts.length > 0) {
+  const statusPaid = statuses.find((s) => s.name === "Đã thanh toán");
+  const shiftMorning = shifts.find((s) => s.notes === "Ca sáng ngày 14/06/2025");
+  const shiftAfternoon = shifts.find((s) => s.notes === "Ca chiều ngày 14/06/2025");
+
+  const extraBills = [];
+  for (let i = 3; i <= 12; i++) {
+    const shift = i % 2 === 0 ? shiftAfternoon : shiftMorning;
+    const billNumber = `HD${String(i).padStart(3, '0')}`;
+    extraBills.push({
+      billNumber,
+      seller: `Nhân viên ${i}`,
+      totalAmount: 10000 + i * 1000,
+      finalAmount: 10000 + i * 1000,
+      paymentMethod: i % 2 === 0 ? "Chuyển khoản ngân hàng" : "Tiền mặt",
+      statusId: statusPaid?._id,
+      shift_id: shift?._id,
+    });
+  }
+
+  const insertedExtraBills = await db.Bill.insertMany(extraBills);
+  console.log("Seeded 10 extra bills!");
+
+  // Seed BillDetails cho 10 bill mới
+  const extraBillDetails = [];
+  for (let i = 0; i < insertedExtraBills.length; i++) {
+    const bill = insertedExtraBills[i];
+
+    // 2 chi tiết mỗi bill
+    const item1 = {
+      bill_id: bill._id,
+      goods_id: goods[0]._id,
+      goods_name: goods[0].goods_name,
+      quantity: 1 + (i % 3),
+      unit_price: 5000 + i * 100,
+      total_amount: (1 + (i % 3)) * (5000 + i * 100),
+    };
+
+    const item2 = {
+      bill_id: bill._id,
+      goods_id: goods[1]._id,
+      goods_name: goods[1].goods_name,
+      quantity: 2,
+      unit_price: 7000 + i * 100,
+      total_amount: 2 * (7000 + i * 100),
+    };
+
+    extraBillDetails.push(item1, item2);
+  }
+
+  await db.BillDetail.insertMany(extraBillDetails);
+  console.log("Seeded 10 extra bill details!");
+} else {
+  console.warn("Không đủ dữ liệu về status hoặc shifts để tạo thêm bills.");
+}
+
+
+
     // Seed dữ liệu cho DisposalItem
     const disposalItemCount = await db.DisposalItem.countDocuments();
     let disposalItems = [];
