@@ -17,11 +17,13 @@ import POS from './components/POS';
 import CashierSidebar from './components/CashierSidebar';
 import Sidebar2 from './components/Sidebar2'
 import Page from './pages/page';
+import { UIProvider } from './contexts/UIContext';
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/openshift" element={<OpenShift />} />
+    <UIProvider>
+      <Router>
+        <Routes>
+          <Route path="/openshift" element={<OpenShift />} />
         <Route path="/closeshift" element={<CloseShift />} />
         <Route path="/POS" element={<POS />} />
         <Route path="/" element={<LoginPage />} />
@@ -43,6 +45,7 @@ function App() {
 
       </Routes>
     </Router>
+  </UIProvider>
   );
 }
 

@@ -1,12 +1,44 @@
-import { useState } from "react"
+import React, { useState } from "react";
+// <<< THAY ĐỔI: Import React để dùng React.Fragment
+import { useUI } from "../../contexts/UIContext";
+
 export default function HeaderWH({
-  title = "Quản lý Xuất Hủy",
-  subtitle = "Xuất Kho / Phiếu Xuất Hủy",
   userName = "Nguyễn Văn A",
   userRole = "Thủ kho",
   onSidebarToggle,
 }) {
-  const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  // <<< THAY ĐỔI: Bỏ pageTitle, chỉ giữ pageSubtitle
+  const { pageSubtitle } = useUI();
+
+  // <<< THAY ĐỔI: Logic để tạo Breadcrumb
+  const renderBreadcrumb = () => {
+    // Nếu không có subtitle thì không hiển thị gì cả
+    if (!pageSubtitle) return null;
+
+    // Tách chuỗi subtitle thành các phần, ví dụ: "Tồn Kho / Kiểm kê kho" -> ["Tồn Kho", "Kiểm kê kho"]
+    const parts = pageSubtitle.split(' / ');
+
+    return (
+      <p className="mb-0 text-muted small d-flex align-items-center">
+        {parts.map((part, index) => (
+          // Dùng React.Fragment để bọc mỗi phần tử và dấu phân cách
+          <React.Fragment key={index}>
+            {/* Nếu là phần tử cuối cùng trong mảng, bôi đen nó */}
+            {index === parts.length - 1 ? (
+              <strong className="text-dark fw-semibold">{part}</strong>
+            ) : (
+              // Nếu không phải, hiển thị bình thường
+              <span>{part}</span>
+            )}
+
+            {/* Thêm dấu ">" vào giữa các phần tử, trừ phần tử cuối */}
+            {index < parts.length - 1 && <span className="mx-2">{'>'}</span>}
+          </React.Fragment>
+        ))}
+      </p>
+    );
+  };
 
   return (
     <header className="bg-white border-bottom shadow-sm">
@@ -20,9 +52,9 @@ export default function HeaderWH({
             ☰
           </button>
 
+          {/* <<< THAY ĐỔI: Gọi hàm renderBreadcrumb để hiển thị */}
           <div>
-            <h4 className="mb-0 fw-semibold">{title}</h4>
-            {subtitle && <p className="mb-0 text-muted small">{subtitle}</p>}
+            {renderBreadcrumb()}
           </div>
         </div>
 
