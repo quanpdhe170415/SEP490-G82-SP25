@@ -16,9 +16,9 @@ const Status = require('./statusBill');
 const BillDetail = require('./billDetail');
 const ReturnOrder = require("./returnOrder"); 
 const ReturnDetail = require("./returndetail");
-
+const PurchaseOrder = require("./purchaseOrder");
 const StatusWarehouse = require("./statuswarehouse")
-
+const Supplier = require("./supplier");
 
 const GoodsDisposal = require('./goodsDisposal');
 const DisposalItem = require('./disposalItem');
@@ -44,15 +44,14 @@ const db = {
   BillDetail,
   ReturnOrder,
   ReturnDetail,
-
-
+  PurchaseOrder,
+  Supplier,
   StatusWarehouse,
   GoodsDisposal,
   DisposalItem,
   UserDetail,
   Session,
   ShiftType
-
 };
   
 
