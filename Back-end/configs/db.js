@@ -33,6 +33,8 @@ const connectDB = async () => {
       db.Session.createCollection(),
       db.ShiftType.createCollection(),
       db.UserDetail.createCollection(),
+      db.Supplier.createCollection(),
+      db.PurchaseOrder.createCollection(),
     ]);
     console.log("All collections ensured!");
 
@@ -264,7 +266,7 @@ const connectDB = async () => {
       categories = await db.Category.find();
     }
 
-    // Seed dữ liệu cho Goods nếu chưa có
+      // Seed dữ liệu cho Goods nếu chưa có
     let goods = [];
     const goodsCount = await db.Goods.countDocuments();
     console.log(`Goods count: ${goodsCount}`);
@@ -320,14 +322,199 @@ const connectDB = async () => {
           is_active: true,
           image_url: "https://example.com/sandwich.jpg",
         },
+        {
+          goods_name: "Pepsi Cola",
+          barcode: "8931234567891",
+          unit_of_measure: "chai",
+          description: "Nước ngọt có ga Pepsi",
+          category_id: categories[0]._id,
+          selling_price: 9500,
+          average_import_price: 7500,
+          last_import_price: 8000,
+          last_import_date: new Date(),
+          stock_quantity: 80,
+          display_quantity: 15,
+          minimum_stock_quantity: 8,
+          is_active: true,
+          image_url: "https://example.com/pepsi.jpg",
+        },
+        {
+          goods_name: "Kẹo Chupa Chups",
+          barcode: "8930987654322",
+          unit_of_measure: "cái",
+          description: "Kẹo mút tròn nhiều vị",
+          category_id: categories[1]._id,
+          selling_price: 3000,
+          average_import_price: 2000,
+          last_import_price: 2200,
+          last_import_date: new Date(),
+          stock_quantity: 200,
+          display_quantity: 50,
+          minimum_stock_quantity: 20,
+          is_active: true,
+          image_url: "https://example.com/chupa.jpg",
+        },
       ]);
       console.log("Seeded goods!");
     } else {
       goods = await db.Goods.find();
     }
 
+// Seed dữ liệu cho Supplier nếu chưa có
+    let suppliers = [];
+    const supplierCount = await db.Supplier.countDocuments();
+    console.log(`Supplier count: ${supplierCount}`);
+    if (supplierCount === 0) {
+      suppliers = await db.Supplier.insertMany([
+        {
+          suplier_name: "Công ty TNHH Coca Cola Việt Nam",
+          tax_number: "0123456789",
+          contact_person: "Nguyễn Văn X",
+          address: "123 Đường ABC, Quận 1, TP.HCM",
+          email: "contact@cocacola.vn",
+          phone_number: "0281234567",
+          isActive: true,
+        },
+        {
+          suplier_name: "Công ty CP Thực phẩm Oishi",
+          tax_number: "0987654321",
+          contact_person: "Trần Thị Y",
+          address: "456 Đường DEF, Quận 2, TP.HCM",
+          email: "sales@oishi.com.vn",
+          phone_number: "0287654321",
+          isActive: true,
+        },
+        {
+          suplier_name: "Công ty TNHH Bánh mì Kinh Đô",
+          tax_number: "0555666777",
+          contact_person: "Lê Văn Z",
+          address: "789 Đường GHI, Quận 3, TP.HCM",
+          email: "info@kinhdo.com.vn",
+          phone_number: "0285556677",
+          isActive: true,
+        },
+        {
+          suplier_name: "Công ty CP Pepsi Việt Nam",
+          tax_number: "0111222333",
+          contact_person: "Phạm Thị M",
+          address: "321 Đường JKL, Quận 4, TP.HCM",
+          email: "contact@pepsi.vn",
+          phone_number: "0281112223",
+          isActive: true,
+        },
+        {
+          suplier_name: "Công ty TNHH Kẹo Chupa Chups",
+          tax_number: "0444555666",
+          contact_person: "Võ Văn N",
+          address: "654 Đường MNO, Quận 5, TP.HCM",
+          email: "sales@chupachups.vn",
+          phone_number: "0284445556",
+          isActive: true,
+        },
+      ]);
+      console.log("Seeded suppliers:", suppliers.map(s => s.suplier_name));
+    } else {
+      suppliers = await db.Supplier.find();
+      console.log("Existing suppliers:", suppliers.map(s => s.suplier_name));
+    }
 
-    // Seed dữ liệu cho ImportBatch
+    // Seed dữ liệu cho PurchaseOrder nếu chưa có
+    let purchaseOrders = [];
+    const purchaseOrderCount = await db.PurchaseOrder.countDocuments();
+    console.log(`PurchaseOrder count: ${purchaseOrderCount}`);
+    if (purchaseOrderCount === 0 && suppliers.length > 0 && goods.length > 0 && accounts.length > 0) {
+      purchaseOrders = await db.PurchaseOrder.insertMany([
+        {
+          order_number: "PO001",
+          supplier_id: suppliers[0]._id, // Coca Cola
+          items: [
+            {
+              goods_id: goods[0]._id, // Coca Cola
+              quantity_order: 100,
+              unit_price: 8500,
+            },
+            {
+              goods_id: goods[2]._id, // Pepsi Cola
+              quantity_order: 80,
+              unit_price: 8000,
+            },
+          ],
+          total_price: (100 * 8500) + (80 * 8000), // 850,000 + 640,000 = 1,490,000
+          created_by: accounts[0]._id, // Admin
+          assigned_to: accounts[3]._id, // Warehouse Staff
+          receiving_status: "fully_received",
+          expected_delivery_date: new Date("2025-06-15T10:00:00Z"),
+          is_pinned: true,
+          total_expected_batches: 2, // Giả sử có 2 lô nhập
+        },
+        {
+          order_number: "PO002",
+          supplier_id: suppliers[1]._id, // Oishi
+          items: [
+            {
+              goods_id: goods[1]._id, // Snack Oishi
+              quantity_order: 50,
+              unit_price: 9500,
+            },
+            {
+              goods_id: goods[2]._id, // Kẹo Chupa Chups
+              quantity_order: 200,
+              unit_price: 2200,
+            },
+          ],
+          total_price: (50 * 9500) + (200 * 2200), // 475,000 + 440,000 = 915,000
+          created_by: accounts[2]._id, // Manager
+          assigned_to: accounts[1]._id, // Staff
+          receiving_status: "partially_received",
+          expected_delivery_date: new Date("2025-06-16T09:00:00Z"),
+          is_pinned: false,
+          total_expected_batches: 3, // Giả sử có 3 lô nhập
+        },
+        {
+          order_number: "PO003",
+          supplier_id: suppliers[2]._id, // Bánh mì Kinh Đô
+          items: [
+            {
+              goods_id: goods[2]._id, // Bánh mì sandwich
+              quantity_order: 30,
+              unit_price: 19000,
+            },
+          ],
+          total_price: 30 * 19000, // 570,000
+          created_by: accounts[0]._id, // Admin
+          assigned_to: accounts[3]._id, // Warehouse Staff
+          receiving_status: "pending_receipt",
+          expected_delivery_date: new Date("2025-06-18T08:00:00Z"),
+          is_pinned: true,
+          total_expected_batches: 1
+        },
+        {
+          order_number: "PO004",
+          supplier_id: suppliers[3]._id, // Pepsi
+          items: [
+            {
+              goods_id: goods[2]._id, // Pepsi Cola
+              quantity_order: 60,
+              unit_price: 8000,
+            },
+          ],
+          total_price: 60 * 8000, // 480,000
+          created_by: accounts[2]._id, // Manager
+          assigned_to: accounts[1]._id, // Staff
+          receiving_status: "completed",
+          expected_delivery_date: new Date("2025-06-17T14:00:00Z"),
+          is_pinned: true,
+          total_expected_batches: 1
+        },
+
+      ]);
+      console.log("Seeded purchase orders:", purchaseOrders.map(po => po.order_number));
+    } else {
+      purchaseOrders = await db.PurchaseOrder.find();
+      console.log("Existing purchase orders:", purchaseOrders.map(po => po.order_number));
+    }
+
+    // Seed dữ liệu cho ImportBatch (cập nhật với purchase_order_id)
     let importBatches = [];
     const importBatchCount = await db.ImportBatch.countDocuments();
     console.log(`ImportBatch count: ${importBatchCount}`);
@@ -335,45 +522,52 @@ const connectDB = async () => {
       await db.ImportBatch.deleteMany({});
       console.log("Cleared existing import batches!");
     }
-    if (goods.length >= 2 && accounts.length > 0) {
+    if (purchaseOrders.length > 0 && accounts.length > 0) {
       importBatches = await db.ImportBatch.insertMany([
         {
+          purchase_order_id: purchaseOrders[0]._id, // PO001
+          delivery_code: "DEL001",
           import_receipt_number: "PN001",
-          supplier: "Công ty TNHH ABC",
-          import_date: new Date("2025-06-14T10:00:00Z"),
-          imported_by: accounts[0]._id, // Nguyễn Văn A
-          total_value: 850000,
-          status: "completed",
-          notes: "Phiếu nhập hàng đầu tiên",
-          conditions_checked: true,
+          import_date: new Date("2025-06-15T10:30:00Z"),
+          imported_by: accounts[3]._id, // Warehouse Staff
+          total_value: 1490000,
+          notes: "Nhập hàng đợt 1 từ PO001 - Coca Cola và Pepsi",
         },
         {
+          purchase_order_id: purchaseOrders[1]._id, // PO002
+          delivery_code: "DEL002",
           import_receipt_number: "PN002",
-          supplier: "Công ty CP XYZ",
-          import_date: new Date("2025-06-15T09:00:00Z"),
-          imported_by: accounts[1]._id, // Trần Thị B
+          import_date: new Date("2025-06-16T11:00:00Z"),
+          imported_by: accounts[1]._id, // Staff
           total_value: 475000,
-          status: "pending",
-          notes: "Đang chờ kiểm tra hàng",
-          conditions_checked: false,
+          notes: "Nhập hàng đợt 1 từ PO002 - Chỉ Snack Oishi",
         },
         {
+          purchase_order_id: purchaseOrders[1]._id, // PO002
+          delivery_code: "DEL003",
           import_receipt_number: "PN003",
-          supplier: "Công ty TNHH DEF",
-          import_date: new Date("2025-05-10T08:00:00Z"),
-          imported_by: accounts[0]._id,
-          total_value: 270000,
-          status: "cancelled",
-          notes: "Lô hàng có một số sản phẩm hết hạn",
-          conditions_checked: true,
+          import_date: new Date("2025-06-17T09:30:00Z"),
+          imported_by: accounts[1]._id, // Staff
+          total_value: 440000,
+          notes: "Nhập hàng đợt 2 từ PO002 - Kẹo Chupa Chups",
+        },
+        {
+          purchase_order_id: purchaseOrders[3]._id, // PO004
+          delivery_code: "DEL004",
+          import_receipt_number: "PN004",
+          import_date: new Date("2025-06-17T15:00:00Z"),
+          imported_by: accounts[1]._id, // Staff
+          total_value: 480000,
+          notes: "Nhập hàng từ PO004 - Pepsi Cola",
         },
       ]);
-      console.log("Seeded import batches!");
+      console.log("Seeded import batches:", importBatches.map(ib => ib.import_receipt_number));
     } else {
       importBatches = await db.ImportBatch.find();
+      console.log("Existing import batches:", importBatches.map(ib => ib.import_receipt_number));
     }
 
-    // Seed dữ liệu cho ImportDetail
+    // Seed dữ liệu cho ImportDetail (cập nhật với import_batch_id mới)
     const importDetailCount = await db.ImportDetail.countDocuments();
     console.log(`ImportDetail count: ${importDetailCount}`);
     if (importDetailCount > 0) {
@@ -381,48 +575,77 @@ const connectDB = async () => {
       console.log("Cleared existing import details!");
     }
     let importDetails = [];
-    if (importBatches.length > 0 && goods.length >= 2) {
-      importDetails = [
+    if (importBatches.length > 0 && goods.length > 0) {
+      importDetails = await db.ImportDetail.insertMany([
+        // Chi tiết cho PN001 (PO001)
         {
           import_batch_id: importBatches[0]._id, // PN001
           goods_id: goods[0]._id, // Coca Cola
           quantity_imported: 100,
           unit_import_price: 8500,
-          total_amount: 8500 * 100,
-          expiry_date: new Date("2026-06-14"),
-          manufacturing_batch_number: "LOT001",
+          total_amount: 8500 * 100, // 850,000
+          expiry_date: new Date("2026-06-15"),
+          manufacturing_batch_number: "CC001",
           manufacturing_date: new Date("2025-01-01"),
-          notes: "Hàng mới, chất lượng tốt",
+          notes: "Coca Cola chất lượng tốt",
           meets_conditions: true,
         },
+        {
+          import_batch_id: importBatches[0]._id, // PN001
+          goods_id: goods[3]._id, // Pepsi Cola
+          quantity_imported: 80,
+          unit_import_price: 8000,
+          total_amount: 8000 * 80, // 640,000
+          expiry_date: new Date("2026-06-15"),
+          manufacturing_batch_number: "PP001",
+          manufacturing_date: new Date("2025-01-15"),
+          notes: "Pepsi Cola chất lượng tốt",
+          meets_conditions: true,
+        },
+        // Chi tiết cho PN002 (PO002 - đợt 1)
         {
           import_batch_id: importBatches[1]._id, // PN002
           goods_id: goods[1]._id, // Snack Oishi
           quantity_imported: 50,
           unit_import_price: 9500,
-          total_amount: 9500 * 50,
-          expiry_date: new Date("2026-06-15"),
-          manufacturing_batch_number: "LOT002",
+          total_amount: 9500 * 50, // 475,000
+          expiry_date: new Date("2026-06-16"),
+          manufacturing_batch_number: "OI001",
           manufacturing_date: new Date("2025-02-01"),
-          notes: "Chờ kiểm tra chất lượng",
-          meets_conditions: false,
+          notes: "Snack Oishi vị tôm cay",
+          meets_conditions: true,
         },
+        // Chi tiết cho PN003 (PO002 - đợt 2)
         {
           import_batch_id: importBatches[2]._id, // PN003
-          goods_id: goods[0]._id, 
-          quantity_imported: 30,
-          unit_import_price: 9000,
-          total_amount: 9000 * 30,
-          expiry_date: new Date("2025-12-31"),
-          manufacturing_batch_number: "LOT003",
-          manufacturing_date: new Date("2025-03-15"),
-          notes: "Bị hư hỏng khi vận chuyển",
-          meets_conditions: false,
+          goods_id: goods[4]._id, // Kẹo Chupa Chups
+          quantity_imported: 200,
+          unit_import_price: 2200,
+          total_amount: 2200 * 200, // 440,000
+          expiry_date: new Date("2027-06-17"),
+          manufacturing_batch_number: "CU001",
+          manufacturing_date: new Date("2025-03-01"),
+          notes: "Kẹo Chupa Chups nhiều vị",
+          meets_conditions: true,
         },
-      ];
-
-      importDetails = await db.ImportDetail.insertMany(importDetails);
-      console.log("Seeded import details!");
+        // Chi tiết cho PN004 (PO004)
+        {
+          import_batch_id: importBatches[3]._id, // PN004
+          goods_id: goods[3]._id, // Pepsi Cola
+          quantity_imported: 60,
+          unit_import_price: 8000,
+          total_amount: 8000 * 60, // 480,000
+          expiry_date: new Date("2026-06-17"),
+          manufacturing_batch_number: "PP002",
+          manufacturing_date: new Date("2025-02-15"),
+          notes: "Pepsi Cola lô 2",
+          meets_conditions: true,
+        },
+      ]);
+      console.log("Seeded import details:", importDetails.length, "items");
+    } else {
+      importDetails = await db.ImportDetail.find();
+      console.log("Existing import details:", importDetails.length, "items");
     }
 
     // Seed dữ liệu cho Status nếu chưa có
