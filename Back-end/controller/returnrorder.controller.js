@@ -53,11 +53,14 @@ exports.getBillsForReturn = async (req, res) => {
       };
     }
 
-    // Chỉ lấy hóa đơn đã hoàn thành
-    const completedStatus = await Status.findOne({ name: "Completed" });
+    // Chỉ lấy hóa đơn đã hoàn thành và chưa bị trả hàng
+    const completedStatus = await Status.findOne({ name: "Đã thanh toán" });
     if (completedStatus) {
       query.statusId = completedStatus._id;
     }
+
+    // Loại bỏ các bill đã được return
+    query.has_been_returned = false;
 
     const bills = await Bill.find(query)
       .populate("statusId", "name")
@@ -162,6 +165,23 @@ exports.createReturnOrder = async (req, res) => {
       });
     }
 
+    // Kiểm tra bill đã được return trước đó chưa
+    const existingBill = await Bill.findById(bill_id);
+    if (!existingBill) {
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy hóa đơn",
+      });
+    }
+
+    if (existingBill.has_been_returned) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Hóa đơn này đã được trả hàng trước đó. Mỗi hóa đơn chỉ cho phép trả hàng một lần.",
+      });
+    }
+
     // Validate each item
     for (const item of items) {
       if (!item.goods_id || !item.quantity || !item.unit_price) {
@@ -177,6 +197,7 @@ exports.createReturnOrder = async (req, res) => {
       0
     );
 
+    // Tạo return order
     const returnOrder = await ReturnOrder.create({
       bill_id,
       return_reason,
@@ -202,13 +223,57 @@ exports.createReturnOrder = async (req, res) => {
       });
     }
 
-    // Cập nhật trạng thái hóa đơn thành "Đã trả hàng"
-    const returnStatus = await Status.findOne({ name: "Returned" });
-    if (returnStatus) {
-      await Bill.findByIdAndUpdate(bill_id, {
-        statusId: returnStatus._id,
+    // Cập nhật BillDetail - giảm quantity hoặc xóa item
+    let isFullReturn = true;
+    const originalBillDetails = await BillDetail.find({ bill_id: bill_id });
+
+    for (const returnItem of items) {
+      const billDetail = await BillDetail.findOne({
+        bill_id: bill_id,
+        goods_id: returnItem.goods_id,
       });
+
+      if (billDetail) {
+        const newQuantity = billDetail.quantity - returnItem.quantity;
+
+        if (newQuantity <= 0) {
+          // Xóa item khỏi bill detail nếu return hết
+          await BillDetail.findByIdAndDelete(billDetail._id);
+        } else {
+          // Cập nhật quantity và total_amount
+          await BillDetail.findByIdAndUpdate(billDetail._id, {
+            quantity: newQuantity,
+            total_amount: newQuantity * billDetail.unit_price,
+          });
+          isFullReturn = false; // Còn sản phẩm chưa return hết
+        }
+      }
     }
+
+    // Kiểm tra còn sản phẩm nào trong bill không
+    const remainingBillDetails = await BillDetail.find({ bill_id: bill_id });
+    if (remainingBillDetails.length > 0) {
+      isFullReturn = false;
+    }
+
+    // Cập nhật bill amount và status
+    const newFinalAmount = existingBill.finalAmount - total_refund;
+    const originalAmount =
+      existingBill.originalAmount || existingBill.finalAmount;
+
+    let newStatus;
+    if (isFullReturn) {
+      newStatus = await Status.findOne({ name: "Đã trả hàng" });
+    } else {
+      newStatus = await Status.findOne({ name: "Đã trả hàng một phần" });
+    }
+
+    await Bill.findByIdAndUpdate(bill_id, {
+      finalAmount: Math.max(0, newFinalAmount), // Đảm bảo không âm
+      originalAmount: originalAmount, // Lưu số tiền gốc nếu chưa có
+      statusId: newStatus ? newStatus._id : existingBill.statusId,
+      has_been_returned: true, // Đánh dấu đã return
+    });
 
     res.status(201).json({
       success: true,
@@ -216,6 +281,8 @@ exports.createReturnOrder = async (req, res) => {
       data: {
         return_order_id: returnOrder._id,
         total_refund: total_refund,
+        is_full_return: isFullReturn,
+        new_bill_amount: Math.max(0, newFinalAmount),
       },
     });
   } catch (err) {

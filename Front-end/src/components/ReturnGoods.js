@@ -1,6 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { Search, Bell } from "lucide-react";
 import ReturnOrderService from "../services/returnOrderService";
+import CashierLayout from "./cashier/CashierLayout";
+
+// Add this new function
+const formatDateTime = (dateString) => {
+  // Return original string if it's invalid or doesn't match the expected format
+  if (!dateString || !dateString.includes(" ")) return dateString;
+
+  // Split the string into date and time parts
+  const [datePart, timePart] = dateString.split(" ");
+
+  // Split the date part into year, month, and day
+  const [year, month, day] = datePart.split("-");
+
+  // Reassemble in the desired DD-MM-YYYY format and append the time
+  return `${day}-${month}-${year} ${timePart}`;
+};
 
 export default function ReturnGoods() {
   // State management
@@ -8,15 +24,15 @@ export default function ReturnGoods() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Sidebar navigation
-  const [activeNav, setActiveNav] = useState("Trả hàng");
-  const navigationItems = [
-    "Dashboard",
-    "Mở ca",
-    "Bán hàng",
-    "Trả hàng",
-    "Kết ca",
-  ];
+  // Remove sidebar navigation states as they're now handled by CashierLayout
+  // const [activeNav, setActiveNav] = useState("Trả hàng");
+  // const navigationItems = [
+  //   "Dashboard",
+  //   "Mở ca",
+  //   "Bán hàng",
+  //   "Trả hàng",
+  //   "Kết ca",
+  // ];
 
   // Filter and pagination states
   const [searchOrderId, setSearchOrderId] = useState("");
@@ -390,569 +406,495 @@ export default function ReturnGoods() {
   }, [selectedTimeSlot, allOrders]);
 
   return (
-    <div className="d-flex min-vh-100">
-      {/* Sidebar */}
-      <div
-        className="bg-dark text-white"
-        style={{ width: "250px", minHeight: "100vh" }}
-      >
-        <div className="p-3">
-          <h5 className="text-primary mb-4">Hải Chi</h5>
-          <nav className="nav flex-column">
-            {navigationItems.map((item) => (
-              <button
-                key={item}
-                className={`nav-link text-white text-start border-0 rounded mb-1 ${
-                  activeNav === item ? "bg-primary" : "bg-transparent"
-                }`}
-                onClick={() => setActiveNav(item)}
-                style={{ padding: "12px 16px" }}
+    <CashierLayout pageTitle="Trả hàng" breadcrumb="Quản lý trả hàng">
+      {/* Error Display */}
+      {error && (
+        <div className="alert alert-danger mb-3" role="alert">
+          <i className="fas fa-exclamation-triangle me-2"></i>
+          {error}
+        </div>
+      )}
+
+      <div className="row g-4">
+        {/* Left Panel - Order History */}
+        <div className="col-md-5">
+          <div className="card shadow-sm h-100">
+            <div className="card-body">
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <h6 className="card-title mb-0">Lịch sử đơn hàng (24 giờ)</h6>
+                <div className="d-flex gap-2">
+                  <span className="badge bg-primary small">
+                    {selectedShift}
+                  </span>
+                  <span className="badge bg-secondary small">
+                    {selectedTimeSlot === "Tất cả"
+                      ? selectedShift === "Ca sáng"
+                        ? "8h-15h"
+                        : "15h-22h"
+                      : selectedTimeSlot}
+                  </span>
+                </div>
+              </div>
+
+              {/* Search */}
+              <div
+                className="d-grid mb-3"
+                style={{
+                  gridTemplateColumns: "1fr auto",
+                  gap: "0",
+                  maxWidth: "100%",
+                }}
               >
-                <i
-                  className={`me-2 ${
-                    item === "Dashboard"
-                      ? "fas fa-home"
-                      : item === "Mở ca"
-                      ? "fas fa-calendar-plus"
-                      : item === "Bán hàng"
-                      ? "fas fa-shopping-cart"
-                      : item === "Trả hàng"
-                      ? "fas fa-undo"
-                      : "fas fa-sign-out-alt"
-                  }`}
-                ></i>
-                {item}
-              </button>
-            ))}
-          </nav>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="flex-grow-1" style={{ backgroundColor: "#f8f9fa" }}>
-        {/* Top Bar */}
-        <div className="bg-white border-bottom p-3">
-          <div className="d-flex justify-content-between align-items-center">
-            <h3 className="fw-bold mb-0">Trả hàng</h3>
-            <div className="d-flex align-items-center">
-              <div className="bg-white rounded shadow-sm px-3 py-2 me-3">
-                <span className="text-success small">●</span>
-                <span className="ms-2 small">Ca làm việc: 08:00 - 22:00</span>
-              </div>
-              <div className="position-relative">
-                <button
-                  className="btn btn-light rounded-circle d-flex align-items-center justify-content-center"
-                  style={{ width: "40px", height: "40px" }}
-                  type="button"
-                >
-                  <Bell size={18} className="text-secondary" />
-                </button>
-                <span
-                  className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Nhập mã đơn hàng hoặc tên sản phẩm"
+                  value={searchOrderId}
+                  onChange={(e) => setSearchOrderId(e.target.value)}
                   style={{
-                    fontSize: "0.65em",
-                    padding: "0.3em 0.5em",
-                    border: "2px solid white",
+                    borderTopRightRadius: 0,
+                    borderBottomRightRadius: 0,
+                    margin: 0,
+                    // Thêm các thuộc tính sau để thu nhỏ
+                    height: "28px",
+                    fontSize: "0.8rem",
+                    padding: "0.2rem 0.5rem",
                   }}
+                />
+                <button
+                  className="btn btn-outline-secondary"
+                  onClick={handleSearch}
+                  type="button"
+                  style={{
+                    borderTopLeftRadius: 0,
+                    borderBottomLeftRadius: 0,
+                    margin: 0,
+                    // Thêm các thuộc tính sau để đồng bộ kích thước
+                    height: "28px",
+                    fontSize: "0.8rem",
+                    padding: "0.2rem 0.5rem",
+                  }}
+                  disabled={loading}
                 >
-                  1
-                </span>
+                  {loading ? "Đang tìm..." : "Tìm kiếm"}
+                </button>
               </div>
-            </div>
-          </div>
-        </div>
 
-        {/* Error Display */}
-        {error && (
-          <div className="alert alert-danger mx-4 mt-3" role="alert">
-            <i className="fas fa-exclamation-triangle me-2"></i>
-            {error}
-          </div>
-        )}
-
-        <div className="container-fluid p-4">
-          <div className="row g-4">
-            {/* Left Panel - Order History */}
-            <div className="col-md-6">
-              <div className="card shadow-sm h-100">
-                <div className="card-body">
-                  <div className="d-flex justify-content-between align-items-center mb-3">
-                    <h6 className="card-title mb-0">
-                      Lịch sử đơn hàng (24 giờ)
-                    </h6>
-                    <div className="d-flex gap-2">
-                      <span className="badge bg-primary small">
-                        {selectedShift}
-                      </span>
-                      <span className="badge bg-secondary small">
-                        {selectedTimeSlot === "Tất cả"
-                          ? selectedShift === "Ca sáng"
-                            ? "8h-15h"
-                            : "15h-22h"
-                          : selectedTimeSlot}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Search */}
-                  <div
-                    className="d-grid mb-3"
-                    style={{
-                      gridTemplateColumns: "1fr auto",
-                      gap: "0",
-                      maxWidth: "100%",
-                    }}
-                  >
+              {/* Shift Selection */}
+              <div className="mb-3">
+                <label className="form-label text-muted small">Chọn ca:</label>
+                <div className="d-flex gap-3">
+                  <div className="form-check">
                     <input
-                      type="text"
-                      className="form-control"
-                      placeholder="Nhập mã đơn hàng hoặc tên sản phẩm"
-                      value={searchOrderId}
-                      onChange={(e) => setSearchOrderId(e.target.value)}
-                      style={{
-                        borderTopRightRadius: 0,
-                        borderBottomRightRadius: 0,
-                        margin: 0,
-                        // Thêm các thuộc tính sau để thu nhỏ
-                        height: "28px",
-                        fontSize: "0.8rem",
-                        padding: "0.2rem 0.5rem",
-                      }}
+                      className="form-check-input"
+                      type="radio"
+                      name="shift"
+                      id="morning"
+                      checked={selectedShift === "Ca sáng"}
+                      onChange={() => setSelectedShift("Ca sáng")}
                     />
-                    <button
-                      className="btn btn-outline-secondary"
-                      onClick={handleSearch}
-                      type="button"
-                      style={{
-                        borderTopLeftRadius: 0,
-                        borderBottomLeftRadius: 0,
-                        margin: 0,
-                        // Thêm các thuộc tính sau để đồng bộ kích thước
-                        height: "28px",
-                        fontSize: "0.8rem",
-                        padding: "0.2rem 0.5rem",
-                      }}
-                      disabled={loading}
-                    >
-                      {loading ? "Đang tìm..." : "Tìm kiếm"}
-                    </button>
-                  </div>
-
-                  {/* Shift Selection */}
-                  <div className="mb-3">
-                    <label className="form-label text-muted small">
-                      Chọn ca:
+                    <label className="form-check-label" htmlFor="morning">
+                      Ca sáng
                     </label>
-                    <div className="d-flex gap-3">
-                      <div className="form-check">
-                        <input
-                          className="form-check-input"
-                          type="radio"
-                          name="shift"
-                          id="morning"
-                          checked={selectedShift === "Ca sáng"}
-                          onChange={() => setSelectedShift("Ca sáng")}
-                        />
-                        <label className="form-check-label" htmlFor="morning">
-                          Ca sáng
-                        </label>
-                      </div>
-                      <div className="form-check">
-                        <input
-                          className="form-check-input"
-                          type="radio"
-                          name="shift"
-                          id="afternoon"
-                          checked={selectedShift === "Ca chiều"}
-                          onChange={() => setSelectedShift("Ca chiều")}
-                        />
-                        <label className="form-check-label" htmlFor="afternoon">
-                          Ca chiều
-                        </label>
-                      </div>
+                  </div>
+                  <div className="form-check">
+                    <input
+                      className="form-check-input"
+                      type="radio"
+                      name="shift"
+                      id="afternoon"
+                      checked={selectedShift === "Ca chiều"}
+                      onChange={() => setSelectedShift("Ca chiều")}
+                    />
+                    <label className="form-check-label" htmlFor="afternoon">
+                      Ca chiều
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              {/* Time Slot */}
+              <div className="mb-3">
+                <label className="form-label text-muted small">
+                  Khung giờ:
+                </label>
+                <select
+                  className="form-select"
+                  value={selectedTimeSlot}
+                  onChange={(e) => setSelectedTimeSlot(e.target.value)}
+                >
+                  <option value="Tất cả">Tất cả</option>
+                  {selectedShift === "Ca sáng" ? (
+                    <>
+                      <option value="8h-9h">8h-9h</option>
+                      <option value="9h-10h">9h-10h</option>
+                      <option value="10h-11h">10h-11h</option>
+                      <option value="11h-12h">11h-12h</option>
+                      <option value="12h-13h">12h-13h</option>
+                      <option value="13h-14h">13h-14h</option>
+                      <option value="14h-15h">14h-15h</option>
+                    </>
+                  ) : (
+                    <>
+                      <option value="15h-16h">15h-16h</option>
+                      <option value="16h-17h">16h-17h</option>
+                      <option value="17h-18h">17h-18h</option>
+                      <option value="18h-19h">18h-19h</option>
+                      <option value="19h-20h">19h-20h</option>
+                      <option value="20h-21h">20h-21h</option>
+                      <option value="21h-22h">21h-22h</option>
+                    </>
+                  )}
+                </select>
+              </div>
+
+              {/* Orders Table */}
+              <div className="table-responsive">
+                <table className="table table-sm table-hover">
+                  <tbody>
+                    {loading ? (
+                      <tr>
+                        <td className="py-4 text-center text-muted">
+                          <div className="spinner-border spinner-border-sm me-2"></div>{" "}
+                          Đang tải danh sách hóa đơn...
+                        </td>
+                      </tr>
+                    ) : currentOrders.length > 0 ? (
+                      currentOrders.map((order) => (
+                        <tr key={order.id} className="border-bottom">
+                          <td className="py-3">
+                            <div className="d-flex justify-content-between align-items-center">
+                              <div>
+                                <div className="text-primary fw-bold small">
+                                  {" "}
+                                  {order.id}{" "}
+                                </div>
+                                {/* Use the new formatting function here */}
+                                <div className="text-muted small">
+                                  {" "}
+                                  {formatDateTime(order.date)}{" "}
+                                </div>
+                              </div>
+                              <div className="text-end">
+                                <div className="text-danger fw-bold small">
+                                  {" "}
+                                  {formatCurrency(order.totalAmount)}{" "}
+                                </div>
+                              </div>
+                              <button
+                                className="btn btn-sm btn-outline-primary ms-2"
+                                onClick={() => handleSelectOrder(order)}
+                                disabled={loadingOrderDetails}
+                              >
+                                {" "}
+                                {loadingOrderDetails
+                                  ? "Đang tải..."
+                                  : "Chọn"}{" "}
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td className="py-4 text-center text-muted">
+                          <i className="fas fa-search me-2"></i> Không tìm thấy
+                          đơn hàng nào
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Pagination */}
+              {filteredOrders.length > 0 && (
+                <div className="mt-3 pt-3 border-top">
+                  {/* Items per page selector */}
+                  <div className="d-flex justify-content-between align-items-center mb-3">
+                    <div className="d-flex align-items-center gap-2">
+                      <span className="text-muted small">Hiển thị:</span>
+                      <select
+                        className="form-select form-select-sm"
+                        style={{ width: "auto", minWidth: "70px" }}
+                        value={itemsPerPage}
+                        onChange={(e) =>
+                          handleItemsPerPageChange(parseInt(e.target.value))
+                        }
+                      >
+                        <option value={3}>3</option>
+                        <option value={5}>5</option>
+                        <option value={10}>10</option>
+                        <option value={15}>15</option>
+                        <option value={20}>20</option>
+                      </select>
+                      <span className="text-muted small">đơn/trang</span>
+                    </div>
+                    <div className="text-muted small">
+                      Tổng: {filteredOrders.length} đơn hàng
                     </div>
                   </div>
 
-                  {/* Time Slot */}
-                  <div className="mb-3">
-                    <label className="form-label text-muted small">
-                      Khung giờ:
-                    </label>
-                    <select
-                      className="form-select"
-                      value={selectedTimeSlot}
-                      onChange={(e) => setSelectedTimeSlot(e.target.value)}
-                    >
-                      <option value="Tất cả">Tất cả</option>
-                      {selectedShift === "Ca sáng" ? (
-                        <>
-                          <option value="8h-9h">8h-9h</option>
-                          <option value="9h-10h">9h-10h</option>
-                          <option value="10h-11h">10h-11h</option>
-                          <option value="11h-12h">11h-12h</option>
-                          <option value="12h-13h">12h-13h</option>
-                          <option value="13h-14h">13h-14h</option>
-                          <option value="14h-15h">14h-15h</option>
-                        </>
-                      ) : (
-                        <>
-                          <option value="15h-16h">15h-16h</option>
-                          <option value="16h-17h">16h-17h</option>
-                          <option value="17h-18h">17h-18h</option>
-                          <option value="18h-19h">18h-19h</option>
-                          <option value="19h-20h">19h-20h</option>
-                          <option value="20h-21h">20h-21h</option>
-                          <option value="21h-22h">21h-22h</option>
-                        </>
-                      )}
-                    </select>
-                  </div>
-
-                  {/* Orders Table */}
-                  <div className="table-responsive">
-                    <table className="table table-sm table-hover">
-                      <tbody>
-                        {loading ? (
-                          <tr>
-                            <td className="py-4 text-center text-muted">
-                              <div className="spinner-border spinner-border-sm me-2"></div>
-                              Đang tải danh sách hóa đơn...
-                            </td>
-                          </tr>
-                        ) : currentOrders.length > 0 ? (
-                          currentOrders.map((order) => (
-                            <tr key={order.id} className="border-bottom">
-                              <td className="py-3">
-                                <div className="d-flex justify-content-between align-items-center">
-                                  <div>
-                                    <div className="text-primary fw-bold small">
-                                      {order.id}
-                                    </div>
-                                    <div className="text-muted small">
-                                      {order.date}
-                                    </div>
-                                  </div>
-                                  <div className="text-end">
-                                    <div className="text-danger fw-bold small">
-                                      {formatCurrency(order.totalAmount)}
-                                    </div>
-                                  </div>
-                                  <button
-                                    className="btn btn-sm btn-outline-primary ms-2"
-                                    onClick={() => handleSelectOrder(order)}
-                                    disabled={loadingOrderDetails}
-                                  >
-                                    {loadingOrderDetails
-                                      ? "Đang tải..."
-                                      : "Chọn"}
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))
-                        ) : (
-                          <tr>
-                            <td className="py-4 text-center text-muted">
-                              <i className="fas fa-search me-2"></i>
-                              Không tìm thấy đơn hàng nào
-                            </td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  {/* Pagination */}
-                  {filteredOrders.length > 0 && (
-                    <div className="mt-3 pt-3 border-top">
-                      {/* Items per page selector */}
-                      <div className="d-flex justify-content-between align-items-center mb-3">
-                        <div className="d-flex align-items-center gap-2">
-                          <span className="text-muted small">Hiển thị:</span>
-                          <select
-                            className="form-select form-select-sm"
-                            style={{ width: "auto", minWidth: "70px" }}
-                            value={itemsPerPage}
-                            onChange={(e) =>
-                              handleItemsPerPageChange(parseInt(e.target.value))
-                            }
-                          >
-                            <option value={3}>3</option>
-                            <option value={5}>5</option>
-                            <option value={10}>10</option>
-                            <option value={15}>15</option>
-                            <option value={20}>20</option>
-                          </select>
-                          <span className="text-muted small">đơn/trang</span>
-                        </div>
-                        <div className="text-muted small">
-                          Tổng: {filteredOrders.length} đơn hàng
-                        </div>
+                  {totalPages > 1 ? (
+                    <>
+                      <nav aria-label="Phân trang đơn hàng">
+                        <ul className="pagination pagination-sm justify-content-center mb-2">
+                          {renderPagination()}
+                        </ul>
+                      </nav>
+                      <div className="text-center text-muted small">
+                        Trang {currentPage} / {totalPages} - Hiển thị{" "}
+                        {indexOfFirstItem + 1}-
+                        {Math.min(indexOfLastItem, filteredOrders.length)}
+                        trong tổng {filteredOrders.length} đơn hàng
                       </div>
-
-                      {totalPages > 1 ? (
-                        <>
-                          <nav aria-label="Phân trang đơn hàng">
-                            <ul className="pagination pagination-sm justify-content-center mb-2">
-                              {renderPagination()}
-                            </ul>
-                          </nav>
-                          <div className="text-center text-muted small">
-                            Trang {currentPage} / {totalPages} - Hiển thị{" "}
-                            {indexOfFirstItem + 1}-
-                            {Math.min(indexOfLastItem, filteredOrders.length)}
-                            trong tổng {filteredOrders.length} đơn hàng
-                          </div>
-                        </>
-                      ) : (
-                        <div className="text-center text-muted small">
-                          Hiển thị tất cả {filteredOrders.length} đơn hàng
-                        </div>
-                      )}
+                    </>
+                  ) : (
+                    <div className="text-center text-muted small">
+                      Hiển thị tất cả {filteredOrders.length} đơn hàng
                     </div>
                   )}
                 </div>
-              </div>
+              )}
             </div>
+          </div>
+        </div>
 
-            {/* Right Panel - Return Request */}
-            <div className="col-md-6">
-              <div className="card shadow-sm h-100">
-                <div className="card-body">
-                  <h6 className="card-title mb-3">Tạo yêu cầu trả hàng</h6>
+        {/* Right Panel - Return Request */}
+        <div className="col-md-7">
+          <div className="card shadow-sm h-100">
+            <div className="card-body">
+              <h6 className="card-title mb-3">Tạo yêu cầu trả hàng</h6>
 
-                  {!selectedOrder ? (
-                    <div className="text-center text-muted py-5">
-                      <i className="fas fa-box fa-3x mb-3 opacity-50"></i>
-                      <p>Vui lòng chọn đơn hàng để tạo yêu cầu trả hàng</p>
+              {!selectedOrder ? (
+                <div className="text-center text-muted py-5">
+                  <i className="fas fa-box fa-3x mb-3 opacity-50"></i>
+                  <p>Vui lòng chọn đơn hàng để tạo yêu cầu trả hàng</p>
+                </div>
+              ) : (
+                <div>
+                  {/* Order Info */}
+                  <div className="row mb-3">
+                    <div className="col-6">
+                      <label className="form-label text-muted small">
+                        Mã đơn hàng trả:
+                      </label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={selectedOrder.id}
+                        readOnly
+                      />
                     </div>
-                  ) : (
-                    <div>
-                      {/* Order Info */}
-                      <div className="row mb-3">
-                        <div className="col-6">
-                          <label className="form-label text-muted small">
-                            Mã đơn hàng trả:
-                          </label>
-                          <input
-                            type="text"
-                            className="form-control"
-                            value={selectedOrder.id}
-                            readOnly
-                          />
-                        </div>
-                        <div className="col-6">
-                          <label className="form-label text-muted small">
-                            Ngày trả hàng:
-                          </label>
-                          <input
-                            type="text"
-                            className="form-control"
-                            value={new Date().toLocaleDateString("vi-VN")}
-                            readOnly
-                          />
-                        </div>
+                    <div className="col-6">
+                      <label className="form-label text-muted small">
+                        Ngày trả hàng:
+                      </label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={new Date().toLocaleDateString("vi-VN")}
+                        readOnly
+                      />
+                    </div>
+                  </div>
+
+                  {/* Items */}
+                  <div className="mb-3">
+                    <div className="d-flex justify-content-between align-items-center mb-2">
+                      <label className="form-label text-muted small mb-0">
+                        Các sản phẩm trong đơn hàng:
+                      </label>
+                      <div className="d-flex align-items-center gap-2">
+                        <span className="badge bg-light text-dark small">
+                          {filteredReturnItems.length}/{returnItems.length} sản
+                          phẩm
+                        </span>
                       </div>
+                    </div>
 
-                      {/* Items */}
-                      <div className="mb-3">
-                        <div className="d-flex justify-content-between align-items-center mb-2">
-                          <label className="form-label text-muted small mb-0">
-                            Các sản phẩm trong đơn hàng:
-                          </label>
-                          <div className="d-flex align-items-center gap-2">
-                            <span className="badge bg-light text-dark small">
-                              {filteredReturnItems.length}/{returnItems.length}{" "}
-                              sản phẩm
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Product Search */}
-                        <div className="mb-4">
-                          <div
-                            className="d-grid"
-                            style={{
-                              gridTemplateColumns: "1fr auto",
-                              gap: 0,
-                              maxWidth: "100%",
-                            }}
-                          >
-                            <input
-                              type="text"
-                              className="form-control form-control-sm"
-                              placeholder="Tìm kiếm sản phẩm trong đơn hàng..."
-                              value={productSearchQuery}
-                              onChange={(e) =>
-                                handleProductSearch(e.target.value)
-                              }
-                              style={{
-                                borderTopRightRadius: 0,
-                                borderBottomRightRadius: 0,
-                                margin: 0,
-                                // Thêm các thuộc tính sau để thu nhỏ
-                                height: "28px", // Chiều cao tùy chỉnh
-                                fontSize: "0.8rem", // Cỡ chữ nhỏ hơn
-                                padding: "0.2rem 0.5rem", // Giảm padding
-                              }}
-                            />
-                            <button
-                              className="btn btn-outline-secondary btn-sm"
-                              type="button"
-                              onClick={() =>
-                                handleProductSearch(productSearchQuery)
-                              }
-                              style={{
-                                borderTopLeftRadius: 0,
-                                borderBottomLeftRadius: 0,
-                                margin: 0,
-                                // Thêm các thuộc tính sau để đồng bộ kích thước
-                                height: "28px", // Chiều cao giống input
-                                fontSize: "0.8rem", // Cỡ chữ giống input
-                                padding: "0.2rem 0.5rem", // Padding giống input
-                              }}
-                            >
-                              Tìm kiếm
-                            </button>
-                          </div>
-                        </div>
-
-                        <div className="table-responsive">
-                          <table className="table table-sm">
-                            <thead className="table-light">
-                              <tr className="align-middle text-center">
-                                <th className="text-muted small">SẢN PHẨM</th>
-                                <th className="text-muted small">SL ĐÃ MUA</th>
-                                <th className="text-muted small">SL TRẢ</th>
-                                <th className="text-muted small">ĐƠN GIÁ</th>
-                                <th className="text-muted small">THÀNH TIỀN</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {filteredReturnItems.length > 0 ? (
-                                filteredReturnItems.map((item, index) => (
-                                  <tr key={index} className="align-middle">
-                                    <td>
-                                      <div className="form-check">
-                                        <input
-                                          className="form-check-input"
-                                          type="checkbox"
-                                          checked={item.selected}
-                                          onChange={(e) =>
-                                            handleReturnItemChange(
-                                              index,
-                                              "selected",
-                                              e.target.checked
-                                            )
-                                          }
-                                        />
-                                        <label className="form-check-label small">
-                                          {item.name}
-                                        </label>
-                                      </div>
-                                    </td>
-                                    <td className="small text-center">
-                                      {item.quantity}
-                                    </td>
-                                    <td className="text-center">
-                                      <input
-                                        type="number"
-                                        className="form-control form-control-sm text-center"
-                                        style={{ width: "60px" }}
-                                        min="0"
-                                        max={item.quantity}
-                                        value={item.returnQuantity}
-                                        onChange={(e) =>
-                                          handleReturnItemChange(
-                                            index,
-                                            "returnQuantity",
-                                            parseInt(e.target.value) || 0
-                                          )
-                                        }
-                                        disabled={!item.selected}
-                                      />
-                                    </td>
-                                    <td className="small text-center">
-                                      {formatCurrency(item.price)}
-                                    </td>
-                                    <td className="text-danger fw-bold small text-center">
-                                      {item.selected
-                                        ? formatCurrency(
-                                            item.price * item.returnQuantity
-                                          )
-                                        : "0 đ"}
-                                    </td>
-                                  </tr>
-                                ))
-                              ) : (
-                                <tr>
-                                  <td
-                                    colSpan="5"
-                                    className="text-center text-muted py-3"
-                                  >
-                                    <i className="fas fa-search me-2"></i>
-                                    Không tìm thấy sản phẩm nào phù hợp với "
-                                    {productSearchQuery}"
-                                  </td>
-                                </tr>
-                              )}
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-
-                      {/* Total */}
-                      <div className="mb-3">
-                        <div className="d-flex justify-content-between align-items-center bg-light p-3 rounded">
-                          <span className="fw-bold">Tổng tiền hoàn lại:</span>
-                          <span className="text-primary fs-5 fw-bold">
-                            {formatCurrency(calculateReturnTotal())}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Return Reason */}
-                      <div className="mb-3">
-                        <label className="form-label text-muted small">
-                          Lý do trả hàng:
-                        </label>
-                        <textarea
-                          className="form-control"
-                          rows="3"
-                          placeholder="Mô tả lý do trả hàng"
-                          value={returnReason}
-                          onChange={(e) => setReturnReason(e.target.value)}
+                    {/* Product Search */}
+                    <div className="mb-4">
+                      <div
+                        className="d-grid"
+                        style={{
+                          gridTemplateColumns: "1fr auto",
+                          gap: 0,
+                          maxWidth: "100%",
+                        }}
+                      >
+                        <input
+                          type="text"
+                          className="form-control form-control-sm"
+                          placeholder="Tìm kiếm sản phẩm trong đơn hàng..."
+                          value={productSearchQuery}
+                          onChange={(e) => handleProductSearch(e.target.value)}
+                          style={{
+                            borderTopRightRadius: 0,
+                            borderBottomRightRadius: 0,
+                            margin: 0,
+                            // Thêm các thuộc tính sau để thu nhỏ
+                            height: "28px", // Chiều cao tùy chỉnh
+                            fontSize: "0.8rem", // Cỡ chữ nhỏ hơn
+                            padding: "0.2rem 0.5rem", // Giảm padding
+                          }}
                         />
-                      </div>
-
-                      {/* Action Buttons */}
-                      <div className="d-flex gap-2">
                         <button
-                          className="btn btn-secondary"
-                          onClick={() => {
-                            setSelectedOrder(null);
-                            setReturnItems([]);
-                            setFilteredReturnItems([]);
-                            setProductSearchQuery("");
-                            setReturnReason("");
+                          className="btn btn-outline-secondary btn-sm"
+                          type="button"
+                          onClick={() =>
+                            handleProductSearch(productSearchQuery)
+                          }
+                          style={{
+                            borderTopLeftRadius: 0,
+                            borderBottomLeftRadius: 0,
+                            margin: 0,
+                            // Thêm các thuộc tính sau để đồng bộ kích thước
+                            height: "28px", // Chiều cao giống input
+                            fontSize: "0.8rem", // Cỡ chữ giống input
+                            padding: "0.2rem 0.5rem", // Padding giống input
                           }}
                         >
-                          Hủy
-                        </button>
-                        <button
-                          className="btn btn-success"
-                          onClick={handleReturnSubmit}
-                          disabled={submittingReturn}
-                        >
-                          {submittingReturn
-                            ? "Đang xử lý..."
-                            : "Xác nhận trả hàng"}
+                          Tìm kiếm
                         </button>
                       </div>
                     </div>
-                  )}
+
+                    <div className="table-responsive">
+                      <table className="table table-sm">
+                        <thead className="table-light">
+                          <tr className="align-middle text-center">
+                            <th className="text-muted small">SẢN PHẨM</th>
+                            <th className="text-muted small">SL ĐÃ MUA</th>
+                            <th className="text-muted small">SL TRẢ</th>
+                            <th className="text-muted small">ĐƠN GIÁ</th>
+                            <th className="text-muted small">THÀNH TIỀN</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {filteredReturnItems.length > 0 ? (
+                            filteredReturnItems.map((item, index) => (
+                              <tr key={index} className="align-middle">
+                                <td>
+                                  <div className="form-check">
+                                    <input
+                                      className="form-check-input"
+                                      type="checkbox"
+                                      checked={item.selected}
+                                      onChange={(e) =>
+                                        handleReturnItemChange(
+                                          index,
+                                          "selected",
+                                          e.target.checked
+                                        )
+                                      }
+                                    />
+                                    <label className="form-check-label small">
+                                      {item.name}
+                                    </label>
+                                  </div>
+                                </td>
+                                <td className="small text-center">
+                                  {item.quantity}
+                                </td>
+                                <td className="text-center">
+                                  <input
+                                    type="number"
+                                    className="form-control form-control-sm text-center"
+                                    style={{
+                                      width: "60px",
+                                      margin: "0 auto",
+                                    }}
+                                    min="0"
+                                    max={item.quantity}
+                                    value={item.returnQuantity}
+                                    onChange={(e) =>
+                                      handleReturnItemChange(
+                                        index,
+                                        "returnQuantity",
+                                        parseInt(e.target.value) || 0
+                                      )
+                                    }
+                                    disabled={!item.selected}
+                                  />
+                                </td>
+                                <td className="small text-center">
+                                  {formatCurrency(item.price)}
+                                </td>
+                                <td className="text-danger fw-bold small text-center">
+                                  {item.selected
+                                    ? formatCurrency(
+                                        item.price * item.returnQuantity
+                                      )
+                                    : "0 đ"}
+                                </td>
+                              </tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td
+                                colSpan="5"
+                                className="text-center text-muted py-3"
+                              >
+                                <i className="fas fa-search me-2"></i>
+                                Không tìm thấy sản phẩm nào phù hợp với "
+                                {productSearchQuery}"
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* Return Reason */}
+                  <div className="mb-3">
+                    <label className="form-label text-muted small">
+                      Lý do trả hàng:
+                    </label>
+                    <textarea
+                      className="form-control"
+                      rows="3"
+                      placeholder="Mô tả lý do trả hàng"
+                      value={returnReason}
+                      onChange={(e) => setReturnReason(e.target.value)}
+                    />
+                  </div>
+
+                  {/* Total */}
+                  <div className="mb-3">
+                    <div className="d-flex justify-content-between align-items-center bg-light p-3 rounded">
+                      <span className="fw-bold">Tổng tiền hoàn lại:</span>
+                      <span className="text-primary fs-5 fw-bold">
+                        {formatCurrency(calculateReturnTotal())}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="d-flex gap-2 justify-content-end">
+                    <button
+                      className="btn btn-secondary"
+                      onClick={() => {
+                        setSelectedOrder(null);
+                        setReturnItems([]);
+                        setFilteredReturnItems([]);
+                        setProductSearchQuery("");
+                        setReturnReason("");
+                      }}
+                    >
+                      Hủy
+                    </button>
+                    <button
+                      className="btn btn-success"
+                      onClick={handleReturnSubmit}
+                      disabled={submittingReturn}
+                    >
+                      {submittingReturn ? "Đang xử lý..." : "Xác nhận trả hàng"}
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
@@ -1067,6 +1009,6 @@ export default function ReturnGoods() {
           </div>
         </>
       )}
-    </div>
+    </CashierLayout>
   );
 }
