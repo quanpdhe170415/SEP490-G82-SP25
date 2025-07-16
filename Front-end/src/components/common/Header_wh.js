@@ -104,4 +104,4 @@ export default function HeaderWH({
       </div>
     </header>
   )
-}
+};
