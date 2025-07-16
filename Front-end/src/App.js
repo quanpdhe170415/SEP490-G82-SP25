@@ -15,13 +15,23 @@ import OpenShift from './components/OpenShift';
 import CloseShift from './components/CloseShift';
 import POS from './components/POS';
 import CashierSidebar from './components/CashierSidebar';
+
+import { UIProvider } from './contexts/UIContext';
+
 import Sidebar2 from './components/Sidebar2'
+import InventorySchedule from './pages/InventorySchedule/InventorySchedule';
+import Page from './pages/page';
+import Inventory from './pages/Inventory/Inventory';
+import CashierLayout from './components/cashier/CashierLayout';
+
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/openshift" element={<OpenShift />} />
+    <UIProvider>
+      <Router>
+        <Routes>
+          <Route path="/openshift" element={<OpenShift />} />
+
         <Route path="/closeshift" element={<CloseShift />} />
         <Route path="/POS" element={<POS />} />
         <Route path="/" element={<LoginPage />} />
@@ -39,10 +49,18 @@ function App() {
         <Route path="/import-history" element={<ImportHistory />} />
 
         <Route path="/cashier/*" element={<Sidebar2 />} />
-        
+        <Route path="/page" element={<Page />} />
+
+
+        <Route path="/inventory/inventory-schedule" element={<InventorySchedule />} />
+        <Route path='/inventory/inventory-schedule/inventory-control' element={<Inventory />} />
+        <Route path="/cashier/*" element={<Sidebar2 />} />
+        <Route path="/page" element={<Page />} />
+
 
       </Routes>
     </Router>
+  </UIProvider>
   );
 }
 
