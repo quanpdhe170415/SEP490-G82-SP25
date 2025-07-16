@@ -2,7 +2,16 @@ const mongoose = require('mongoose');
 
 const ImportBatchSchema = new mongoose.Schema(
   {
-    //số lô nhập
+    purchase_order_id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'PurchaseOrder',
+        required: true
+    },
+    //Các đợt giao hàng
+    delivery_code: {
+        type: String,
+        required: true,
+    },
     import_receipt_number: {
       type: String,
       required: true,

@@ -1,61 +1,45 @@
+import { useUI } from '../../contexts/UIContext';
 export default function SidebarWH({ isCollapsed, onToggle }) {
-  const menuItems = {
+  const { setHeaderInfo } = useUI();
+ const menuItems = {
     main: [
-      {
-        title: "Tổng quan",
-        url: "/",
-        icon: "🏠",
-      },
+      { title: "Tổng quan", url: "/", icon: "🏠" },
     ],
     nhapKho: [
-      {
-        title: "Phiếu nhập kho",
-        url: "/nhap-kho/phieu-nhap",
-        icon: "📦",
-      },
-      {
-        title: "Kiểm tra hàng nhập",
-        url: "/nhap-kho/kiem-tra",
-        icon: "✅",
-      },
-      {
-        title: "Xếp hàng vào kho",
-        url: "/nhap-kho/xep-hang",
-        icon: "📋",
-      },
+      { title: "Phiếu nhập kho", url: "/nhap-kho/phieu-nhap", icon: "📦" },
+      { title: "Kiểm tra hàng nhập", url: "/nhap-kho/kiem-tra", icon: "✅" },
+      { title: "Xếp hàng vào kho", url: "/nhap-kho/xep-hang", icon: "📋" },
     ],
     xuatKho: [
-      {
-        title: "Xuất ra kệ bán",
-        url: "/xuat-kho/xuat-ban",
-        icon: "🛒",
-      },
-      {
-        title: "Xuất hủy",
-        url: "/xuat-kho/xuat-huy",
-        icon: "🗑️",
-        
-      },
+      { title: "Xuất ra kệ bán", url: "/xuat-kho/xuat-ban", icon: "🛒" },
+      { title: "Xuất hủy", url: "/xuat-kho/xuat-huy", icon: "🗑️" },
     ],
     tonKho: [
-      {
-        title: "Kiểm kê kho",
-        url: "/inventory/inventory-schedule",
-        icon: "📊",
-      },
-      {
-        title: "Lịch sử kiểm kê",
-        url: "/ton-kho/lich-su",
-        icon: "📅",
-      },
-      {
-        title: "Tra cứu tồn kho",
-        url: "/ton-kho/tra-cuu",
-        icon: "🔍",
-      },
+      { title: "Kiểm kê kho", url: "/ton-kho/kiem-ke", icon: "📊" },
+      { title: "Lịch sử kiểm kê", url: "/ton-kho/lich-su", icon: "📅" },
+      { title: "Tra cứu tồn kho", url: "/ton-kho/tra-cuu", icon: "🔍" },
     ],
-  }
+  };
 
+  // <<< THAY ĐỔI LỚN: Tạo một mapping cho tên các nhóm menu
+  const groupDisplayTitles = {
+      main: "Tổng Quan",
+      nhapKho: "Nhập Kho",
+      xuatKho: "Xuất Kho",
+      tonKho: "Tồn Kho"
+  };
+
+
+    const handleLinkClick = (e, item, groupTitle) => {
+    e.preventDefault(); 
+    setHeaderInfo({
+        title: item.title,
+        subtitle: `${groupTitle} / ${item.title}`
+    });
+    // Trong ứng dụng thực tế, bạn sẽ thêm logic điều hướng ở đây
+    // ví dụ: navigate(item.url);
+  };
+  
   return (
     <div 
       className={`position-fixed top-0 start-0 h-100 bg-light border-end transition-all`}
@@ -78,100 +62,35 @@ export default function SidebarWH({ isCollapsed, onToggle }) {
         </div>
       </div>
 
-      {/* Navigation */}
-      <div className="flex-grow-1 overflow-auto" style={{ height: 'calc(100vh - 140px)' }}>
-        {/* Main Navigation */}
-        <div className="p-3">
-          <ul className="list-unstyled">
-            {menuItems.main.map((item) => (
-              <li key={item.title} className="mb-1">
-                <a 
-                  href={item.url} 
-                  className="d-flex align-items-center text-decoration-none text-dark p-2 rounded"
-                  style={{ transition: 'background-color 0.2s' }}
-                  title={isCollapsed ? item.title : ''}
-                >
-                  <span className="me-2">{item.icon}</span>
-                  {!isCollapsed && <span>{item.title}</span>}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
+      
 
-        {/* Nhập Kho Section */}
-        <div className="px-3">
-          {!isCollapsed && (
-            <h6 className="text-muted text-uppercase fw-bold mb-2" style={{ fontSize: '0.75rem', letterSpacing: '0.05em' }}>
-              NHẬP KHO
-            </h6>
-          )}
-          <ul className="list-unstyled">
-            {menuItems.nhapKho.map((item) => (
-              <li key={item.title} className="mb-1">
-                <a 
-                  href={item.url} 
-                  className="d-flex align-items-center text-decoration-none text-dark p-2 rounded"
-                  style={{ transition: 'background-color 0.2s' }}
-                  title={isCollapsed ? item.title : ''}
-                >
-                  <span className="me-2">{item.icon}</span>
-                  {!isCollapsed && <span>{item.title}</span>}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Xuất Kho Section */}
-        <div className="px-3">
-          {!isCollapsed && (
-            <h6 className="text-muted text-uppercase fw-bold mb-2" style={{ fontSize: '0.75rem', letterSpacing: '0.05em' }}>
-              XUẤT KHO
-            </h6>
-          )}
-          <ul className="list-unstyled">
-            {menuItems.xuatKho.map((item) => (
-              <li key={item.title} className="mb-1">
-                <a 
-                  href={item.url} 
-                  className={`d-flex align-items-center text-decoration-none p-2 rounded ${
-                    item.isActive ? 'bg-primary text-white' : 'text-dark'
-                  }`}
-                  style={{ transition: 'background-color 0.2s' }}
-                  title={isCollapsed ? item.title : ''}
-                >
-                  <span className="me-2">{item.icon}</span>
-                  {!isCollapsed && <span>{item.title}</span>}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Tồn Kho Section */}
-        <div className="px-3">
-          {!isCollapsed && (
-            <h6 className="text-muted text-uppercase fw-bold mb-2" style={{ fontSize: '0.75rem', letterSpacing: '0.05em' }}>
-              TỒN KHO
-            </h6>
-          )}
-          <ul className="list-unstyled">
-            {menuItems.tonKho.map((item) => (
-              <li key={item.title} className="mb-1">
-                <a 
-                  href={item.url} 
-                  className="d-flex align-items-center text-decoration-none text-dark p-2 rounded"
-                  style={{ transition: 'background-color 0.2s' }}
-                  title={isCollapsed ? item.title : ''}
-                >
-                  <span className="me-2">{item.icon}</span>
-                  {!isCollapsed && <span>{item.title}</span>}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
+        <div className="flex-grow-1 overflow-auto" style={{ height: 'calc(100vh - 140px)' }}>
+        {Object.entries(menuItems).map(([groupKey, items]) => (
+            <div key={groupKey} className="px-3 py-2">
+                {!isCollapsed && (
+                    <h6 className="text-muted text-uppercase fw-bold mb-2" style={{ fontSize: '0.75rem', letterSpacing: '0.05em' }}>
+                        {groupDisplayTitles[groupKey]}
+                    </h6>
+                )}
+                 <ul className="list-unstyled mb-0">
+                    {items.map((item) => (
+                        <li key={item.title} className="mb-1">
+                            <a 
+                              href={item.url} 
+                              // <<< THAY ĐỔI: Gắn sự kiện onClick vào đây
+                              onClick={(e) => handleLinkClick(e, item, groupDisplayTitles[groupKey])}
+                              className="d-flex align-items-center text-decoration-none text-dark p-2 rounded"
+                              style={{ transition: 'background-color 0.2s' }}
+                              title={isCollapsed ? item.title : ''}
+                            >
+                                <span className="me-2">{item.icon}</span>
+                                {!isCollapsed && <span>{item.title}</span>}
+                            </a>
+                        </li>
+                    ))}
+                 </ul>
+            </div>
+        ))}
       </div>
 
       {/* Footer */}
