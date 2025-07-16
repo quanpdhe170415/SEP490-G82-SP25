@@ -29,7 +29,6 @@ function App() {
       <Router>
         <Routes>
           <Route path="/openshift" element={<OpenShift />} />
-
         <Route path="/closeshift" element={<CloseShift />} />
         <Route path="/POS" element={<POS />} />
         <Route path="/" element={<LoginPage />} />
@@ -45,15 +44,9 @@ function App() {
         <Route path="/openshift" element={<OpenShift />} />
         <Route path="/bill-history" element={<BillHistoryPage />} />
         <Route path="/import-history" element={<ImportHistory />} />
-        <Route path="/page" element={<Page />} />
-
-        <Route path="/cashier/*" element={<Sidebar2 />} />
-        <Route path="/page" element={<Page />} />
-
 
         <Route path="/inventory/inventory-schedule" element={<InventorySchedule />} />
         <Route path='/inventory/inventory-schedule/inventory-control' element={<Inventory />} />
-        <Route path="/cashier/*" element={<Sidebar2 />} />
         <Route path="/page" element={<Page />} />
 
 
