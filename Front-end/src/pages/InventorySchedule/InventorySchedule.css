@@ -406,9 +406,13 @@
 
 /* Main Layout */
 .warehouse-inspection {
+  /* padding: 20px;
+  background: #f8fafc;
+  min-height: calc(100vh - 70px); */
+  flex-grow: 1;
+  overflow-y: auto;
   padding: 20px;
   background: #f8fafc;
-  min-height: calc(100vh - 70px);
 }
 
 .search-section {
