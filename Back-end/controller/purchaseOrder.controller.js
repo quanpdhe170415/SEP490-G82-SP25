@@ -54,12 +54,13 @@ exports.getAssignedPurchaseOrders = async (req, res) => {
                 _id: po._id,
                 order_number: po.order_number,
                 supplier_name: po.supplier_id ? po.supplier_id.suplier_name : 'N/A',
-                delivery_progress: `${importBatches.length}/${po.total_expected_batches || 'N/A'}`,
+                delivery_progress: importBatches.length,
                 total_quantity_ordered: totalQuantityOrdered,
                 total_quantity_received: totalQuantityReceived,
                 status: status,
                 expected_delivery_date: po.expected_delivery_date,
                 is_pinned: po.is_pinned || false,
+                total_expected_delivery: po.total_expected_batches || 0,
             };
         });
 
