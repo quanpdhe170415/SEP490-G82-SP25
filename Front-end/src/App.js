@@ -44,7 +44,6 @@ function App() {
         <Route path="/openshift" element={<OpenShift />} />
         <Route path="/bill-history" element={<BillHistoryPage />} />
         <Route path="/import-history" element={<ImportHistory />} />
-
         <Route path="/inventory/inventory-schedule" element={<InventorySchedule />} />
         <Route path='/inventory/inventory-schedule/inventory-control' element={<Inventory />} />
         <Route path="/page" element={<Page />} />

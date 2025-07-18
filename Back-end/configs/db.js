@@ -56,10 +56,16 @@ const connectDB = async () => {
           notes: "Ca chiều từ 15h đến 22h",
         },
       ]);
-      console.log("Seeded shift types:", shiftTypes.map(s => s.name));
+      console.log(
+        "Seeded shift types:",
+        shiftTypes.map((s) => s.name)
+      );
     } else {
       shiftTypes = await db.ShiftType.find();
-      console.log("Existing shift types:", shiftTypes.map(s => s.name));
+      console.log(
+        "Existing shift types:",
+        shiftTypes.map((s) => s.name)
+      );
     }
 
     // Seed dữ liệu cho Role nếu chưa có
@@ -195,14 +201,20 @@ const connectDB = async () => {
     if (userDetailCount === 0 && accounts.length > 0) {
       userDetails = await db.UserDetail.insertMany(
         accounts.map((acc, idx) => ({
-          user_id: acc._id,                           // Liên kết 1-1
-          ...defaultUserDetails[idx],                 // Trộn dữ liệu mẫu
+          user_id: acc._id, // Liên kết 1-1
+          ...defaultUserDetails[idx], // Trộn dữ liệu mẫu
         }))
       );
-      console.log("Seeded user details:", userDetails.map(u => u.full_name));
+      console.log(
+        "Seeded user details:",
+        userDetails.map((u) => u.full_name)
+      );
     } else {
       userDetails = await db.UserDetail.find();
-      console.log("Existing user details:", userDetails.map(u => u.full_name));
+      console.log(
+        "Existing user details:",
+        userDetails.map((u) => u.full_name)
+      );
     }
 
     // Seed dữ liệu cho Shift nếu chưa có
@@ -266,7 +278,7 @@ const connectDB = async () => {
       categories = await db.Category.find();
     }
 
-      // Seed dữ liệu cho Goods nếu chưa có
+    // Seed dữ liệu cho Goods nếu chưa có
     let goods = [];
     const goodsCount = await db.Goods.countDocuments();
     console.log(`Goods count: ${goodsCount}`);
@@ -360,7 +372,7 @@ const connectDB = async () => {
       goods = await db.Goods.find();
     }
 
-// Seed dữ liệu cho Supplier nếu chưa có
+    // Seed dữ liệu cho Supplier nếu chưa có
     let suppliers = [];
     const supplierCount = await db.Supplier.countDocuments();
     console.log(`Supplier count: ${supplierCount}`);
@@ -412,17 +424,28 @@ const connectDB = async () => {
           isActive: true,
         },
       ]);
-      console.log("Seeded suppliers:", suppliers.map(s => s.suplier_name));
+      console.log(
+        "Seeded suppliers:",
+        suppliers.map((s) => s.suplier_name)
+      );
     } else {
       suppliers = await db.Supplier.find();
-      console.log("Existing suppliers:", suppliers.map(s => s.suplier_name));
+      console.log(
+        "Existing suppliers:",
+        suppliers.map((s) => s.suplier_name)
+      );
     }
 
     // Seed dữ liệu cho PurchaseOrder nếu chưa có
     let purchaseOrders = [];
     const purchaseOrderCount = await db.PurchaseOrder.countDocuments();
     console.log(`PurchaseOrder count: ${purchaseOrderCount}`);
-    if (purchaseOrderCount === 0 && suppliers.length > 0 && goods.length > 0 && accounts.length > 0) {
+    if (
+      purchaseOrderCount === 0 &&
+      suppliers.length > 0 &&
+      goods.length > 0 &&
+      accounts.length > 0
+    ) {
       purchaseOrders = await db.PurchaseOrder.insertMany([
         {
           order_number: "PO001",
@@ -439,7 +462,7 @@ const connectDB = async () => {
               unit_price: 8000,
             },
           ],
-          total_price: (100 * 8500) + (80 * 8000), // 850,000 + 640,000 = 1,490,000
+          total_price: 100 * 8500 + 80 * 8000, // 850,000 + 640,000 = 1,490,000
           created_by: accounts[0]._id, // Admin
           assigned_to: accounts[3]._id, // Warehouse Staff
           receiving_status: "partially_received",
@@ -462,7 +485,7 @@ const connectDB = async () => {
               unit_price: 2200,
             },
           ],
-          total_price: (50 * 9500) + (200 * 2200), // 475,000 + 440,000 = 915,000
+          total_price: 50 * 9500 + 200 * 2200, // 475,000 + 440,000 = 915,000
           created_by: accounts[2]._id, // Manager
           assigned_to: accounts[1]._id, // Staff
           receiving_status: "partially_received",
@@ -486,7 +509,7 @@ const connectDB = async () => {
           receiving_status: "pending_receipt",
           expected_delivery_date: new Date("2025-06-18T08:00:00Z"),
           is_pinned: true,
-          total_expected_batches: 1
+          total_expected_batches: 1,
         },
         {
           order_number: "PO004",
@@ -504,14 +527,19 @@ const connectDB = async () => {
           receiving_status: "completed",
           expected_delivery_date: new Date("2025-06-17T14:00:00Z"),
           is_pinned: true,
-          total_expected_batches: 1
+          total_expected_batches: 1,
         },
-
       ]);
-      console.log("Seeded purchase orders:", purchaseOrders.map(po => po.order_number));
+      console.log(
+        "Seeded purchase orders:",
+        purchaseOrders.map((po) => po.order_number)
+      );
     } else {
       purchaseOrders = await db.PurchaseOrder.find();
-      console.log("Existing purchase orders:", purchaseOrders.map(po => po.order_number));
+      console.log(
+        "Existing purchase orders:",
+        purchaseOrders.map((po) => po.order_number)
+      );
     }
 
     // Seed dữ liệu cho ImportBatch (cập nhật với purchase_order_id)
@@ -561,10 +589,16 @@ const connectDB = async () => {
           notes: "Nhập hàng từ PO004 - Pepsi Cola",
         },
       ]);
-      console.log("Seeded import batches:", importBatches.map(ib => ib.import_receipt_number));
+      console.log(
+        "Seeded import batches:",
+        importBatches.map((ib) => ib.import_receipt_number)
+      );
     } else {
       importBatches = await db.ImportBatch.find();
-      console.log("Existing import batches:", importBatches.map(ib => ib.import_receipt_number));
+      console.log(
+        "Existing import batches:",
+        importBatches.map((ib) => ib.import_receipt_number)
+      );
     }
 
     // Seed dữ liệu cho ImportDetail (cập nhật với import_batch_id mới)
@@ -680,8 +714,12 @@ const connectDB = async () => {
     if (statuses.length > 0 && shifts.length > 0) {
       const statusPaid = statuses.find((s) => s.name === "Đã thanh toán");
       const statusReturned = statuses.find((s) => s.name === "Đã trả hàng");
-      const shiftMorning = shifts.find((s) => s.notes === "Ca sáng ngày 14/06/2025");
-      const shiftAfternoon = shifts.find((s) => s.notes === "Ca chiều ngày 14/06/2025");
+      const shiftMorning = shifts.find(
+        (s) => s.notes === "Ca sáng ngày 14/06/2025"
+      );
+      const shiftAfternoon = shifts.find(
+        (s) => s.notes === "Ca chiều ngày 14/06/2025"
+      );
       const billsToInsert = [];
       if (statusPaid && shiftMorning) {
         billsToInsert.push({
@@ -694,7 +732,9 @@ const connectDB = async () => {
           shift_id: shiftMorning._id,
         });
       } else {
-        console.warn("Không tìm thấy status 'Đã thanh toán' hoặc shift 'Ca sáng ngày 14/06/2025', bỏ qua HD001");
+        console.warn(
+          "Không tìm thấy status 'Đã thanh toán' hoặc shift 'Ca sáng ngày 14/06/2025', bỏ qua HD001"
+        );
       }
       if (statusReturned && shiftAfternoon) {
         billsToInsert.push({
@@ -707,7 +747,9 @@ const connectDB = async () => {
           shift_id: shiftAfternoon._id,
         });
       } else {
-        console.warn("Không tìm thấy status 'Đã trả hàng' hoặc shift 'Ca chiều ngày 14/06/2025', bỏ qua HD002");
+        console.warn(
+          "Không tìm thấy status 'Đã trả hàng' hoặc shift 'Ca chiều ngày 14/06/2025', bỏ qua HD002"
+        );
       }
       if (billsToInsert.length > 0) {
         bills = await db.Bill.insertMany(billsToInsert);
@@ -776,7 +818,125 @@ const connectDB = async () => {
       await db.BillDetail.insertMany(billDetails);
       console.log("Seeded bill details with new data!");
     } else {
-      console.warn("Not enough bills or goods to seed bill details. Skipping bill details seeding.");
+      console.warn(
+        "Not enough bills or goods to seed bill details. Skipping bill details seeding."
+      );
+    }
+
+    // Tạo thêm 10 bill mới
+    if (statuses.length > 0 && shifts.length > 0) {
+      const statusPaid = statuses.find((s) => s.name === "Đã thanh toán");
+      const shiftMorning = shifts.find(
+        (s) => s.notes === "Ca sáng ngày 14/06/2025"
+      );
+      const shiftAfternoon = shifts.find(
+        (s) => s.notes === "Ca chiều ngày 14/06/2025"
+      );
+
+      const extraBills = [];
+      for (let i = 3; i <= 12; i++) {
+        const shift = i % 2 === 0 ? shiftAfternoon : shiftMorning;
+        const billNumber = `HD${String(i).padStart(3, "0")}`;
+        extraBills.push({
+          billNumber,
+          seller: `Nhân viên ${i}`,
+          totalAmount: 10000 + i * 1000,
+          finalAmount: 10000 + i * 1000,
+          paymentMethod: i % 2 === 0 ? "Chuyển khoản ngân hàng" : "Tiền mặt",
+          statusId: statusPaid?._id,
+          shift_id: shift?._id,
+        });
+      }
+
+      const insertedExtraBills = await db.Bill.insertMany(extraBills);
+      console.log("Seeded 10 extra bills!");
+
+      // Seed BillDetails cho 10 bill mới
+      const extraBillDetails = [];
+      for (let i = 0; i < insertedExtraBills.length; i++) {
+        const bill = insertedExtraBills[i];
+
+        // 2 chi tiết mỗi bill
+        const item1 = {
+          bill_id: bill._id,
+          goods_id: goods[0]._id,
+          goods_name: goods[0].goods_name,
+          quantity: 1 + (i % 3),
+          unit_price: 5000 + i * 100,
+          total_amount: (1 + (i % 3)) * (5000 + i * 100),
+        };
+
+        const item2 = {
+          bill_id: bill._id,
+          goods_id: goods[1]._id,
+          goods_name: goods[1].goods_name,
+          quantity: 2,
+          unit_price: 7000 + i * 100,
+          total_amount: 2 * (7000 + i * 100),
+        };
+
+        extraBillDetails.push(item1, item2);
+      }
+
+      await db.BillDetail.insertMany(extraBillDetails);
+      console.log("Seeded 10 extra bill details!");
+
+      // Tạo thêm bills mới cho test return order (trong 24h gần đây)
+      const today = new Date();
+      const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+
+      const testReturnBills = [];
+      for (let i = 1; i <= 5; i++) {
+        const billTime = new Date(yesterday.getTime() + i * 2 * 60 * 60 * 1000); // Mỗi bill cách nhau 2 tiếng
+        const shift = i % 2 === 0 ? shiftAfternoon : shiftMorning;
+        const totalAmount = 50000 + i * 10000;
+
+        testReturnBills.push({
+          billNumber: `TEST${String(i).padStart(3, "0")}`,
+          seller: `Thu ngân ${i}`,
+          totalAmount: totalAmount,
+          finalAmount: totalAmount,
+          originalAmount: totalAmount, // Set originalAmount cho test
+          paymentMethod: i % 2 === 0 ? "Chuyển khoản ngân hàng" : "Tiền mặt",
+          statusId: statusPaid?._id,
+          shift_id: shift?._id,
+          createdAt: billTime,
+          updatedAt: billTime,
+          has_been_returned: false, // Chưa được return
+        });
+      }
+
+      const insertedTestBills = await db.Bill.insertMany(testReturnBills);
+      console.log("Seeded 5 test return bills!");
+
+      // Seed BillDetails cho test bills
+      const testBillDetails = [];
+      for (let i = 0; i < insertedTestBills.length; i++) {
+        const bill = insertedTestBills[i];
+
+        // Tạo 2-3 items cho mỗi bill để test return một phần hoặc toàn bộ
+        const numItems = 2 + (i % 2); // 2 hoặc 3 items
+
+        for (let j = 0; j < numItems; j++) {
+          const goodsIndex = j % goods.length;
+          const quantity = 1 + j;
+          const unitPrice = goods[goodsIndex].selling_price || 10000 + j * 2000;
+
+          testBillDetails.push({
+            bill_id: bill._id,
+            goods_id: goods[goodsIndex]._id,
+            goods_name: goods[goodsIndex].goods_name,
+            quantity: quantity,
+            unit_price: unitPrice,
+            total_amount: quantity * unitPrice,
+          });
+        }
+      }
+
+      await db.BillDetail.insertMany(testBillDetails);
+      console.log("Seeded test bill details for return testing!");
+    } else {
+      console.warn("Không đủ dữ liệu về status hoặc shifts để tạo thêm bills.");
     }
 
     // Seed dữ liệu cho DisposalItem
@@ -839,15 +999,17 @@ const connectDB = async () => {
           status: "approved",
           approved_by: accounts[2]._id, // Lê Văn C (manager1)
           confirmed_by: accounts[0]._id, // Nguyễn Văn A (admin1)
-          notes: "Hủy 15 chiếc bánh mì hết hạn, đã được phê duyệt và xác nhận thực hiện",
+          notes:
+            "Hủy 15 chiếc bánh mì hết hạn, đã được phê duyệt và xác nhận thực hiện",
         },
         {
           disposal_number: "HUY002",
           created_by: accounts[1]._id, // Trần Thị B (admin2)
           disposal_date: new Date("2025-06-15T10:00:00Z"),
-          reason_for_disposal: "Hàng hóa bị hỏng trong quá trình vận chuyển và bảo quản",
+          reason_for_disposal:
+            "Hàng hóa bị hỏng trong quá trình vận chuyển và bảo quản",
           disposal_items: [disposalItems[1]._id, disposalItems[2]._id], // Coca Cola hỏng + Snack ẩm mốc
-          total_disposal_value: (5 * 8500) + (3 * 9500), // 42,500 + 28,500 = 71,000
+          total_disposal_value: 5 * 8500 + 3 * 9500, // 42,500 + 28,500 = 71,000
           status: "pending",
           notes: "Chờ phê duyệt hủy hàng bị hỏng",
         },
@@ -855,7 +1017,8 @@ const connectDB = async () => {
           disposal_number: "HUY003",
           created_by: accounts[3]._id, // Phạm Thị D (staff1)
           disposal_date: new Date("2025-06-17T09:15:00Z"),
-          reason_for_disposal: "Kiểm tra định kỳ phát hiện hàng có dấu hiệu hư hỏng",
+          reason_for_disposal:
+            "Kiểm tra định kỳ phát hiện hàng có dấu hiệu hư hỏng",
           disposal_items: [], // Chưa có items cụ thể
           total_disposal_value: 0,
           status: "cancelled",
@@ -867,7 +1030,6 @@ const connectDB = async () => {
 
     console.log("=== DATABASE SEEDING COMPLETED ===");
     console.log("All collections have been seeded with sample data!");
-
   } catch (error) {
     console.error("MongoDB connection failed: ", error);
     process.exit(1);

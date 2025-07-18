@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const billSchema = new mongoose.Schema({
   billNumber: {
@@ -14,14 +14,22 @@ const billSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  originalAmount: {
+    type: Number,
+    required: false, // Số tiền gốc trước khi return
+  },
   paymentMethod: {
     type: String,
-    enum: ['Tiền mặt', 'Chuyển khoản ngân hàng'],
+    enum: ["Tiền mặt", "Chuyển khoản ngân hàng"],
   },
   statusId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Status',
+    ref: "Status",
     required: true,
+  },
+  has_been_returned: {
+    type: Boolean,
+    default: false, // Đánh dấu bill đã được return hay chưa
   },
   createdAt: {
     type: Date,
@@ -33,15 +41,15 @@ const billSchema = new mongoose.Schema({
   },
   shift_id: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Shift',
+    ref: "Shift",
     required: false,
   },
 });
 
-billSchema.pre('save', function(next) {
+billSchema.pre("save", function (next) {
   this.updatedAt = Date.now();
   next();
 });
 
-const Bill = mongoose.model('Bill', billSchema);
+const Bill = mongoose.model("Bill", billSchema);
 module.exports = Bill;
