@@ -202,7 +202,7 @@ const CashierLayout = ({
                   />
                   <div className="user-info">
                     <p className="user-name">Nguyễn Văn A</p>
-                    <p className="user-role">Thủ kho</p>
+                    <p className="user-role">Người bán hàng</p>
                   </div>
                 </button>
                 {showUserMenu && (
