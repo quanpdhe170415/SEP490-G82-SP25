@@ -465,7 +465,7 @@ const connectDB = async () => {
           total_price: 100 * 8500 + 80 * 8000, // 850,000 + 640,000 = 1,490,000
           created_by: accounts[0]._id, // Admin
           assigned_to: accounts[3]._id, // Warehouse Staff
-          receiving_status: "fully_received",
+          receiving_status: "partially_received",
           expected_delivery_date: new Date("2025-06-15T10:00:00Z"),
           is_pinned: true,
           total_expected_batches: 2, // Giả sử có 2 lô nhập

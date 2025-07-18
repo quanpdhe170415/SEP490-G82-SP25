@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { PurchaseOrder, Supplier, ImportBatch, ImportDetail } = require('../models');
+const { PurchaseOrder, Supplier, ImportBatch, ImportDetail, UserDetail } = require('../models');
 
 // Get list of purchase orders assigned to the logged-in employee
 exports.getAssignedPurchaseOrders = async (req, res) => {
@@ -54,12 +54,13 @@ exports.getAssignedPurchaseOrders = async (req, res) => {
                 _id: po._id,
                 order_number: po.order_number,
                 supplier_name: po.supplier_id ? po.supplier_id.suplier_name : 'N/A',
-                delivery_progress: `${importBatches.length}/${po.total_expected_batches || 'N/A'}`,
+                delivery_progress: importBatches.length,
                 total_quantity_ordered: totalQuantityOrdered,
                 total_quantity_received: totalQuantityReceived,
                 status: status,
                 expected_delivery_date: po.expected_delivery_date,
                 is_pinned: po.is_pinned || false,
+                total_expected_delivery: po.total_expected_batches || 0,
             };
         });
 
@@ -88,12 +89,11 @@ exports.getPurchaseOrderDetail = async (req, res) => {
             return res.status(400).json({ success: false, message: "ID của đơn đặt hàng không hợp lệ." });
         }
 
-        // Bước 1: Lấy thông tin gốc của PO và populate thêm tên hàng hóa
+        // Bước 1: Lấy thông tin gốc của PO và populate các thông tin cơ bản
         const poDetail = await PurchaseOrder.findById(id)
             .populate('supplier_id')
-            .populate('created_by', 'fullName email')
-            .populate('assigned_to', 'fullName email')
-            // THÊM POPULATE NÀY để lấy tên sản phẩm từ đơn hàng gốc
+            .populate('created_by', 'email') // Chỉ lấy email từ Account trước
+            .populate('assigned_to', 'email') // Chỉ lấy email từ Account trước
             .populate({
                 path: 'items.goods_id',
                 select: 'goods_name' 
@@ -104,17 +104,51 @@ exports.getPurchaseOrderDetail = async (req, res) => {
             return res.status(404).json({ success: false, message: "Không tìm thấy đơn đặt hàng." });
         }
 
-        // Bước 2: Lấy lịch sử các đợt nhập hàng
+        // BƯỚC 1.5: Lấy full_name từ UserDetail
+        const userIds = [];
+        if (poDetail.created_by) userIds.push(poDetail.created_by._id);
+        // Thêm assigned_to ID nếu nó khác với created_by ID
+        if (poDetail.assigned_to && String(poDetail.created_by?._id) !== String(poDetail.assigned_to._id)) {
+            userIds.push(poDetail.assigned_to._id);
+        }
+
+        if (userIds.length > 0) {
+            // Tìm tất cả các user details tương ứng
+            const userDetails = await UserDetail.find({ user_id: { $in: userIds } }).select('user_id full_name').lean();
+            
+            // Tạo một map để dễ dàng tra cứu
+            const userDetailsMap = userDetails.reduce((map, detail) => {
+                map[detail.user_id] = detail.full_name;
+                return map;
+            }, {});
+
+            // Gắn full_name vào đối tượng poDetail
+            if (poDetail.created_by) {
+                poDetail.created_by.full_name = userDetailsMap[poDetail.created_by._id] || null;
+            }
+            if (poDetail.assigned_to) {
+                poDetail.assigned_to.full_name = userDetailsMap[poDetail.assigned_to._id] || null;
+            }
+        }
+
+        // Bước 2: Lấy lịch sử các đợt nhập hàng (giữ nguyên)
         const importBatches = await ImportBatch.find({ purchase_order_id: id })
-            .populate('imported_by', 'fullName email')
+            .populate('imported_by', 'fullName email') // Giả sử imported_by cũng cần lấy tên
             .sort({ import_date: -1 })
             .lean();
             
-        // Bước 3: Lấy chi tiết hàng hóa trong mỗi đợt nhập
+        // Bước 3: Lấy chi tiết hàng hóa trong mỗi đợt nhập (giữ nguyên)
         const detailedImportBatchesPromises = importBatches.map(async (batch) => {
             const details = await ImportDetail.find({ import_batch_id: batch._id })
                 .populate('goods_id', 'goods_name goods_code')
                 .lean();
+            // Tương tự, bạn có thể lấy full_name cho người nhập kho ở đây nếu cần
+            if (batch.imported_by) {
+                const importedByDetail = await UserDetail.findOne({ user_id: batch.imported_by._id }).select('full_name').lean();
+                if (importedByDetail) {
+                    batch.imported_by.full_name = importedByDetail.full_name;
+                }
+            }
             return { ...batch, items_imported: details };
         });
 
