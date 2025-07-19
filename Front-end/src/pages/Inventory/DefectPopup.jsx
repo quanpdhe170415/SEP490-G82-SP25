@@ -46,7 +46,6 @@ export function DefectPopup({ item, onSave, onCancel, onImageUpload }) {
             </label>
             <input
               type="number"
-              min="0"
               max={item.actualQuantity || item.expectedQuantity}
               value={defectQuantity}
               onChange={(e) => setDefectQuantity(Number(e.target.value))}
