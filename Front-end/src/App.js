@@ -20,6 +20,7 @@ import InventorySchedule from './pages/InventorySchedule/InventorySchedule';
 import Page from './pages/page';
 import Inventory from './pages/Inventory/Inventory';
 import CashierLayout from './components/cashier/CashierLayout';
+import InventoryDetailPage from './pages/Inventory/InventoryDetail';
 
 
 function App() {
@@ -47,7 +48,7 @@ function App() {
 
         <Route path="/inventory/inventory-schedule" element={<InventorySchedule />} />
         <Route path='/inventory/inventory-schedule/inventory-control' element={<Inventory />} />
-
+        <Route path="/inventory/inventory-schedule/inventory-control/:id" element={<InventoryDetailPage />} />
         <Route path="/page" element={<Page />} />
 
 
