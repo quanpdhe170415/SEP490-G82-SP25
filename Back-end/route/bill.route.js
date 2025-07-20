@@ -1,8 +1,8 @@
-const Router = require('express').Router();
-const { billController } = require('../controller');
+const Router = require("express").Router();
+const { billController } = require("../controller");
 Router.post("/create", billController.createBill); // Thêm dòng này
 
-Router.get('/checkStatus', billController.isBillPaid);
+Router.get("/checkStatus", billController.isBillPaid);
 
 // GET: Lấy danh sách tất cả hóa đơn
 Router.get("/", billController.getAllBills);

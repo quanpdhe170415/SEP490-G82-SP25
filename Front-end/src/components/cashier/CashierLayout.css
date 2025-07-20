@@ -37,6 +37,7 @@
 }
 
 .sidebar.collapsed .sidebar-text,
+.sidebar.collapsed .sidebar-title,
 .sidebar.collapsed .profile-info {
   display: none;
 }
@@ -72,6 +73,11 @@
 .logo-container {
   display: flex;
   align-items: center;
+  transition: all 0.3s ease;
+}
+
+.sidebar.collapsed .logo-container {
+  justify-content: center;
 }
 
 .logo-icon {
@@ -81,6 +87,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.sidebar.collapsed .logo-icon {
+  margin-right: 0;
 }
 
 .logo-icon svg {

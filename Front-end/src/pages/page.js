@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import SidebarWH from '../components/common/Sidebar_wh';
 import HeaderWH from '../components/common/Header_wh';
+
+import ListMyPO from './Storekeeper/ListPO';
+
 export default function Page() {
     const [isCollapsed, setIsCollapsed] = useState(false);
 
@@ -72,6 +75,8 @@ export default function Page() {
                             </div>
                         </div>
                     </div>
+                    <ListMyPO/>
+
                 </main>
             </div>
         </div>

@@ -1,17 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { 
-  FaHome, 
+import React, { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import {
+  FaHome,
   FaPlay,
   FaCashRegister,
   FaUndo,
   FaStop,
   FaChevronRight,
-  FaBars
-} from 'react-icons/fa';
-import './CashierLayout.css';
+  FaBars,
+} from "react-icons/fa";
+import "./CashierLayout.css";
 
-const CashierLayout = ({ children, pageTitle = "Tổng quan", breadcrumb = "" }) => {
+const CashierLayout = ({
+  children,
+  pageTitle = "Tổng quan",
+  breadcrumb = "",
+}) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [currentPageTitle, setCurrentPageTitle] = useState(pageTitle);
@@ -22,33 +26,33 @@ const CashierLayout = ({ children, pageTitle = "Tổng quan", breadcrumb = "" })
   useEffect(() => {
     const path = location.pathname;
     let title = "Tổng quan";
-    
+
     switch (path) {
-      case '/layout':
-      case '/cashier':
-      case '/cashier/overview':
+      case "/layout":
+      case "/cashier":
+      case "/cashier/overview":
         title = "Tổng quan";
         break;
-      case '/openshift':
-      case '/cashier/openshift':
+      case "/openshift":
+      case "/cashier/openshift":
         title = "Mở ca";
         break;
-      case '/POS':
-      case '/cashier/pos':
+      case "/POS":
+      case "/cashier/pos":
         title = "Bán hàng";
         break;
-      case '/return-goods':
-      case '/cashier/return':
+      case "/return-goods":
+      case "/cashier/return":
         title = "Trả hàng";
         break;
-      case '/closeshift':
-      case '/cashier/closeshift':
+      case "/closeshift":
+      case "/cashier/closeshift":
         title = "Kết ca";
         break;
       default:
         title = pageTitle;
     }
-    
+
     setCurrentPageTitle(title);
   }, [location.pathname, pageTitle]);
 
@@ -67,13 +71,24 @@ const CashierLayout = ({ children, pageTitle = "Tổng quan", breadcrumb = "" })
   return (
     <div className="layout">
       {/* Sidebar */}
-      <aside className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
+      <aside className={`sidebar ${isCollapsed ? "collapsed" : ""}`}>
         {/* Logo */}
         <div className="sidebar-header">
           <div className="logo-container">
             <div className="logo-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4M4 7l8 4.5 8-4.5M12 12l8 4.5" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4M4 7l8 4.5 8-4.5M12 12l8 4.5"
+                />
               </svg>
             </div>
             <h1 className="sidebar-title">Tạp hóa Hải Chi</h1>
@@ -90,7 +105,7 @@ const CashierLayout = ({ children, pageTitle = "Tổng quan", breadcrumb = "" })
                 <span className="sidebar-text">Tổng quan</span>
               </button>
             </li> */}
-            
+
             {/* Nhập Kho */}
             <li className="nav-section">
               {/* <h3 className="nav-section-title">
@@ -98,47 +113,61 @@ const CashierLayout = ({ children, pageTitle = "Tổng quan", breadcrumb = "" })
               </h3> */}
               <ul className="nav-submenu">
                 <li>
-                  <button className="nav-link" onClick={() => handleNavigation('/layout')}>
+                  <button
+                    className="nav-link"
+                    onClick={() => handleNavigation("/layout")}
+                  >
                     <FaHome />
                     <span className="sidebar-text">Tổng quan</span>
                   </button>
                 </li>
                 <li>
-                  <button className="nav-link" onClick={() => handleNavigation('/openshift')}>
+                  <button
+                    className="nav-link"
+                    onClick={() => handleNavigation("/openshift")}
+                  >
                     <FaPlay />
                     <span className="sidebar-text">Mở ca</span>
                   </button>
                 </li>
                 <li>
-                  <button className="nav-link" onClick={() => handleNavigation('/POS')}>
+                  <button
+                    className="nav-link"
+                    onClick={() => handleNavigation("/POS")}
+                  >
                     <FaCashRegister />
                     <span className="sidebar-text">Bán hàng</span>
                   </button>
                 </li>
                 <li>
-                  <button className="nav-link" onClick={() => handleNavigation('/return-goods')}>
+                  <button
+                    className="nav-link"
+                    onClick={() => handleNavigation("/return-goods")}
+                  >
                     <FaUndo />
                     <span className="sidebar-text">Trả hàng</span>
                   </button>
                 </li>
                 <li>
-                  <button className="nav-link" onClick={() => handleNavigation('/closeshift')}>
+                  <button
+                    className="nav-link"
+                    onClick={() => handleNavigation("/closeshift")}
+                  >
                     <FaStop />
                     <span className="sidebar-text">Kết ca</span>
                   </button>
                 </li>
               </ul>
             </li>
-
           </ul>
         </nav>
 
         {/* Profile sidebar tạm comment*/}
         {/* <div className="sidebar-profile">
           <button className="profile-link">
-            <img 
-              className="profile-avatar" 
-              src="https://placehold.co/100x100/E2E8F0/4A5568?text=AVT" 
+            <img
+              className="profile-avatar"
+              src="https://placehold.co/100x100/E2E8F0/4A5568?text=AVT"
               alt="Avatar người dùng"
             />
             <div className="profile-info">
@@ -150,7 +179,7 @@ const CashierLayout = ({ children, pageTitle = "Tổng quan", breadcrumb = "" })
       </aside>
 
       {/* Main Content */}
-      <div className={`main-wrapper ${isCollapsed ? 'collapsed' : ''}`}>
+      <div className={`main-wrapper ${isCollapsed ? "collapsed" : ""}`}>
         {/* Header */}
         <header className="top-header">
           <div className="header-content">
@@ -166,14 +195,14 @@ const CashierLayout = ({ children, pageTitle = "Tổng quan", breadcrumb = "" })
             <div className="header-right">
               <div className="user-menu-container">
                 <button className="user-menu-button" onClick={toggleUserMenu}>
-                  <img 
-                    className="user-avatar" 
-                    src="https://placehold.co/100x100/E2E8F0/4A5568?text=AVT" 
+                  <img
+                    className="user-avatar"
+                    src="https://placehold.co/100x100/E2E8F0/4A5568?text=AVT"
                     alt="Avatar người dùng"
                   />
                   <div className="user-info">
                     <p className="user-name">Nguyễn Văn A</p>
-                    <p className="user-role">Thủ kho</p>
+                    <p className="user-role">Người bán hàng</p>
                   </div>
                 </button>
                 {showUserMenu && (
@@ -190,9 +219,7 @@ const CashierLayout = ({ children, pageTitle = "Tổng quan", breadcrumb = "" })
         </header>
 
         {/* Content Area */}
-        <main className="content-area">
-          {children}
-        </main>
+        <main className="content-area">{children}</main>
       </div>
     </div>
   );
