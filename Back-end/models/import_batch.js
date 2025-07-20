@@ -1,45 +1,37 @@
 const mongoose = require('mongoose');
 
-const ImportBatchSchema = new mongoose.Schema(
-  {
-    purchase_order_id: {
+const ImportBatchSchema = new mongoose.Schema({
+
+    receiving_task_id: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'PurchaseOrder',
+        ref: 'ReceivingTask',
         required: true
     },
-    //Các đợt giao hàng
-    delivery_code: {
+    
+    receipt_code: { 
         type: String,
         required: true,
+        unique: true,
     },
-    import_receipt_number: {
-      type: String,
-      required: true,
-      unique: true,
+    
+    receipt_date: {
+        type: Date,
+        required: true,
+        default: Date.now,
     },
-    import_date: {
-      type: Date,
-      required: true,
-    },
-    imported_by: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Account",
-      required: true,
-    },
-    total_value: {
-      type: Number,
-      required: true,
+   
+    received_by: { 
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Account", 
+        required: true,
     },
     notes: {
-      type: String,
-      required: false,
-    }
-  },
-  {
+        type: String,
+        required: false,
+    },
+}, {
     timestamps: true,
-  }
-);
+});
 
 const ImportBatch = mongoose.model('ImportBatch', ImportBatchSchema);
-
 module.exports = ImportBatch;

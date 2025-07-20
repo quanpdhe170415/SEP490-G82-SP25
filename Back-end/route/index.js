@@ -10,7 +10,7 @@ const goodsDisposalRoute = require('./goodsDisposal.route');
 const goodsRoute = require("./goods.route");
 const exportRoute = require("./export.route");
 const importController = require("./import.route");
-const purchaseOrderRoute = require("./purchaseOrder.route");
+const receiveRoute = require("./receiveGoods.route");
 
 router.use("/product", productRouter);
 router.use("/goods", goodsRoute);
@@ -20,9 +20,9 @@ router.use("/payment", paymentRouter);
 router.use("/invoice", require("./invoice.route"));
 router.use("/bill", billRoute);
 router.use("/return", returnOrderRoute);
-router.use("/purchase-order", purchaseOrderRoute);
 router.use("/goods-disposal", goodsDisposalRoute);
 router.use("/import", importController);
 router.use("/export", exportRoute);
+router.use("/receive", receiveRoute);
 
 module.exports = router;

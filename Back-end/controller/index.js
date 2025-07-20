@@ -9,7 +9,7 @@ const returnOrderController = require("./returnrorder.controller");
 const importController = require("./import.controller");
 const exportController = require("./export.controller");
 const goodsDisposalController = require('./goodsDisposal.controller');
-const purchaseOrderController = require('./purchaseOrder.controller');
+const ReceiveGoodsController = require('./receiveGoods.controller');
 module.exports = {
   goodsController,
   authenController,
@@ -24,5 +24,5 @@ module.exports = {
   returnOrderController,
   importController,
   exportController,
-  purchaseOrderController
+  ReceiveGoodsController
 };
