@@ -16,11 +16,15 @@ import CloseShift from './components/CloseShift';
 import POS from './components/POS';
 import CashierSidebar from './components/CashierSidebar';
 
+
 import { UIProvider } from './contexts/UIContext';
+
 import InventorySchedule from './pages/InventorySchedule/InventorySchedule';
 import Page from './pages/page';
 import Inventory from './pages/Inventory/Inventory';
 import CashierLayout from './components/cashier/CashierLayout';
+import InventoryDetailPage from './pages/Inventory/InventoryDetail';
+
 
 
 function App() {
@@ -46,6 +50,12 @@ function App() {
         <Route path="/import-history" element={<ImportHistory />} />
         <Route path="/inventory/inventory-schedule" element={<InventorySchedule />} />
         <Route path='/inventory/inventory-schedule/inventory-control' element={<Inventory />} />
+        <Route path="/page" element={<Page />} />
+
+
+        <Route path="/inventory/inventory-schedule" element={<InventorySchedule />} />
+        <Route path='/inventory/inventory-schedule/inventory-control' element={<Inventory />} />
+        <Route path="/inventory/inventory-schedule/inventory-control/:id" element={<InventoryDetailPage />} />
         <Route path="/page" element={<Page />} />
 
 
