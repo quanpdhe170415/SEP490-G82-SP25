@@ -24,6 +24,7 @@ const GoodsDisposal = require('./goodsDisposal');
 const DisposalItem = require('./disposalItem');
 const Session = require('./session');
 const ShiftType = require('./shiftType');
+const ReceivingTask = require('./receivingTask');
 
 mongoose.Promise = global.Promise;
 
@@ -51,7 +52,8 @@ const db = {
   DisposalItem,
   UserDetail,
   Session,
-  ShiftType
+  ShiftType,
+  ReceivingTask
 };
   
 

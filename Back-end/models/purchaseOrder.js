@@ -1,24 +1,24 @@
 const mongoose = require('mongoose');
 
-const purchaseOrderSchema = new mongoose.Schema({
-    order_number: {
+const PurchaseOrderSchema = new mongoose.Schema({
+    po_code: {
         type: String,
         required: true,
         unique: true
     },
-    supplier_id: {
+    supplier: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Supplier',
         required: true
     },
+
     items: [{
-        goods_id: {
+        product: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Goods',
             required: true
         },
-        // Số lượng đặt hàng theo PO
-        quantity_order: {
+        quantity: {
             type: Number,
             required: true
         },
@@ -27,7 +27,7 @@ const purchaseOrderSchema = new mongoose.Schema({
             required: true
         }
     }],
-    total_price: {
+    total_amount: {
         type: Number,
         required: true
     },
@@ -36,33 +36,14 @@ const purchaseOrderSchema = new mongoose.Schema({
         ref: 'Account',
         required: true
     },
-    assigned_to: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Account',
-        required: true
-    },
-
-    receiving_status: {
+    // Trạng thái của chính PO này, không phải trạng thái nhận hàng
+    status: {
         type: String,
-        enum: ['pending_receipt', 'partially_received', 'fully_received', 'over_received', 'completed'],
-        default: 'pending_receipt'
-    },
+        enum: ['draft', 'approved', 'completed', 'cancelled'],
+        default: 'draft'
+    }
+}, { timestamps: true });
 
-    expected_delivery_date: {
-        type: Date,
-        required: true
-    },
-    is_pinned: {
-        type: Boolean,
-        default: false
-    },
-    total_expected_batches: { 
-        type: Number,
-        required: true,
-        default: 1
-    },
-}, {
-    timestamps: true
-});
+const PurchaseOrder = mongoose.model('PurchaseOrder', PurchaseOrderSchema);
 
-module.exports = mongoose.model('PurchaseOrder', purchaseOrderSchema);
+module.exports = PurchaseOrder;
