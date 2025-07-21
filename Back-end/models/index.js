@@ -19,6 +19,13 @@ const ReturnDetail = require("./returndetail");
 const PurchaseOrder = require("./purchaseOrder");
 const StatusWarehouse = require("./statuswarehouse")
 const Supplier = require("./supplier");
+const InventorySchedule = require('./InventorySchedule');
+const InventoryCheck = require('./inventoryCheck');
+const ShelfLevel = require('./ShelfLevel');
+const InventoryTask = require('./InventoryTask');
+const ScheduleCheckMapping = require('./ScheduleCheckMapping');
+const Inventory = require('./inventory');
+const Shelf = require('./Shelf');
 
 const GoodsDisposal = require('./goodsDisposal');
 const DisposalItem = require('./disposalItem');
@@ -51,7 +58,9 @@ const db = {
   DisposalItem,
   UserDetail,
   Session,
-  ShiftType
+  ShiftType, 
+  InventorySchedule,
+  InventoryCheck, InventoryTask, Inventory, ShelfLevel, ScheduleCheckMapping, Shelf
 };
   
 
