@@ -15,7 +15,7 @@ import OpenShift from './components/OpenShift';
 import CloseShift from './components/CloseShift';
 import POS from './components/POS';
 import CashierSidebar from './components/CashierSidebar';
-
+import Dashboard from "./components/Dashboard";
 import { UIProvider } from './contexts/UIContext';
 import InventorySchedule from './pages/InventorySchedule/InventorySchedule';
 import Page from './pages/page';
@@ -29,29 +29,37 @@ function App() {
       <Router>
         <Routes>
           <Route path="/openshift" element={<OpenShift />} />
-        <Route path="/closeshift" element={<CloseShift />} />
-        <Route path="/POS" element={<POS />} />
-        <Route path="/" element={<LoginPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/home" element={<HomePage />} />
-        <Route path="/bill-history" element={<BillHistoryPage />} />
-        {/* <Route path="/bill-export-history" element={<PurchaseHistory />} /> */}
-        <Route path="/goods-disposal" element={<GoodsDisposal/>}/>
-        <Route path="/goods-disposal-detail/:id" element={<GoodsDisposalDetail />} />
-        <Route path="/return-goods" element={<ReturnGoods/>} />
-        <Route path="/forgotpassword" element={<ForgotPassword />} />
-        {/* <Route path="/homecashier" element={<HomeForCashier />} /> */}
-        <Route path="/openshift" element={<OpenShift />} />
-        <Route path="/bill-history" element={<BillHistoryPage />} />
-        <Route path="/import-history" element={<ImportHistory />} />
-        <Route path="/inventory/inventory-schedule" element={<InventorySchedule />} />
-        <Route path='/inventory/inventory-schedule/inventory-control' element={<Inventory />} />
-        <Route path="/page" element={<Page />} />
-
-
-      </Routes>
-    </Router>
-  </UIProvider>
+          <Route path="/closeshift" element={<CloseShift />} />
+          <Route path="/POS" element={<POS />} />
+          <Route path="/" element={<LoginPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/home" element={<HomePage />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/bill-history" element={<BillHistoryPage />} />
+          {/* <Route path="/bill-export-history" element={<PurchaseHistory />} /> */}
+          <Route path="/goods-disposal" element={<GoodsDisposal />} />
+          <Route
+            path="/goods-disposal-detail/:id"
+            element={<GoodsDisposalDetail />}
+          />
+          <Route path="/return-goods" element={<ReturnGoods />} />
+          <Route path="/forgotpassword" element={<ForgotPassword />} />
+          {/* <Route path="/homecashier" element={<HomeForCashier />} /> */}
+          <Route path="/openshift" element={<OpenShift />} />
+          <Route path="/bill-history" element={<BillHistoryPage />} />
+          <Route path="/import-history" element={<ImportHistory />} />
+          <Route
+            path="/inventory/inventory-schedule"
+            element={<InventorySchedule />}
+          />
+          <Route
+            path="/inventory/inventory-schedule/inventory-control"
+            element={<Inventory />}
+          />
+          <Route path="/page" element={<Page />} />
+        </Routes>
+      </Router>
+    </UIProvider>
   );
 }
 
