@@ -424,128 +424,184 @@ const connectDB = async () => {
         suppliers.map((s) => s.suplier_name)
       );
     }
-
-    let purchaseOrders = [];
-    if (await db.PurchaseOrder.countDocuments() === 0) {
-      const adminUser = accounts.find(a => a.username === 'admin');
+// 1. Seed PurchaseOrder
+    let purchaseOrders = await db.PurchaseOrder.find();
+    if (purchaseOrders.length === 0) {
       purchaseOrders = await db.PurchaseOrder.insertMany([
+        // PO cho task đã có vấn đề (thiếu hàng)
         {
           po_code: "PO2025001",
-          supplier: suppliers[0]._id, // NCC Nước giải khát
+          supplier: suppliers[0]._id,
           items: [
             { product: goods[0]._id, quantity: 100, unit_price: 8000 }, // Coca
-            { product: goods[2]._id, quantity: 80, unit_price: 7500 }  // Pepsi
+            { product: goods[2]._id, quantity: 80, unit_price: 7500 },  // Pepsi
           ],
-          total_amount: (100 * 8000) + (80 * 7500),
+          total_amount: 100 * 8000 + 80 * 7500,
           created_by: accounts[0]._id,
-          status: 'approved',
+          status: "approved",
         },
+        // PO cho task đã có vấn đề (hỏng hàng)
         {
           po_code: "PO2025002",
-          supplier: suppliers[1]._id, // NCC Bánh kẹo
-          items: [
-            { product: goods[1]._id, quantity: 50, unit_price: 9000 } // Snack
-          ],
+          supplier: suppliers[1]._id,
+          items: [{ product: goods[1]._id, quantity: 50, unit_price: 9000 }], // Snack
           total_amount: 50 * 9000,
           created_by: accounts[0]._id,
-          status: 'approved',
+          status: "approved",
+        },
+        // MỚI: PO cho task sắp nhận
+        {
+          po_code: "PO2025003",
+          supplier: suppliers[2]._id, // Kinh Đô
+          items: [{ product: goods[3]._id, quantity: 200, unit_price: 12000 }], // Bánh mì
+          total_amount: 200 * 12000,
+          created_by: accounts[0]._id,
+          status: "approved",
+        },
+        // MỚI: PO cho task có vấn đề (thừa hàng)
+        {
+            po_code: "PO2025004",
+            supplier: suppliers[3]._id, // Pepsi
+            items: [{ product: goods[2]._id, quantity: 120, unit_price: 7500 }], // Pepsi
+            total_amount: 120 * 7500,
+            created_by: accounts[0]._id,
+            status: 'approved',
         }
       ]);
-      console.log("🌱 Đã seed dữ liệu cho PurchaseOrder:", purchaseOrders.map(p => p.po_code));
-    } else {
-      purchaseOrders = await db.PurchaseOrder.find();
+      console.log("🌱 Đã seed dữ liệu cho PurchaseOrder.");
     }
 
-    // 2. Seed ReceivingTask (Nhiệm vụ nhận hàng)
-    let receivingTasks = [];
-    if (await db.ReceivingTask.countDocuments() === 0 && purchaseOrders.length > 0) {
-      const warehouseStaff = accounts.find(a => a.username === 'warehouse_staff');
+    // 2. Seed ReceivingTask
+    let receivingTasks = await db.ReceivingTask.find();
+    if (receivingTasks.length === 0) {
       receivingTasks = await db.ReceivingTask.insertMany([
+        // SỬA: Task này có vấn đề thiếu hàng -> status: 'issue'
         {
+          task_name: "nhận hàng đợt 1 của nhà cung cấp Coca Cola",
           task_code: "RT2025001",
-          purchase_order: purchaseOrders[0]._id,
+          purchase_order: purchaseOrders.find(p => p.po_code === 'PO2025001')._id,
           assigned_to: accounts[3]._id,
-          expected_items: purchaseOrders[0].items.map(item => ({ product: item.product, quantity_expected: item.quantity })),
-          expected_date: new Date("2025-07-25T10:00:00Z"),
-          status: 'completed', // Giả sử task này đã hoàn thành
+          expected_items: purchaseOrders[0].items.map((item) => ({
+            product: item.product,
+            quantity_expected: item.quantity,
+          })),
+          expected_date: new Date("2025-07-21T10:00:00Z"),
+          status: "issue",
         },
+        // SỬA: Task này có vấn đề hỏng hàng -> status: 'issue'
         {
+          task_name: "nhận hàng bên nhà cung cấp Snack",
           task_code: "RT2025002",
-          purchase_order: purchaseOrders[1]._id,
-          assigned_to: accounts[3]._id,
-          expected_items: purchaseOrders[1].items.map(item => ({ product: item.product, quantity_expected: item.quantity })),
-          expected_date: new Date("2025-07-26T09:00:00Z"),
-          status: 'in_progress', // Giả sử task này đang thực hiện
-        }
-      ]);
-      console.log("🌱 Đã seed dữ liệu cho ReceivingTask:", receivingTasks.map(t => t.task_code));
-    } else {
-      receivingTasks = await db.ReceivingTask.find();
-    }
-
-    // 3. Seed ImportBatch (Lô hàng nhập)
-    let importBatches = [];
-    if (await db.ImportBatch.countDocuments() === 0 && receivingTasks.length > 0) {
-      const warehouseStaff = accounts.find(a => a.username === 'warehouse_staff');
-      importBatches = await db.ImportBatch.insertMany([
-        {
-          receiving_task_id: receivingTasks[0]._id, // Lô hàng cho task 1
-          receipt_code: "PNK2025001",
-          receipt_date: new Date("2025-07-25T10:30:00Z"),
-          received_by: accounts[3]._id,
-          notes: "Nhập hàng từ PO2025001. Hàng đầy đủ, chất lượng tốt.",
+          purchase_order: purchaseOrders.find(p => p.po_code === 'PO2025002')._id,
+          assigned_to:  accounts[3]._id,
+          expected_items: purchaseOrders[1].items.map((item) => ({
+            product: item.product,
+            quantity_expected: item.quantity,
+          })),
+          expected_date: new Date("2025-07-22T09:00:00Z"),
+          status: "issue",
         },
+        // MỚI: Task sắp nhận, chưa có batch hay detail
         {
-          receiving_task_id: receivingTasks[1]._id, // Lô hàng cho task 2
-          receipt_code: "PNK2025002",
-          receipt_date: new Date("2025-07-26T09:15:00Z"),
-          received_by:  accounts[3]._id,
-          notes: "Nhập hàng từ PO2025002. Có thiếu hụt số lượng.",
+          task_name: "nhận hàng bên nhà cung cấp Kinh Đô",
+          task_code: "RT2025003",
+          purchase_order: purchaseOrders.find(p => p.po_code === 'PO2025003')._id,
+          assigned_to:  accounts[3]._id,
+          expected_items: purchaseOrders[2].items.map((item) => ({
+            product: item.product,
+            quantity_expected: item.quantity,
+          })),
+          expected_date: new Date("2025-07-28T09:00:00Z"),
+          status: "pending", // Trạng thái chờ nhận
+        },
+        // MỚI: Task có vấn đề thừa hàng
+        {
+            task_name: "nhận lô hàng bên nhà cung cấp Pepsi",
+            task_code: "RT2025004",
+            purchase_order: purchaseOrders.find(p => p.po_code === 'PO2025004')._id,
+            assigned_to:  accounts[3]._id,
+            expected_items: purchaseOrders[3].items.map(item => ({ product: item.product, quantity_expected: item.quantity })),
+            expected_date: new Date("2025-07-23T14:00:00Z"),
+            status: 'issue',
         }
       ]);
-      console.log("🌱 Đã seed dữ liệu cho ImportBatch:", importBatches.map(ib => ib.receipt_code));
-    } else {
-      importBatches = await db.ImportBatch.find();
+      console.log("🌱 Đã seed dữ liệu cho ReceivingTask.");
     }
 
-    // 4. Seed ImportDetail (Chi tiết lô hàng nhập)
-    if (await db.ImportDetail.countDocuments() === 0 && importBatches.length > 0) {
-      const importDetailsData = [
-        // Chi tiết cho lô PNK2025001 (từ task 1, po 1)
+    // 3. Seed ImportBatch
+    let importBatches = await db.ImportBatch.find();
+    if (importBatches.length === 0) {
+      importBatches = await db.ImportBatch.insertMany([
+        // SỬA: Ghi chú phản ánh đúng vấn đề
         {
-          import_batch_id: importBatches[0]._id,
-          product: goods[0]._id, // Coca
+          receiving_task_id: receivingTasks.find(t => t.task_code === 'RT2025001')._id,
+          receipt_code: "PNK2025001",
+          receipt_date: new Date("2025-07-21T10:30:00Z"),
+          received_by:  accounts[3]._id,
+          notes: "Nhập hàng từ PO2025001. Phát hiện thiếu 2 chai Pepsi.",
+        },
+        // SỬA: Ghi chú phản ánh đúng vấn đề
+        {
+          receiving_task_id: receivingTasks.find(t => t.task_code === 'RT2025002')._id,
+          receipt_code: "PNK2025002",
+          receipt_date: new Date("2025-07-22T09:15:00Z"),
+          received_by:  accounts[3]._id,
+          notes: "Nhập hàng từ PO2025002. Hàng đủ nhưng có 5 gói bị bẹp.",
+        },
+        // MỚI: Batch cho task bị thừa hàng
+        {
+            receiving_task_id: receivingTasks.find(t => t.task_code === 'RT2025004')._id,
+            receipt_code: "PNK2025004",
+            receipt_date: new Date("2025-07-23T14:20:00Z"),
+            received_by:  accounts[3]._id,
+            notes: "Nhập hàng từ PO2025004. NCC giao thừa 1 thùng (24 chai).",
+        }
+      ]);
+      console.log("🌱 Đã seed dữ liệu cho ImportBatch.");
+    }
+
+    // 4. Seed ImportDetail
+    if ((await db.ImportDetail.countDocuments()) === 0) {
+      const importDetailsData = [
+        // Chi tiết cho lô PNK2025001 (thiếu hàng)
+        {
+          import_batch_id: importBatches.find(ib => ib.receipt_code === 'PNK2025001')._id,
+          product: goods[0]._id,
           quantity_expected: 100,
           quantity_received: 100,
-          discrepancy_type: 'none',
-          expiry_date: new Date("2026-07-25"),
-          lot_number: "COCA250725",
+          discrepancy_type: "none",
         },
         {
-          import_batch_id: importBatches[0]._id,
-          product: goods[2]._id, // Pepsi
+          import_batch_id: importBatches.find(ib => ib.receipt_code === 'PNK2025001')._id,
+          product: goods[3]._id,
           quantity_expected: 80,
           quantity_received: 78, // Bị thiếu 2
-          discrepancy_type: 'shortage',
+          discrepancy_type: "shortage",
           discrepancy_notes: "Thùng hàng bị rách, thiếu 2 chai.",
-          expiry_date: new Date("2026-07-25"),
-          lot_number: "PEPSI250725",
         },
-        // Chi tiết cho lô PNK2025002 (từ task 2, po 2)
+        // Chi tiết cho lô PNK2025002 (hỏng hàng)
         {
-          import_batch_id: importBatches[1]._id,
-          product: goods[1]._id, // Snack
+          import_batch_id: importBatches.find(ib => ib.receipt_code === 'PNK2025002')._id,
+          product: goods[1]._id,
           quantity_expected: 50,
           quantity_received: 50,
-          discrepancy_type: 'damage',
+          discrepancy_type: "damage",
           discrepancy_notes: "5 gói bị bẹp, vỏ ngoài rách nhẹ.",
-          expiry_date: new Date("2026-01-26"),
-          lot_number: "OISHI260725",
+        },
+        // MỚI: Chi tiết cho lô PNK2025004 (thừa hàng)
+        {
+            import_batch_id: importBatches.find(ib => ib.receipt_code === 'PNK2025004')._id,
+            product: goods[3]._id,
+            quantity_expected: 120,
+            quantity_received: 144, // Giao thừa 24 chai
+            discrepancy_type: 'overage',
+            discrepancy_notes: 'Nhà cung cấp giao thừa 1 thùng (24 chai), đã tách riêng chờ xử lý.',
         }
       ];
       await db.ImportDetail.insertMany(importDetailsData);
-      console.log(`🌱 Đã seed dữ liệu cho ImportDetail: ${importDetailsData.length} mục.`);
-    }
+      console.log(`🌱 Đã seed dữ liệu cho ImportDetail.`);
+    };
+
 
     // Seed dữ liệu cho Status nếu chưa có
     let statuses = [];

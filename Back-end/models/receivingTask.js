@@ -1,6 +1,10 @@
 const mongoose = require('mongoose');
 
 const ReceivingTaskSchema = new mongoose.Schema({
+    task_name: {
+        type: String,
+        required: true
+    },
     task_code: {
         type: String,
         required: true,
