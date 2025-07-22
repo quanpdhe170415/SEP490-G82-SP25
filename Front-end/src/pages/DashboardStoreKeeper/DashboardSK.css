@@ -1,0 +1,104 @@
+/* File: MainContent.css */
+
+/* Sử dụng một lớp container chính để gói gọn tất cả các style,
+  đảm bảo chúng chỉ áp dụng cho component MainContent.
+*/
+.dashboardSK-container {
+    --primary-start: #667eea;
+    --primary-end: #764ba2;
+    --task-receipt-bg: #eff6ff;
+    --task-receipt-border: #93c5fd;
+    --task-receipt-text: #2563eb;
+    --task-disposal-bg: #fef2f2;
+    --task-disposal-border: #fca5a5;
+    --task-disposal-text: #dc2626;
+    --task-inventory-bg: #f0fdf4;
+    --task-inventory-border: #86efac;
+    --task-inventory-text: #16a34a;
+    background-color: #f8f9fa; /* Màu nền cho main content */
+}
+
+.dashboardSK-container .card {
+    border: 1px solid #e2e8f0;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    padding: 25px;
+    background-color: #fff;
+}
+
+.dashboardSK-container .btn-gradient {
+    background: linear-gradient(135deg, var(--primary-start), var(--primary-end));
+    border: none;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.dashboardSK-container .btn-gradient:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    color: white;
+}
+
+.dashboardSK-container .task-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 10px;
+    font-size: 14px;
+    transition: opacity 0.3s ease;
+}
+
+.dashboardSK-container .task-card.task-receipt {
+    background-color: var(--task-receipt-bg);
+    border-color: var(--task-receipt-border);
+    color: var(--task-receipt-text);
+}
+
+.dashboardSK-container .task-card.task-disposal {
+    background-color: var(--task-disposal-bg);
+    border-color: var(--task-disposal-border);
+    color: var(--task-disposal-text);
+}
+
+.dashboardSK-container .task-card.task-inventory {
+    background-color: var(--task-inventory-bg);
+    border-color: var(--task-inventory-border);
+    color: var(--task-inventory-text);
+}
+
+.dashboardSK-container .task-card h5 {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.dashboardSK-container .task-receipt h5 { color: var(--task-receipt-text); }
+.dashboardSK-container .task-disposal h5 { color: var(--task-disposal-text); }
+.dashboardSK-container .task-inventory h5 { color: var(--task-inventory-text); }
+
+.dashboardSK-container .task-card.completed {
+    opacity: 0.6;
+    background: #f8fafc;
+    border-style: dashed;
+}
+
+.dashboardSK-container .task-card.completed h5 {
+    text-decoration: line-through;
+}
+
+.dashboardSK-container .progress-receipt .progress-bar { background-color: var(--task-receipt-text); }
+.dashboardSK-container .progress-inventory .progress-bar { background-color: var(--task-inventory-text); }
+
+.dashboardSK-container .calendar-day-header {
+    border-bottom: 2px solid #dee2e6;
+}
+
+.dashboardSK-container .calendar-day-content {
+    min-height: 200px;
+}
+
+.dashboardSK-container .calendar-day-content.today {
+    background-color: #e7f1ff;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    border: 2px solid #0d6efd;
+}
