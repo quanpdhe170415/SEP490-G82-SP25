@@ -1,105 +1,90 @@
 import React, { useState, useEffect } from 'react';
-import './ListPO.css'; // File CSS không thay đổi
+import './ListPO.css'; // Đảm bảo file CSS này chứa nội dung được cung cấp
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEye, faThumbtack, faCogs, faExclamationTriangle, faShippingFast, faTimes, faCheckCircle, faTruck } from '@fortawesome/free-solid-svg-icons';
+import { faThumbtack, faTimes, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 
 // --- Cấu hình API ---
-const API_BASE_URL = 'http://localhost:9999/api/purchase-order'; // Thay đổi nếu cần
+const API_BASE_URL = 'http://localhost:9999/api';
 
 // --- Các hàm gọi API ---
 const apiService = {
-    // Lấy danh sách PO được giao
-    getAssignedPOs: async (userId) => {
-        const response = await fetch(`${API_BASE_URL}/assigned`, {
+    getAssignedTasks: async (userId) => {
+        const response = await fetch(`${API_BASE_URL}/receive`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ userId: userId }),
         });
-        if (!response.ok) throw new Error('Không thể tải danh sách đơn hàng.');
+        if (!response.ok) throw new Error('Không thể tải danh sách công việc.');
         return response.json();
     },
-    // Lấy chi tiết một PO
-    getPurchaseOrderDetail: async (poId) => {
-        const response = await fetch(`${API_BASE_URL}/${poId}`);
-        if (!response.ok) throw new Error('Không thể tải chi tiết đơn hàng.');
-        return response.json();
-    },
-    // Ghim hoặc bỏ ghim PO
-    togglePin: async (poId) => {
-        const response = await fetch(`${API_BASE_URL}/${poId}/pin`, {
-            method: 'PATCH',
-        });
-        if (!response.ok) throw new Error('Thao tác thất bại.');
-        return response.json();
-    }
 };
 
 const MainContent = () => {
-    const [pos, setPOs] = useState([]);
-    const [processedPOs, setProcessedPOs] = useState([]);
+    const [tasks, setTasks] = useState([]);
+    const [processedTasks, setProcessedTasks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     const [activeTab, setActiveTab] = useState('kanban-view');
-    const [modalData, setModalData] = useState({ po: null, history: null, isLoading: false });
-    const [sortConfig, setSortConfig] = useState({ key: 'id', order: 'asc' });
-    const [filters, setFilters] = useState({
-        upcoming: false,
-        receiving: false,
-        shortage: false,
-        overage: false,
-        completed: false
-    });
+    
+    // --- State mới cho bộ lọc của List View ---
+    const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState('all');
+    
+    // --- CÁC HÀM XỬ LÝ DỮ LIỆU ĐÃ ĐƯỢC CẬP NHẬT ---
 
-    const mapApiStatusToComponentStatus = (apiStatus) => {
-        const statusMap = {
-            pending_receipt: 'upcoming',
-            partially_received: 'receiving',
-            fully_received: 'completed',
-            under_received: 'shortage', // Giả sử API có thể trả về trạng thái này
-            over_received: 'overage'
-        };
-        return statusMap[apiStatus] || 'unknown';
-    };
-
-    const transformApiDataToPO = (apiPO) => {
+    // Chuyển đổi dữ liệu và xác định trạng thái
+    const transformApiDataToTask = (apiTask) => {
         const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const nextReceiptDate = new Date(apiPO.expected_delivery_date);
-        const diffTime = nextReceiptDate - today;
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-        const isDeadlineWarning = diffDays <= 2 && diffDays >= 0;
-        const overallStatus = mapApiStatusToComponentStatus(apiPO.status);
+        const expectedDate = new Date(apiTask.expected_date);
         
-        let attentionReason = null;
-        if (apiPO.status === 'under_received') attentionReason = 'Thiếu';
-        if (apiPO.status === 'over_received') attentionReason = 'Thừa';
+        const todayDateOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        const expectedDateOnly = new Date(expectedDate.getFullYear(), expectedDate.getMonth(), expectedDate.getDate());
+
+        let status;
+        if (apiTask.status === 'issue') {
+            status = 'issue';
+        } else if (apiTask.status === 'completed') {
+            status = 'completed';
+        } else if (apiTask.status === 'in_progress') {
+            status = 'receiving';
+        } else if (apiTask.status === 'pending') {
+            if (expectedDateOnly > todayDateOnly) {
+                status = 'upcoming';
+            } else {
+                status = 'receiving';
+            }
+        } else if (expectedDateOnly < todayDateOnly) {
+            status = 'overdue';
+        } else {
+            status = 'receiving';
+        }
+        
+        const diffDays = Math.ceil((expectedDate - today) / (1000 * 60 * 60 * 24));
+        const isDeadlineWarning = diffDays <= 2 && diffDays >= 0 && status !== 'completed' && status !== 'issue';
 
         return {
-            id: apiPO._id,
-            poNumber: apiPO.order_number,
-            supplier: apiPO.supplier_name,
-            completedReceipts: apiPO.delivery_progress,
-            totalReceipts: apiPO.total_expected_delivery,
-            totalOrdered: apiPO.total_quantity_ordered,
-            totalReceived: apiPO.total_quantity_received,
-            overallStatus: overallStatus,
-            pinned: apiPO.is_pinned,
-            nextReceipt: { expectedDate: apiPO.expected_delivery_date },
+            id: apiTask._id,
+            taskName: apiTask.task_name,
+            poCode: apiTask.purchase_order.po_code, // Thêm PO Code
+            supplier: apiTask.purchase_order.supplier.suplier_name,
+            overallStatus: status,
+            expectedDate: apiTask.expected_date,
             isDeadlineWarning: isDeadlineWarning,
-            attentionReason: attentionReason
+            totalQuantityExpected: apiTask.total_quantity_expected,
+            totalQuantityReceived: apiTask.total_quantity_received,
         };
     };
 
     useEffect(() => {
-        const loadPOs = async () => {
+        const loadTasks = async () => {
             try {
                 setLoading(true);
-                const userId = "6877186497cc45861f4f6bf8"; // ID này chỉ để ví dụ
-                const result = await apiService.getAssignedPOs(userId);
-                if (result.success) {
-                    const transformedPOs = result.data.map(transformApiDataToPO);
-                    setPOs(transformedPOs);
+                const userId = "687e00edd4fc567f47717721"; // Ví dụ userId
+                const result = await apiService.getAssignedTasks(userId);
+                if (result.data) {
+                    const transformedTasks = result.data.map(transformApiDataToTask);
+                    setTasks(transformedTasks);
                 } else {
                     throw new Error(result.message || 'Lỗi không xác định từ API.');
                 }
@@ -109,241 +94,134 @@ const MainContent = () => {
                 setLoading(false);
             }
         };
-        loadPOs();
+        loadTasks();
     }, []);
 
+    // Lọc và sắp xếp dữ liệu cho cả hai view
     useEffect(() => {
-        let filteredPOs = [...pos];
-        const activeFilters = Object.keys(filters).filter(key => filters[key]);
-        if (activeFilters.length > 0) {
-            filteredPOs = filteredPOs.filter(po => activeFilters.includes(po.overallStatus));
+        let processed = [...tasks];
+
+        if (activeTab === 'kanban-view') {
+            const kanbanStatuses = ['upcoming', 'receiving', 'issue'];
+            processed = processed.filter(task => kanbanStatuses.includes(task.overallStatus));
+        } else { // activeTab === 'list-view'
+            // 1. Lọc theo thanh tìm kiếm
+            if (searchTerm) {
+                processed = processed.filter(task =>
+                    task.taskName.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+            }
+            // 2. Lọc theo dropdown trạng thái
+            if (statusFilter !== 'all') {
+                processed = processed.filter(task => task.overallStatus === statusFilter);
+            }
+            // 3. Sắp xếp theo thứ tự ưu tiên
+            const statusOrder = {
+                receiving: 1,
+                upcoming: 2,
+                issue: 3,
+                completed: 4,
+                overdue: 5,
+            };
+            processed.sort((a, b) => {
+                const orderA = statusOrder[a.overallStatus] || 99;
+                const orderB = statusOrder[b.overallStatus] || 99;
+                if (orderA !== orderB) {
+                    return orderA - orderB;
+                }
+                return new Date(a.expectedDate) - new Date(b.expectedDate);
+            });
         }
-        filteredPOs.sort((a, b) => {
-            let valA = a[sortConfig.key];
-            let valB = b[sortConfig.key];
-            if (sortConfig.key === 'receipts') {
-                valA = a.completedReceipts / a.totalReceipts;
-                valB = b.completedReceipts / b.totalReceipts;
+
+        setProcessedTasks(processed);
+    }, [tasks, searchTerm, statusFilter, activeTab]);
+    
+    // --- CÁC COMPONENT VÀ HÀM HỖ TRỢ ---
+
+    const getStatusTitle = (status) => {
+        switch (status) {
+            case "issue": return "Có vấn đề";
+            case "upcoming": return "Sắp nhận";
+            case "receiving": return "Đang nhận";
+            case "overdue": return "Quá hạn";
+            case "completed": return "Đã hoàn tất";
+            default: return "Không xác định";
+        }
+    };
+
+    const TaskCard = ({ item }) => {
+        return (
+            <div className={`task-card status-${item.overallStatus}`}>
+                <div className="card-header">
+                    <span className="card-title">{item.taskName}</span>
+                    {item.isDeadlineWarning && <span className="card-warning-icon">⚠️</span>}
+                </div>
+                <div className="card-body">
+                    <p className="card-po-code">PO: {item.poCode}</p>
+                    <p className="card-supplier">{item.supplier}</p>
+                    <p className="card-date">
+                        Ngày nhận: {new Date(item.expectedDate).toLocaleDateString('vi-VN')}
+                    </p>
+                </div>
+            </div>
+        );
+    };
+
+    const KanbanColumn = ({ status, items }) => {
+        return (
+            <div className="kanban-column">
+                <div className={`kanban-header status-${status}`}>
+                    <h3>{getStatusTitle(status)}</h3>
+                    <span className="kanban-count">{items.length}</span>
+                </div>
+                <div className="kanban-cards-container">
+                    {items.length > 0 ? (
+                        items.map((item) => <TaskCard key={item.id} item={item} />)
+                    ) : (
+                        <p className="empty-column-message">Không có công việc nào.</p>
+                    )}
+                </div>
+            </div>
+        );
+    };
+
+    const groupTasksByStatus = () => {
+        const groups = { upcoming: [], receiving: [], issue: [] };
+        processedTasks.forEach((item) => {
+            if (groups.hasOwnProperty(item.overallStatus)) {
+                groups[item.overallStatus].push(item);
             }
-            if (typeof valA === 'string') {
-                return sortConfig.order === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
-            }
-            return sortConfig.order === 'asc' ? valA - valB : valB - valA;
         });
-        setProcessedPOs(filteredPOs);
-    }, [pos, sortConfig, filters]);
-
-    const openModal = async (poId) => {
-        setModalData({ po: null, history: null, isLoading: true });
-        try {
-            const detailResult = await apiService.getPurchaseOrderDetail(poId);
-            if (detailResult.success) {
-                setModalData({ po: detailResult.data.purchase_order, history: detailResult.data.import_history, isLoading: false });
-            } else {
-                throw new Error('Không thể tải chi tiết.');
-            }
-        } catch (err) {
-            alert(err.message);
-            setModalData({ po: null, history: null, isLoading: false });
-        }
+        Object.keys(groups).forEach((status) => {
+            groups[status].sort((a, b) => new Date(a.expectedDate) - new Date(b.expectedDate));
+        });
+        return groups;
     };
 
-    const closeModal = () => setModalData({ po: null, history: null, isLoading: false });
-
-    const togglePin = async (poId) => {
-        const originalPOs = [...pos];
-        const poToToggle = originalPOs.find(p => p.id === poId);
-        if (!poToToggle) return;
-        const wasPinned = poToToggle.pinned;
-
-        const updatedPOs = pos.map(p => p.id === poId ? { ...p, pinned: !p.pinned } : p);
-        setPOs(updatedPOs);
-
-        try {
-            await apiService.togglePin(poId);
-            alert(wasPinned ? 'Đã bỏ ghim thành công!' : 'Đã ghim thành công!');
-        } catch (err) {
-            alert('Thao tác thất bại, vui lòng thử lại.');
-            setPOs(originalPOs);
-        }
-    };
+    const groupedTasks = groupTasksByStatus();
 
     const renderStatusBadge = (status) => {
         const statusMap = {
-            shortage: { class: 'badge-shortage', text: 'Nhận thiếu' },
-            overage: { class: 'badge-overage', text: 'Nhận thừa' },
-            completed: { class: 'badge-completed', text: 'Hoàn thành' },
-            receiving: { class: 'badge-receiving', text: 'Đang nhận' },
+            issue: { class: 'badge-issue', text: 'Có vấn đề' },
             upcoming: { class: 'badge-upcoming', text: 'Sắp nhận' },
+            receiving: { class: 'badge-receiving', text: 'Đang nhận' },
+            completed: { class: 'badge-completed', text: 'Hoàn thành' },
+            overdue: { class: 'badge-overdue', text: 'Quá hạn' },
         };
         const config = statusMap[status] || { class: '', text: status };
         return <span className={`status-badge ${config.class}`}>{config.text}</span>;
     };
-
-    const handleSort = (key) => setSortConfig(prev => ({ key, order: prev.key === key && prev.order === 'asc' ? 'desc' : 'asc' }));
-    const handleFilterChange = (filterName) => setFilters(prev => ({ ...prev, [filterName]: !prev[filterName] }));
-
-    const renderBoard = () => {
-        const columns = { pinned: [], receiving: [], attention: [], upcoming: [] };
-        processedPOs.forEach(po => {
-            if (po.overallStatus === 'completed' && !po.pinned) return;
-            const card = (
-                <div key={po.id} className={`kanban-card ${po.isDeadlineWarning ? 'deadline-warning' : ''}`} onClick={() => openModal(po.id)}>
-                    <div className="card-header">
-                        <p className="card-po-id">
-                            {po.poNumber}
-                            {po.attentionReason && <span className={`attention-reason ${po.overallStatus}`}>{` - ${po.attentionReason}`}</span>}
-                        </p>
-                        <button onClick={(e) => { e.stopPropagation(); togglePin(po.id); }} className={`pin-button ${po.pinned ? 'pinned' : ''}`}>
-                            <FontAwesomeIcon icon={faThumbtack} />
-                        </button>
-                    </div>
-                    <p className="card-supplier">{po.supplier}</p>
-                    <div className="card-details">
-                        <div className="card-stats">
-                            <span>Đợt: <strong>{po.completedReceipts}/{po.totalReceipts}</strong></span>
-                            <span>SL: <strong>{po.totalReceived}/{po.totalOrdered}</strong></span>
-                        </div>
-                        {po.nextReceipt && (
-                            <div className="card-next-receipt">
-                                Đợt tới: {new Date(po.nextReceipt.expectedDate).toLocaleDateString('vi-VN')}
-                            </div>
-                        )}
-                    </div>
-                </div>
-            );
-            if (po.pinned) columns.pinned.push(card);
-            else if (po.attentionReason) columns.attention.push(card);
-            else if (po.overallStatus === 'receiving') columns.receiving.push(card);
-            else if (po.overallStatus === 'upcoming') columns.upcoming.push(card);
-        });
-        return columns;
-    };
-
-    // --- HÀM RENDER MODAL ĐÃ ĐƯỢC CẬP NHẬT ---
-    const renderModalContent = () => {
-        if (modalData.isLoading) return <div className="modal-loading">Đang tải dữ liệu...</div>;
-        if (!modalData.po) return null;
-
-        const { po, history } = modalData;
-
-        // Tính toán tổng số lượng đã nhận cho mỗi sản phẩm
-        const receivedQuantities = {};
-        if (history) {
-            history.forEach(batch => {
-                if (batch.items_imported) {
-                    batch.items_imported.forEach(item => {
-                        const goodsId = item.goods_id._id;
-                        receivedQuantities[goodsId] = (receivedQuantities[goodsId] || 0) + item.quantity_imported;
-                    });
-                }
-            });
-        }
-
-        return (
-            <>
-                <div className="modal-section">
-                    <h3 className="modal-section-title">Thông tin Phiếu PO</h3>
-                    <div className="modal-grid-info">
-                        <div><span>Mã PO:</span> <strong>{po.order_number}</strong></div>
-                        <div><span>Nhà cung cấp:</span> <strong>{po.supplier_id.suplier_name}</strong></div>
-                        <div><span>Người tạo:</span> <strong>{po.created_by.full_name}</strong></div>
-                        <div><span>Người kiểm hàng:</span> <strong>{po.assigned_to.full_name}</strong></div>
-                        <div><span>Ngày tạo:</span> <strong>{new Date(po.createdAt).toLocaleDateString('vi-VN')}</strong></div>
-                        <div><span>Trạng thái:</span> {renderStatusBadge(mapApiStatusToComponentStatus(po.receiving_status))}</div>
-                    </div>
-                </div>
-
-                <div className="modal-section">
-                    <h3 className="modal-section-title">Tổng quan Tiến độ Nhập hàng</h3>
-                    <table className="po-table progress-table">
-                        <thead>
-                            <tr>
-                                <th>Tên sản phẩm</th>
-                                <th className="cell-center">SL Đặt</th>
-                                <th className="cell-center">Đã Nhận</th>
-                                <th className="cell-center">Còn Lại</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {po.items.map(item => {
-                                const received = receivedQuantities[item.goods_id._id] || 0;
-                                const remaining = item.quantity_order - received;
-                                return (
-                                    <tr key={item._id}>
-                                        <td>{item.goods_id.goods_name}</td>
-                                        <td className="cell-center">{item.quantity_order}</td>
-                                        <td className={`cell-center ${received > 0 ? 'qty-received' : ''}`}>{received}</td>
-                                        <td className={`cell-center ${remaining > 0 ? 'qty-remaining' : 'qty-done'}`}>
-                                            {remaining > 0 ? remaining : <FontAwesomeIcon icon={faCheckCircle} />}
-                                        </td>
-                                    </tr>
-                                )
-                            })}
-                        </tbody>
-                    </table>
-                </div>
-
-                <div className="modal-section">
-                    <h3 className="modal-section-title">Lịch sử các đợt nhập</h3>
-                    {history && history.length > 0 ? (
-                        <div className="import-history-list">
-                            {history.map(batch => (
-                                <div key={batch._id} className="import-batch-card">
-                                    <div className="batch-header">
-                                        <FontAwesomeIcon icon={faTruck} className="batch-icon" />
-                                        <h4>{batch.delivery_code || `Phiếu nhập ${batch.import_receipt_number}`}</h4>
-                                        <span className="batch-date">{new Date(batch.import_date).toLocaleString('vi-VN')}</span>
-                                    </div>
-                                    <div className="batch-body">
-                                        <p><strong>Người nhập:</strong> {batch.imported_by.full_name}</p>
-                                        {batch.notes && <p><strong>Ghi chú:</strong> {batch.notes}</p>}
-                                        
-                                        <h5>Hàng hóa trong đợt:</h5>
-                                        {batch.items_imported && batch.items_imported.length > 0 ? (
-                                             <table className="po-table nested-table">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Tên sản phẩm</th>
-                                                        <th className="cell-center">Số lượng nhận</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {batch.items_imported.map(importedItem => (
-                                                        <tr key={importedItem._id}>
-                                                            <td>{importedItem.goods_id.goods_name}</td>
-                                                            <td className="cell-center">{importedItem.quantity_imported}</td>
-                                                        </tr>
-                                                    ))}
-                                                </tbody>
-                                             </table>
-                                        ) : (
-                                            <p className="no-items-message">Không có sản phẩm nào trong đợt này.</p>
-                                        )}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    ) : (<p className="empty-history-message">Chưa có đợt nhập nào.</p>)}
-                </div>
-            </>
-        );
+    
+    const handleViewDetails = (taskId) => {
+        alert(`Xem chi tiết công việc: ${taskId}`);
     };
 
     if (loading) return <div className="full-page-feedback">Đang tải dữ liệu...</div>;
     if (error) return <div className="full-page-feedback">Lỗi: {error}</div>;
 
-    const boardColumns = renderBoard();
-    const columnConfig = [
-        { key: 'pinned', title: 'Đã Ghim', icon: faThumbtack },
-        { key: 'receiving', title: 'Đang nhận', icon: faCogs },
-        { key: 'attention', title: 'Cần chú ý', icon: faExclamationTriangle },
-        { key: 'upcoming', title: 'Sắp nhận', icon: faShippingFast }
-    ];
-
     return (
         <main className="content-area">
-            <h1 className="page-title">Danh sách Phiếu Nhập Kho</h1>
+            <h1 className="page-title">Danh sách Công việc Nhận hàng</h1>
             <div className="tabs-container">
                 <div className={`tab-item ${activeTab === 'kanban-view' ? 'active' : ''}`} onClick={() => setActiveTab('kanban-view')}>Bảng công việc</div>
                 <div className={`tab-item ${activeTab === 'list-view' ? 'active' : ''}`} onClick={() => setActiveTab('list-view')}>Danh sách chi tiết</div>
@@ -352,62 +230,64 @@ const MainContent = () => {
             {/* Kanban View */}
             <div className={`view-container ${activeTab === 'kanban-view' ? 'active' : ''}`}>
                 <div className="kanban-board">
-                    {columnConfig.map(({ key, title, icon }) => (
-                        <div key={key} className={`kanban-column ${key}`}>
-                            <div className="kanban-column-header">
-                                <h3><FontAwesomeIcon icon={icon} className="column-icon" />{title}</h3>
-                                <span className="count-badge">{boardColumns[key].length}</span>
-                            </div>
-                            <div className="kanban-cards">
-                                {boardColumns[key].length > 0 ? boardColumns[key] : <p className="empty-column-message">Không có phiếu nào.</p>}
-                            </div>
-                        </div>
-                    ))}
+                    <KanbanColumn status="receiving" items={groupedTasks.receiving} />
+                    <KanbanColumn status="upcoming" items={groupedTasks.upcoming} />
+                    <KanbanColumn status="issue" items={groupedTasks.issue} />
                 </div>
             </div>
 
-            {/* List View */}
+            {/* List View (Đã cập nhật) */}
             <div className={`view-container ${activeTab === 'list-view' ? 'active' : ''}`}>
                 <div className="list-view-wrapper">
-                    <div className="table-filters">
-                        <span>Lọc theo:</span>
-                        {Object.keys(filters).map(filterKey => {
-                            const filterTextMap = { upcoming: 'Sắp nhận', receiving: 'Đang nhận', shortage: 'Thiếu', overage: 'Thừa', completed: 'Hoàn thành' };
-                            return (<label key={filterKey} className="filter-checkbox"><input type="checkbox" checked={filters[filterKey]} onChange={() => handleFilterChange(filterKey)} />{filterTextMap[filterKey]}</label>);
-                        })}
+                    <div className="table-controls">
+                        <input
+                            type="text"
+                            placeholder="Tìm theo tên công việc..."
+                            className="search-input"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                        <select
+                            className="status-dropdown"
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                        >
+                            <option value="all">Tất cả trạng thái</option>
+                            <option value="receiving">Đang nhận</option>
+                            <option value="upcoming">Sắp nhận</option>
+                            <option value="issue">Có vấn đề</option>
+                            <option value="completed">Hoàn thành</option>
+                            <option value="overdue">Quá hạn</option>
+                        </select>
                     </div>
                     <div className="table-scroll-container">
                         <table className="po-table">
                             <thead>
                                 <tr>
                                     <th>STT</th>
-                                    <th onClick={() => handleSort('poNumber')}>Mã PO</th>
-                                    <th onClick={() => handleSort('supplier')}>Nhà cung cấp</th>
-                                    <th onClick={() => handleSort('receipts')}>Đợt</th>
-                                    <th onClick={() => handleSort('totalOrdered')}>Tổng SL Đặt</th>
-                                    <th onClick={() => handleSort('totalReceived')}>SL Đã Nhận</th>
-                                    <th onClick={() => handleSort('overallStatus')}>Trạng thái</th>
+                                    <th>Tên công việc</th>
+                                    <th>Nhà cung cấp</th>
+                                    <th>SL Đặt</th>
+                                    <th>SL Nhận</th>
+                                    <th>Ngày dự kiến</th>
+                                    <th>Trạng thái</th>
                                     <th>Hành động</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {processedPOs.length > 0 ? processedPOs.map((po, index) => (
-                                    <tr key={po.id} className={po.isDeadlineWarning && po.overallStatus !== 'completed' ? 'deadline-warning-row' : ''}>
+                                {processedTasks.length > 0 ? processedTasks.map((task, index) => (
+                                    <tr key={task.id} className={`status-row-${task.overallStatus}`}>
                                         <td className="cell-center">{index + 1}</td>
-                                        <td className="po-id-cell">{po.poNumber}
-                                            <button onClick={() => togglePin(po.id)} className={`action-button pin-button ${po.pinned ? 'pinned' : ''}`} title={po.pinned ? 'Bỏ ghim' : 'Ghim'}>
-                                                <FontAwesomeIcon icon={faThumbtack} />
-                                            </button>
-                                        </td>
-                                        <td>{po.supplier}</td>
-                                        <td className="cell-center">{po.completedReceipts} / {po.totalReceipts}</td>
-                                        <td className="cell-center">{po.totalOrdered}</td>
-                                        <td className="cell-center received-qty-cell">{po.totalReceived}</td>
-                                        <td>{renderStatusBadge(po.overallStatus)}</td>
+                                        <td>{task.taskName}</td>
+                                        <td>{task.supplier}</td>
+                                        <td className="cell-center">{task.totalQuantityExpected}</td>
+                                        <td className="cell-center">{task.totalQuantityReceived}</td>
+                                        <td className="cell-center">{new Date(task.expectedDate).toLocaleDateString('vi-VN')}</td>
+                                        <td>{renderStatusBadge(task.overallStatus)}</td>
                                         <td className="cell-center">
-                                            <button onClick={() => openModal(po.id)} className="action-button" title="Xem chi tiết">
-                                                Xem chi tiết
-                                            </button>                                           
+                                            <button className="action-button" onClick={() => handleViewDetails(task.id)}>
+                                                Xem
+                                            </button>
                                         </td>
                                     </tr>
                                 )) : (<tr><td colSpan="8" className="empty-table-message">Không có dữ liệu phù hợp.</td></tr>)}
@@ -416,19 +296,6 @@ const MainContent = () => {
                     </div>
                 </div>
             </div>
-
-            {/* Modal */}
-            {(modalData.po || modalData.isLoading) && (
-                <div className="modal-overlay" onClick={closeModal}>
-                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                        <div className="modal-header">
-                            <h2>{modalData.po ? `Chi tiết Phiếu Nhập: ${modalData.po.order_number}` : 'Đang tải...'}</h2>
-                            <button onClick={closeModal} className="close-modal-button"><FontAwesomeIcon icon={faTimes} /></button>
-                        </div>
-                        <div className="modal-body">{renderModalContent()}</div>
-                    </div>
-                </div>
-            )}
         </main>
     );
 };
