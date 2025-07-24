@@ -25,6 +25,6 @@ router.use("/purchase-order", purchaseOrderRoute);
 router.use("/goods-disposal", goodsDisposalRoute);
 router.use("/import", importController);
 router.use("/export", exportRoute);
-router.use('/inventory-schedule', inventoryScheduleRoute);
+router.use('/inventorySchedule', inventoryScheduleRoute);
 router.use('/inventoryCheck', require('./InventoryCheck'));
 module.exports = router;

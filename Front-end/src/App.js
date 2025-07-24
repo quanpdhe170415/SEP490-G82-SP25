@@ -54,7 +54,7 @@ function App() {
 
 
         <Route path="/inventory/inventory-schedule" element={<InventorySchedule />} />
-        <Route path='/inventory/inventory-schedule/inventory-control' element={<Inventory />} />
+        <Route path='/inventory/inventory-schedule/:scheduleId/inventory-control' element={<Inventory />} />        
         <Route path="/inventory/inventory-schedule/inventory-control/:id" element={<InventoryDetailPage />} />
         <Route path="/page" element={<Page />} />
 

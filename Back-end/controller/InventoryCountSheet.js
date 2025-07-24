@@ -4,135 +4,295 @@ const InventoryItemCheck = require('../models/InventoryItemCheck');
 const Area = require('../models/Area');
 const DefectiveItemLog = require('../models/DefectiveItemLog'); // Nếu có
 const mongoose = require('mongoose');
+const ShelfLevel = require('../models/ShelfLevel');
+const Inventory = require('../models/inventory');
 
-// Lấy danh sách khu vực (task areas) thuộc một phiếu kiểm kho
-exports.getInventoryAreas = async (req, res) => {
+const getGoodsListLengthAndProgress = async (task) => {
   try {
-    const { id } = req.params; // Sử dụng _id của InventoryCheck
-    const { status } = req.query;
+    let totalItems = 0;
+    let completedItems = 0;
+    let inProgressItems = 0;
+    let pendingItems = 0;
 
-    const inventoryCheck = await InventoryCheck.findById(id)
-      .populate('area')
-      .populate({
-        path: 'tasks',
-        populate: { 
-          path: 'shelf_level_id'
-        }
-      });
+    // Lấy tất cả InventoryItemCheck của task này
+    const itemChecks = await InventoryItemCheck.find({ task_id: task._id });
+    
+    // Đếm theo status
+    totalItems = itemChecks.length;
+    completedItems = itemChecks.filter(ic => ic.status === 'Hoàn thành').length;
+    inProgressItems = itemChecks.filter(ic => ic.status === 'Đang kiểm').length;
+    pendingItems = itemChecks.filter(ic => ic.status === 'Chưa kiểm').length;
 
-    if (!inventoryCheck) {
-      return res.status(404).json({ success: false, message: 'Phiếu kiểm kho không tồn tại' });
+    // Nếu chưa có item checks, tạo dựa trên check_type
+    if (totalItems === 0) {
+      let inventories = [];
+      
+      switch (task.check_type) {
+        case 'Toàn bộ':
+          const allShelfLevels = await ShelfLevel.find({ inventory_id: task.inventory_id });
+          inventories = await Inventory.find({ 
+            shelf_level_id: { $in: allShelfLevels.map(sl => sl._id) } 
+          });
+          break;
+
+        case 'Theo kệ':
+          if (task.target_items?.shelf) {
+            const shelfLevels = await ShelfLevel.find({ shelf_id: task.target_items.shelf });
+            inventories = await Inventory.find({ 
+              shelf_level_id: { $in: shelfLevels.map(sl => sl._id) } 
+            });
+          }
+          break;
+
+        case 'Theo tầng':
+          if (task.target_items?.shelf_level) {
+            inventories = await Inventory.find({ 
+              shelf_level_id: task.target_items.shelf_level 
+            });
+          }
+          break;
+
+        case 'Theo sản phẩm':
+          if (task.target_items?.goods && Array.isArray(task.target_items.goods)) {
+            inventories = await Inventory.find({ 
+              goods_id: { $in: task.target_items.goods } 
+            });
+          }
+          break;
+
+        default:
+          if (task.shelf_level_id) {
+            inventories = await Inventory.find({ 
+              shelf_level_id: task.shelf_level_id 
+            });
+          }
+      }
+
+      totalItems = inventories.length;
+      pendingItems = totalItems;
+      completedItems = 0;
+      inProgressItems = 0;
     }
 
-    // Lọc theo trạng thái nếu có
-    const filteredTasks = status && status !== 'all' 
-      ? inventoryCheck.tasks.filter(task => task.status === status)
-      : inventoryCheck.tasks;
+    const completionPercentage = totalItems > 0 ? 
+      Math.round((completedItems / totalItems) * 100) : 0;
 
-    const taskAreas = await Promise.all(filteredTasks.map(async task => {
-      const shelfLevel = task.shelf_level_id;
-      const totalItems = task.inventoryItemChecks?.length || 0;
-      const completedItems = task.inventoryItemChecks?.filter(item => item.status === 'checked').length || 0;
-      const inProgressItems = task.inventoryItemChecks?.filter(item => item.status === 'in-progress').length || 0;
-      const pendingItems = totalItems - completedItems - inProgressItems;
+    return {
+      totalItems,
+      completedItems,
+      inProgressItems,
+      pendingItems,
+      completionPercentage
+    };
+  } catch (error) {
+    console.error('Error calculating progress:', error);
+    return {
+      totalItems: 0,
+      completedItems: 0,
+      inProgressItems: 0,
+      pendingItems: 0,
+      completionPercentage: 0
+    };
+  }
+};
 
+// Sửa lại hàm getInventoryAreas
+exports.getInventoryAreas = async (req, res) => {
+  try {
+    const { checkId } = req.params;
+    const { status = 'all' } = req.query;
+
+    console.log('Getting areas for checkId:', checkId, 'with status filter:', status);
+
+    // Validate checkId
+    if (!checkId) {
+      return res.status(400).json({
+        success: false,
+        message: 'checkId is required',
+      });
+    }
+    if (!mongoose.Types.ObjectId.isValid(checkId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid checkId format',
+      });
+    }
+
+    // Convert checkId to ObjectId
+    const objectId = new mongoose.Types.ObjectId(checkId);
+
+    // Find tasks
+    const tasks = await InventoryTask.find({ inventory_id: objectId })
+      .populate('shelf_level_id')
+      .populate('inventory_id');
+
+    console.log('Found tasks:', tasks.length);
+
+    if (tasks.length === 0) {
+      return res.status(200).json({
+        success: true,
+        data: [],
+        totalProgress: 0,
+        message: 'Không tìm thấy khu vực kiểm kho nào',
+      });
+    }
+
+    // Rest of the function remains the same
+    const areas = await Promise.all(tasks.map(async (task) => {
+      const progress = await getGoodsListLengthAndProgress(task);
       return {
-        id: task._id.toString(),
-        name: shelfLevel?.level_code || 'Khu vực không xác định',
-        description: task.note || `Kiểm tra ${shelfLevel?.level_code || 'khu vực'}`,
-        totalItems,
-        completedItems,
-        inProgressItems,
-        pendingItems,
-        completionPercentage: totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0,
-        status: task.status || 'not-started'
+        id: task._id,
+        name: task.name || `Khu vực ${task._id}`,
+        status: task.status || 'not-started',
+        ...progress,
       };
     }));
 
-   const totalProgress = taskAreas.length > 0 
-      ? Math.round(taskAreas.reduce((acc, area) => acc + area.completionPercentage, 0) / taskAreas.length)
+    const statusMapping = {
+      'not-started': 'not-started',
+      'Chưa kiểm': 'not-started',
+      'checking': 'checking',
+      'Đang kiểm': 'checking',
+      'completed': 'completed',
+      'Hoàn thành': 'completed',
+    };
+
+    let filteredAreas = areas;
+    if (status !== 'all') {
+      filteredAreas = areas.filter(area => {
+        const mappedStatus = statusMapping[area.status] || area.status;
+        return mappedStatus === status;
+      });
+    }
+
+    const totalProgress = areas.length > 0
+      ? Math.round(areas.reduce((sum, area) => sum + area.completionPercentage, 0) / areas.length)
       : 0;
-      
+
+    console.log('Returning areas:', filteredAreas.length, 'total progress:', totalProgress);
+
     res.status(200).json({
       success: true,
-      data: taskAreas,
+      data: filteredAreas,
       totalProgress,
-      message: 'Danh sách khu vực kiểm kho được tải thành công'
+      message: 'Danh sách khu vực kiểm kho được tải thành công',
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Lỗi khi tải danh sách khu vực', error: error.message });
+    console.error('Error getting inventory areas:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi khi tải danh sách khu vực kiểm kho',
+      error: error.message,
+    });
   }
 };
 
 // Bắt đầu kiểm kho
 exports.startInventory = async (req, res) => {
   try {
-    const { id } = req.params; // Sử dụng _id thay vì inventoryCode
+    const { id } = req.params;
+    
     const inventoryCheck = await InventoryCheck.findByIdAndUpdate(
       id,
-      { status: 'in-progress', check_start_time: new Date(), updatedAt: new Date() },
+      { 
+        status: 'in-progress', 
+        check_start_time: new Date(), 
+        updatedAt: new Date() 
+      },
       { new: true, runValidators: true }
     );
 
     if (!inventoryCheck) {
-      return res.status(404).json({ success: false, message: 'Phiếu kiểm kho không tồn tại' });
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Phiếu kiểm kho không tồn tại' 
+      });
     }
+
+    // Cập nhật status của tất cả tasks liên quan
+    await InventoryTask.updateMany(
+      { inventory_id: id },
+      { status: 'not-started' }
+    );
 
     res.status(200).json({
       success: true,
       data: {
-        inventoryCode: inventoryCheck.inventoryCode,
+        _id: inventoryCheck._id,
+        inventory_code: inventoryCheck.inventory_code,
         status: inventoryCheck.status,
-        checkStartTime: inventoryCheck.check_start_time,
-        message: 'Kiểm kho đã được bắt đầu'
-      }
+        check_start_time: inventoryCheck.check_start_time
+      },
+      message: 'Kiểm kho đã được bắt đầu thành công'
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Lỗi khi bắt đầu kiểm kho', error: error.message });
+    console.error('Error starting inventory:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Lỗi khi bắt đầu kiểm kho', 
+      error: error.message 
+    });
   }
 };
 
-// Hoàn tất kiểm kho
+// Sửa lại hàm completeInventory
 exports.completeInventory = async (req, res) => {
   try {
-    const { id } = req.params; // Sử dụng _id thay vì inventoryCode
-    const inventoryCheck = await InventoryCheck.findById(id).populate('tasks');
-
+    const { id } = req.params;
+    
+    const inventoryCheck = await InventoryCheck.findById(id);
     if (!inventoryCheck) {
-      return res.status(404).json({ success: false, message: 'Phiếu kiểm kho không tồn tại' });
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Phiếu kiểm kho không tồn tại' 
+      });
     }
 
-    const allTasksCompleted = inventoryCheck.tasks.every(task => {
-      return task.inventoryItemChecks.every(item => item.status === 'Đã kiểm');
-    });
+    // Kiểm tra tất cả tasks đã hoàn thành chưa
+    const tasks = await InventoryTask.find({ inventory_id: id });
+    const allTasksCompleted = tasks.every(task => task.status === 'completed');
 
     if (!allTasksCompleted) {
-      return res.status(400).json({ success: false, message: 'Còn nhiệm vụ chưa hoàn thành' });
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Còn nhiệm vụ chưa hoàn thành. Vui lòng hoàn thành tất cả khu vực trước khi kết thúc kiểm kho.' 
+      });
     }
 
-    inventoryCheck.status = 'completed';
-    inventoryCheck.check_end_time = new Date();
-    inventoryCheck.updatedAt = new Date();
-    await inventoryCheck.save();
+    const updatedCheck = await InventoryCheck.findByIdAndUpdate(
+      id,
+      {
+        status: 'completed',
+        check_end_time: new Date(),
+        updatedAt: new Date()
+      },
+      { new: true }
+    );
 
     res.status(200).json({
       success: true,
       data: {
-        inventoryCode: inventoryCheck.inventoryCode,
-        status: inventoryCheck.status,
-        checkEndTime: inventoryCheck.check_end_time,
-        message: 'Kiểm kho đã được hoàn tất'
-      }
+        _id: updatedCheck._id,
+        inventory_code: updatedCheck.inventory_code,
+        status: updatedCheck.status,
+        checkEndTime: updatedCheck.check_end_time
+      },
+      message: 'Kiểm kho đã được hoàn tất thành công'
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Lỗi khi hoàn tất kiểm kho', error: error.message });
+    console.error('Error completing inventory:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Lỗi khi hoàn tất kiểm kho', 
+      error: error.message 
+    });
   }
 };
 
-// Hủy kiểm kho
+// Sửa lại hàm cancelInventory
 exports.cancelInventory = async (req, res) => {
   try {
-    const { id } = req.params; // Sử dụng _id thay vì inventoryCode
+    const { id } = req.params;
     const { reason } = req.body;
 
     const inventoryCheck = await InventoryCheck.findByIdAndUpdate(
@@ -143,37 +303,48 @@ exports.cancelInventory = async (req, res) => {
         check_end_time: null,
         updatedAt: new Date()
       },
-      { new: true, runValidators: true }
+      { new: true }
     );
 
     if (!inventoryCheck) {
-      return res.status(404).json({ success: false, message: 'Phiếu kiểm kho không tồn tại' });
-    }
-
-    // Ghi log hủy (nếu có)
-    if (reason) {
-      await DefectiveItemLog.create({
-        inventoryCheckId: inventoryCheck._id,
-        reason,
-        createdAt: new Date()
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Phiếu kiểm kho không tồn tại' 
       });
     }
+
+    // Reset tất cả tasks về trạng thái ban đầu
+    await InventoryTask.updateMany(
+      { inventory_id: id },
+      { status: 'not-started' }
+    );
+
+    // Reset tất cả item checks
+    const tasks = await InventoryTask.find({ inventory_id: id });
+    const taskIds = tasks.map(task => task._id);
+    await InventoryItemCheck.updateMany(
+      { task_id: { $in: taskIds } },
+      { status: 'Chưa kiểm' }
+    );
 
     res.status(200).json({
       success: true,
       data: {
-        inventoryCode: inventoryCheck.inventoryCode,
-        status: inventoryCheck.status,
-        checkStartTime: null,
-        checkEndTime: null,
-        message: 'Yêu cầu hủy kiểm kho đã được gửi thành công'
-      }
+        _id: inventoryCheck._id,
+        inventory_code: inventoryCheck.inventory_code,
+        status: inventoryCheck.status
+      },
+      message: 'Kiểm kho đã được hủy thành công'
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Lỗi khi hủy kiểm kho', error: error.message });
+    console.error('Error canceling inventory:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Lỗi khi hủy kiểm kho', 
+      error: error.message 
+    });
   }
 };
-
 // Lấy chi tiết khu vực kiểm kho
 exports.getInventoryAreaDetails = async (req, res) => {
   try {
@@ -365,12 +536,12 @@ exports.getInventoryCheckDetails = async (req, res) => {
     res.status(200).json({
       success: true,
       data: {
-        inventoryCode: inventoryCheck.inventoryCode,
+        inventoryCode: inventoryCheck.inventory_code,
         inventoryName: inventoryCheck.inventory_name,
         checkStartTime: inventoryCheck.check_start_time,
         checkEndTime: inventoryCheck.check_end_time,
         status: inventoryCheck.status,
-        priorityNotice: '⚠️ Ưu tiên kiểm tra Kệ B - Đồ uống để nhập hàng mới'
+        priorityNotice: inventoryCheck.note
       },
       message: 'Thông tin phiếu kiểm kho được tải thành công'
     });

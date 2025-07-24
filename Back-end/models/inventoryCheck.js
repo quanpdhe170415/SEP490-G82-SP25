@@ -25,7 +25,7 @@ const inventoryCheckSchema = new mongoose.Schema(
     check_start_time: Date,
     check_end_time: Date,
 
-    note: String, // Note của thủ kho
+    note: String, 
     tasks: [{ type: mongoose.Schema.Types.ObjectId, ref: "InventoryTask" }],
     status: {
       type: String,

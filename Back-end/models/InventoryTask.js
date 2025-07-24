@@ -6,6 +6,9 @@ const inventoryTaskSchema = new mongoose.Schema({
     ref: 'InventoryCheck',
     required: true,
   },
+  name: {
+    type: String,
+  },
   shelf_level_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'ShelfLevel',
@@ -13,7 +16,7 @@ const inventoryTaskSchema = new mongoose.Schema({
   },
   check_type: {
     type: String,
-    enum: ['Toàn bộ', 'Theo kệ', 'Theo tầng', 'Theo sản phẩm', 'Đột xuất'],
+    enum: ['Toàn bộ', 'Theo kệ', 'Theo tầng', 'Theo sản phẩm'],
     required: true,
   },
   target_items: {

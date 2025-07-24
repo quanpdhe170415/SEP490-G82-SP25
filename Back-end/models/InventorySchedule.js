@@ -13,6 +13,7 @@ const inventoryScheduleSchema = new mongoose.Schema({
     type: Date,
     required: false,
   },
+  time_start: Date,
   created_by: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Account',

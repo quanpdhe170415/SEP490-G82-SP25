@@ -11,4 +11,5 @@ router.get('/view', controller.inventoryScheduleController.getInventorySchedules
 // Xem chi tiết lịch kiểm kho
 router.get('/view/:id', controller.inventoryScheduleController.getInventoryScheduleById);
 
+router.get('/:scheduleId/check', controller.inventoryScheduleController.getInventoryCheckBySchedule);
 module.exports = router;
