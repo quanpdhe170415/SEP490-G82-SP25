@@ -31,7 +31,10 @@ const inventorySchema = new mongoose.Schema({
         ref: 'ShelfLevel',
         required: true, // Tham chiếu đến ShelfLevel
     },
-
+    item_checks: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'InventoryItemCheck',
+  }],
 }, {
     timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' }
 });

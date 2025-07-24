@@ -12,6 +12,7 @@ const goodsDisposalController = require('./goodsDisposal.controller');
 const purchaseOrderController = require('./purchaseOrder.controller');
 const inventoryScheduleController = require('./InventorySchedule');
 const inventoryCheckController = require('./InventoryCountSheet');
+const inventoryTaskController = require('./InventoryTask');
 module.exports = {
   goodsController,
   authenController,
@@ -27,5 +28,5 @@ module.exports = {
   importController,
   exportController,
   purchaseOrderController,
-  inventoryScheduleController, inventoryCheckController,
+  inventoryScheduleController, inventoryCheckController, inventoryTaskController
 };
