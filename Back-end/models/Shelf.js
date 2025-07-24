@@ -10,11 +10,7 @@ const shelfSchema = new mongoose.Schema({
     type: String,
     required: true, // Tên kệ (ví dụ: Kệ A, Kệ Lạnh)
   },
-  area: {
-    type: String,
-    enum: ['Trưng bày', 'Lưu trữ', 'Đông lạnh'], // Loại kệ
-    required: true,
-  },
+  area: { type: mongoose.Schema.Types.ObjectId, ref: 'Area', required: true },
   shelf_type: {
     type: String,
     enum: ['Kệ thường', 'Tủ lạnh'], // Loại kệ

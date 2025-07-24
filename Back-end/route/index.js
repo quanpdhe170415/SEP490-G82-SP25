@@ -11,6 +11,7 @@ const goodsRoute = require("./goods.route");
 const exportRoute = require("./export.route");
 const importController = require("./import.route");
 const purchaseOrderRoute = require("./purchaseOrder.route");
+const inventoryScheduleRoute = require("./inventorySchedule.route");
 
 router.use("/product", productRouter);
 router.use("/goods", goodsRoute);
@@ -24,5 +25,6 @@ router.use("/purchase-order", purchaseOrderRoute);
 router.use("/goods-disposal", goodsDisposalRoute);
 router.use("/import", importController);
 router.use("/export", exportRoute);
-
+router.use('/inventory-schedule', inventoryScheduleRoute);
+router.use('/inventoryCheck', require('./InventoryCheck'));
 module.exports = router;

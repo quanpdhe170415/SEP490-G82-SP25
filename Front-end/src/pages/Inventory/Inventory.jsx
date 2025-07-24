@@ -5,23 +5,24 @@ import { Link } from "react-router-dom";
 import "./Inventory.css";
 import SidebarWH from "../../components/common/Sidebar_wh";
 import HeaderWH from "../../components/common/Header_wh";
+import CancelInventoryModal from "./cancel-inventory-modal";
 export default function WarehouseDashboard() {
   const [taskAreas] = useState([
     {
       id: "area-a",
-      name: "Khu vực A - Thực phẩm khô",
-      description: "Kiểm tra khu vực thực phẩm khô",
+      name: "Kệ A - Thực phẩm khô",
+      description: "Kiểm tra Kệ thực phẩm khô",
       totalItems: 5,
-      completedItems: 3,
+      completedItems: 0,
       inProgressItems: 8,
-      pendingItems: 2,
-      completionPercentage: 60,
+      pendingItems: 5,
+      completionPercentage: 0,
       status: "checking",
     },
     {
       id: "area-b",
-      name: "Khu vực B - Đồ uống",
-      description: "Kiểm tra khu vực đồ uống",
+      name: "Kệ B - Đồ uống",
+      description: "Kiểm tra Kệ đồ uống",
       totalItems: 2,
       completedItems: 2,
       inProgressItems: 0,
@@ -31,8 +32,8 @@ export default function WarehouseDashboard() {
     },
     {
       id: "area-c1",
-      name: "Khu vực C - Hóa mỹ phẩm",
-      description: "Kiểm tra khu vực hóa mỹ phẩm",
+      name: "Kệ C - Hóa mỹ phẩm",
+      description: "Kiểm tra Kệ hóa mỹ phẩm",
       totalItems: 20,
       completedItems: 0,
       inProgressItems: 0,
@@ -42,88 +43,96 @@ export default function WarehouseDashboard() {
     },
     {
       id: "area-c2",
-      name: "Khu vực C - Hóa mỹ phẩm",
-      description: "Kiểm tra khu vực hóa mỹ phẩm",
+      name: "Kệ C - Hóa mỹ phẩm",
+      description: "Kiểm tra Kệ hóa mỹ phẩm",
       totalItems: 20,
       completedItems: 0,
       inProgressItems: 0,
       pendingItems: 20,
       completionPercentage: 0,
       status: "not-started",
-    },{
+    },
+    {
       id: "area-c3",
-      name: "Khu vực C - Hóa mỹ phẩm",
-      description: "Kiểm tra khu vực hóa mỹ phẩm",
+      name: "Kệ C - Hóa mỹ phẩm",
+      description: "Kiểm tra Kệ hóa mỹ phẩm",
       totalItems: 20,
       completedItems: 0,
       inProgressItems: 0,
       pendingItems: 20,
       completionPercentage: 0,
       status: "not-started",
-    },{
+    },
+    {
       id: "area-c4",
-      name: "Khu vực C - Hóa mỹ phẩm",
-      description: "Kiểm tra khu vực hóa mỹ phẩm",
+      name: "Kệ C - Hóa mỹ phẩm",
+      description: "Kiểm tra Kệ hóa mỹ phẩm",
       totalItems: 20,
       completedItems: 0,
       inProgressItems: 0,
       pendingItems: 20,
       completionPercentage: 0,
       status: "not-started",
-    },{
+    },
+    {
       id: "area-c5",
-      name: "Khu vực C - Hóa mỹ phẩm",
-      description: "Kiểm tra khu vực hóa mỹ phẩm",
+      name: "Kệ C - Hóa mỹ phẩm",
+      description: "Kiểm tra Kệ hóa mỹ phẩm",
       totalItems: 20,
       completedItems: 0,
       inProgressItems: 0,
       pendingItems: 20,
       completionPercentage: 0,
       status: "not-started",
-    },{
+    },
+    {
       id: "area-b2",
-      name: "Khu vực C - Hóa mỹ phẩm",
-      description: "Kiểm tra khu vực hóa mỹ phẩm",
+      name: "Kệ C - Hóa mỹ phẩm",
+      description: "Kiểm tra Kệ hóa mỹ phẩm",
       totalItems: 20,
       completedItems: 0,
       inProgressItems: 0,
       pendingItems: 20,
       completionPercentage: 0,
       status: "not-started",
-    },{
+    },
+    {
       id: "area-b3",
-      name: "Khu vực C - Hóa mỹ phẩm",
-      description: "Kiểm tra khu vực hóa mỹ phẩm",
+      name: "Kệ C - Hóa mỹ phẩm",
+      description: "Kiểm tra Kệ hóa mỹ phẩm",
       totalItems: 20,
       completedItems: 0,
       inProgressItems: 0,
       pendingItems: 20,
       completionPercentage: 0,
       status: "not-started",
-    },{
+    },
+    {
       id: "area-c7",
-      name: "Khu vực C - Hóa mỹ phẩm",
-      description: "Kiểm tra khu vực hóa mỹ phẩm",
+      name: "Kệ C - Hóa mỹ phẩm",
+      description: "Kiểm tra Kệ hóa mỹ phẩm",
       totalItems: 20,
       completedItems: 0,
       inProgressItems: 0,
       pendingItems: 20,
       completionPercentage: 0,
       status: "not-started",
-    },{
+    },
+    {
       id: "area-c9",
-      name: "Khu vực C - Hóa mỹ phẩm",
-      description: "Kiểm tra khu vực hóa mỹ phẩm",
+      name: "Kệ C - Hóa mỹ phẩm",
+      description: "Kiểm tra Kệ hóa mỹ phẩm",
       totalItems: 20,
       completedItems: 0,
       inProgressItems: 0,
       pendingItems: 20,
       completionPercentage: 0,
       status: "not-started",
-    },{
+    },
+    {
       id: "area-c10",
-      name: "Khu vực C - Hóa mỹ phẩm",
-      description: "Kiểm tra khu vực hóa mỹ phẩm",
+      name: "Kệ C - Hóa mỹ phẩm",
+      description: "Kiểm tra Kệ hóa mỹ phẩm",
       totalItems: 20,
       completedItems: 0,
       inProgressItems: 0,
@@ -132,7 +141,13 @@ export default function WarehouseDashboard() {
       status: "not-started",
     },
   ]);
+
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [inventoryStatus, setInventoryStatus] = useState("not-started"); // not-started, in-progress, completed
+  const [startTime, setStartTime] = useState(null);
+  const [endTime, setEndTime] = useState(null);
+   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+    const inventoryCode = "KK2025-001";
 
   const toggleSidebar = () => {
     setIsCollapsed(!isCollapsed);
@@ -161,6 +176,63 @@ export default function WarehouseDashboard() {
     return area.status === tabFilter;
   });
 
+  const handleStartInventory = () => {
+    const now = new Date();
+    setStartTime(now);
+    setInventoryStatus("in-progress");
+  };
+
+  const handleCompleteInventory = () => {
+    const now = new Date();
+    setEndTime(now);
+    setInventoryStatus("completed");
+  };
+
+  const handleCancelInventory = () => {
+    setInventoryStatus("not-started");
+    setStartTime(null);
+    setEndTime(null);
+  };
+
+  const handleOpenCancelModal = () => {
+    setIsCancelModalOpen(true)
+  }
+
+  const handleCloseCancelModal = () => {
+    setIsCancelModalOpen(false)
+  }
+
+  const handleConfirmCancel = (data) => {
+    console.log("Cancel request data:", data)
+    // Here you would typically send the cancellation request to your backend
+    // For now, we'll just reset the inventory status
+    setInventoryStatus("not-started")
+    setStartTime(null)
+    setEndTime(null)
+    setIsCancelModalOpen(false)
+
+    // Show success message
+    alert("Yêu cầu hủy kiểm kho đã được gửi thành công!")
+  }
+
+  const handleEditResults = () => {
+    // Logic for editing results
+    console.log("Editing inventory results...");
+  };
+
+  const handleExportReport = () => {
+    // Logic for exporting report
+    console.log("Exporting inventory report...");
+  };
+
+  const formatTime = (date) => {
+    if (!date) return "";
+    return date.toLocaleTimeString("vi-VN", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
   return (
     <div className="d-flex" style={{ height: "100vh" }}>
       {/* Sidebar */}
@@ -176,39 +248,79 @@ export default function WarehouseDashboard() {
       >
         {/* Header */}
         <HeaderWH onSidebarToggle={toggleSidebar} />
+
         <div className="dashboard-container">
           <div className="dashboard-wrapper">
             {/* Header */}
             <div className="dashboard-header">
-              <div className="header-content">
+
+              <div className="header-content flex justify-between items-center flex-wrap gap-4">
                 <div className="header-info">
-                  <h1>Kiểm Kê Kho</h1>
+                  <h1>Kiểm tra định kỳ tháng 7</h1>
                   <div className="header-details">
                     <span>
-                      <strong>Mã kiểm kho:</strong> KK2025-001
+                      <strong>Mã kiểm kho:</strong> {inventoryCode}
                     </span>
                     <span>
                       <strong>Ngày:</strong> 28/06/2025
                     </span>
                     <span>
-                      <strong>Bắt đầu:</strong> 9:00 AM
+                      <strong>Thời gian bắt đầu:</strong> 9:00 AM
                     </span>
                   </div>
+                  <div className="priority-notice">
+                    <span>⚠️ Ưu tiên kiểm tra Kệ B - Đồ uống để nhập hàng mới</span>
+                  </div>
                 </div>
-                <div className="header-actions">
-                  <button className="btn btn-outline"> Xuất biên bản</button>
-                  <button className="btn btn-destructive"> Hủy kiểm kho</button>
-                  <button className="btn btn-success">
-                    {" "}
-                    Hoàn tất và gửi quản lý
-                  </button>
+                <div className="flex flex-col items-end gap-2">
+                  <div className="header-actions">
+                    {inventoryStatus === "not-started" && (
+                      <button className="btn btn-primary" onClick={handleStartInventory}>
+                        Bắt đầu kiểm kê
+                      </button>
+                    )}
+                    {inventoryStatus === "in-progress" && (
+                      <>
+                        <button className="btn btn-outline" onClick={handleExportReport}>
+                          Xuất biên bản
+                        </button>
+                        <button className="btn btn-destructive" onClick={handleOpenCancelModal}>
+                          Hủy kiểm kho
+                        </button>
+                        <button className="btn btn-success" onClick={handleCompleteInventory}>
+                          Hoàn tất kiểm kê
+                        </button>
+                      </>
+                    )}
+                    {inventoryStatus === "completed" && (
+                      <>
+                        <button className="btn btn-outline" onClick={handleExportReport}>
+                          Xuất biên bản
+                        </button>
+                        <button className="btn btn-destructive" onClick={handleOpenCancelModal}>
+                          Hủy kiểm kho
+                        </button>
+                        <button className="btn btn-secondary" onClick={handleEditResults}>
+                          Chỉnh sửa
+                        </button>
+                      </>
+                    )}
+                  </div>
+                  {(startTime || (endTime && inventoryStatus === "completed")) && (
+                    <div className="time-info flex items-center gap-2">
+                      {startTime && (
+                        <span className="start">
+                          <strong >Bắt đầu:</strong> {formatTime(startTime)}    
+                        </span>
+                      )}
+                      {endTime && inventoryStatus === "completed" && (
+                        <span className="end">
+                          <strong >Kết thúc:</strong> {formatTime(endTime)}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
-              </div>
-
-              <div className="priority-notice">
-                <span>
-                  ⚠️ Ưu tiên kiểm tra Khu vực B - Đồ uống để nhập hàng mới
-                </span>
               </div>
 
               {/* Status Bar */}
@@ -328,18 +440,28 @@ export default function WarehouseDashboard() {
                         </div>
                       </div>
 
-                      <Link
-                        to={`/inventory/inventory-schedule/inventory-control/${area.id}`}
-                        className={`area-action ${
-                          area.status === "completed" ? "secondary" : "primary"
-                        }`}
-                      >
-                        {area.status === "completed"
-                          ? "Xem chi tiết"
-                          : area.status === "checking"
-                          ? "Tiếp tục kiểm kê"
-                          : "Bắt đầu kiểm kê"}
-                      </Link>
+                      {inventoryStatus !== "not-started" && (
+                        <Link
+                          to={`/inventory/inventory-schedule/inventory-control/${area.id}`}
+                          className={`area-action ${
+                            area.status === "completed"
+                              ? "secondary"
+                              : "primary"
+                          }`}
+                        >
+                          {area.status === "completed"
+                            ? "Xem chi tiết"
+                            : area.status === "checking"
+                            ? "Tiếp tục kiểm kê"
+                            : "Bắt đầu kiểm kê"}
+                        </Link>
+                      )}
+
+                      {inventoryStatus === "not-started" && (
+                        <div className="area-action disabled">
+                          Chưa bắt đầu kiểm kê
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -348,6 +470,12 @@ export default function WarehouseDashboard() {
           </div>
         </div>
       </div>
+      <CancelInventoryModal
+        isOpen={isCancelModalOpen}
+        onClose={handleCloseCancelModal}
+        onConfirm={handleConfirmCancel}
+        inventoryCode={inventoryCode}
+      />
     </div>
   );
 }

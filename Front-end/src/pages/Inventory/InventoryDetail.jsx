@@ -262,8 +262,7 @@ export default function InventoryDetailPage() {
 
   const allCount = areaData?.items.length || 0
   const pendingCount = areaData?.items.filter((item) => item.status === "pending").length || 0
-  const checkingCount =
-    areaData?.items.filter((item) => item.actualQuantity !== null && item.status === "checked").length || 0
+
   const checkedCount = areaData?.items.filter((item) => item.status === "checked").length || 0
 
   const completedItems = areaData?.items.filter((item) => item.status !== "pending").length || 0
@@ -320,12 +319,7 @@ export default function InventoryDetailPage() {
             >
               Chưa kiểm ({pendingCount})
             </button>
-            <button
-              onClick={() => setTabFilter("checking")}
-              className={`tab-button ${tabFilter === "checking" ? "active" : "inactive"}`}
-            >
-              Đang kiểm ({checkingCount})
-            </button>
+            
             <button
               onClick={() => setTabFilter("checked")}
               className={`tab-button ${tabFilter === "checked" ? "active" : "inactive"}`}

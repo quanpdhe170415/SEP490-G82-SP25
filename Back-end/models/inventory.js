@@ -12,7 +12,6 @@ const inventorySchema = new mongoose.Schema({
         ref: 'ImportBatch',
         required: true,
     },
-    //số lượng còn lại trong lô hàng đang nhập
     quantity_remain: {
         type: Number,
         required: true,
@@ -26,6 +25,11 @@ const inventorySchema = new mongoose.Schema({
     expiry_date: {
         type: Date,
         required: false
+    },
+    shelf_level_id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'ShelfLevel',
+        required: true, // Tham chiếu đến ShelfLevel
     },
 
 }, {

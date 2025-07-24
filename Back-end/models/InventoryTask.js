@@ -11,12 +11,15 @@ const inventoryTaskSchema = new mongoose.Schema({
     ref: 'ShelfLevel',
     required: true, // Thay location_id bằng shelf_level_id
   },
-  checked_by: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Account',
-  },
-  start_time: Date,
-  end_time: Date,
+  check_type: {
+      type: String,
+      enum: ['Toàn bộ', 'Theo kệ', 'Theo tầng', 'Theo sản phẩm', 'Đột xuất'],
+    },
+    target_items: {
+      shelves: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Shelf' }],
+      shelf_levels: [{ type: mongoose.Schema.Types.ObjectId, ref: 'ShelfLevel' }],
+      inventories: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Inventory' }],
+    },
   status: {
     type: String,
     enum: ['Chưa kiểm', 'Đang kiểm', 'Hoàn thành'],

@@ -24,6 +24,7 @@ const inventoryScheduleSchema = new mongoose.Schema({
     }],
     required: true,
   },
+  area: { type: mongoose.Schema.Types.ObjectId, ref: 'Area', required: true },
   inventory_type: {
     type: String,
     enum: ['Toàn Kho', 'Cuối ngày', 'Định kỳ', 'Đột xuất', 'Khác'],

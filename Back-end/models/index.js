@@ -1,37 +1,38 @@
-const mongoose = require('mongoose');
-const Account = require('./account');
-const Role = require('./role');
-const UserDetail = require('./userDetail');
-const Permission = require('./permission');
-const Goods = require('./goods');
-const ImportBatch = require('./import_batch');
-const ImportDetail = require('./import_detail');
-const PriceHistory = require('./price_history');
-const Category = require('./category');
-const Stockmovement = require('./stockmovement');
-const Shift = require('./shift');
-const CashDenomination = require('./cashdenomination');
-const Bill = require('./bill');
-const Status = require('./statusBill');
-const BillDetail = require('./billDetail');
-const ReturnOrder = require("./returnOrder"); 
+const mongoose = require("mongoose");
+const Account = require("./account");
+const Role = require("./role");
+const UserDetail = require("./userDetail");
+const Permission = require("./permission");
+const Goods = require("./goods");
+const ImportBatch = require("./import_batch");
+const ImportDetail = require("./import_detail");
+const PriceHistory = require("./price_history");
+const Category = require("./category");
+const Stockmovement = require("./stockmovement");
+const Shift = require("./shift");
+const CashDenomination = require("./cashdenomination");
+const Bill = require("./bill");
+const Status = require("./statusBill");
+const BillDetail = require("./billDetail");
+const ReturnOrder = require("./returnOrder");
 const ReturnDetail = require("./returndetail");
 const PurchaseOrder = require("./purchaseOrder");
-const StatusWarehouse = require("./statuswarehouse")
+const StatusWarehouse = require("./statuswarehouse");
 const Supplier = require("./supplier");
-const InventorySchedule = require('./InventorySchedule');
-const InventoryCheck = require('./inventoryCheck');
-const ShelfLevel = require('./ShelfLevel');
-const InventoryTask = require('./InventoryTask');
-const ScheduleCheckMapping = require('./ScheduleCheckMapping');
-const Inventory = require('./inventory');
-const Shelf = require('./Shelf');
-
-const GoodsDisposal = require('./goodsDisposal');
-const DisposalItem = require('./disposalItem');
-const Session = require('./session');
-const ShiftType = require('./shiftType');
-
+const InventorySchedule = require("./InventorySchedule");
+const InventoryCheck = require("./inventoryCheck");
+const ShelfLevel = require("./ShelfLevel");
+const InventoryTask = require("./InventoryTask");
+const ScheduleCheckMapping = require("./ScheduleCheckMapping");
+const Inventory = require("./inventory");
+const Shelf = require("./Shelf");
+const InventoryItemCheck = require("./InventoryItemCheck");
+const GoodsDisposal = require("./goodsDisposal");
+const DisposalItem = require("./disposalItem");
+const Session = require("./session");
+const ShiftType = require("./shiftType");
+const DefectiveItemLog = require("./DefectiveItemLog");
+const Area = require("./Area");
 mongoose.Promise = global.Promise;
 
 const db = {
@@ -58,10 +59,16 @@ const db = {
   DisposalItem,
   UserDetail,
   Session,
-  ShiftType, 
+  ShiftType,
   InventorySchedule,
-  InventoryCheck, InventoryTask, Inventory, ShelfLevel, ScheduleCheckMapping, Shelf
+  InventoryCheck,
+  InventoryTask,
+  Inventory,
+  ShelfLevel,
+  ScheduleCheckMapping,
+  Shelf,
+  DefectiveItemLog,
+  InventoryItemCheck, Area
 };
-  
 
 module.exports = db;

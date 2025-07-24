@@ -35,6 +35,16 @@ const connectDB = async () => {
       db.UserDetail.createCollection(),
       db.Supplier.createCollection(),
       db.PurchaseOrder.createCollection(),
+      db.InventorySchedule.createCollection(),
+      db.InventoryCheck.createCollection(),
+      db.InventoryTask.createCollection(),
+      db.ShelfLevel.createCollection(),
+      db.Inventory.createCollection(),
+      db.ScheduleCheckMapping.createCollection(),
+      db.Shelf.createCollection(),
+      db.DefectiveItemLog.createCollection(),
+      db.InventoryItemCheck.createCollection(),
+      db.Area.createCollection(),
     ]);
     console.log("All collections ensured!");
 
@@ -1027,7 +1037,492 @@ const connectDB = async () => {
       ]);
       console.log("Seeded goods disposals!");
     }
+    let areas = [];
+    const areaCount = await db.Area.countDocuments();
+    console.log(`Area count: ${areaCount}`);
+    if (areaCount === 0) {
+      areas = await db.Area.insertMany([
+        {
+          name: "Khu lưu trữ",
+          code: "AREA-LT",
+          description: "Khu vực thực phẩm khô",
+          createdAt: "2025-07-01T00:00:00Z",
+          updatedAt: "2025-07-01T00:00:00Z",
+        },
+        {
+          name: "Khu trưng bày",
+          code: "AREA-TB",
+          description: "Khu vực đồ uống",
+          createdAt: "2025-07-01T00:00:00Z",
+          updatedAt: "2025-07-01T00:00:00Z",
+        },
+      ]);
+      console.log(
+        "Seeded areas:",
+        areas.map((a) => a.name)
+      );
+    } else {
+      areas = await db.Area.find();
+      console.log(
+        "Existing areas:",
+        areas.map((a) => a.name)
+      );
+    }
 
+    // Seed dữ liệu cho Shelf nếu chưa có
+    let shelves = [];
+    const shelfCount = await db.Shelf.countDocuments();
+    console.log(`Shelf count: ${shelfCount}`);
+    if (shelfCount === 0 && areas.length > 0) {
+      shelves = await db.Shelf.insertMany([
+        {
+          shelf_code: "K001",
+          shelf_name: "Kệ A",
+          area: areas[0]._id,
+          shelf_type: "Kệ thường",
+          status: "Hoạt động",
+          note: "Kệ chứa thực phẩm khô",
+          createdAt: "2025-07-01T00:00:00Z",
+          updatedAt: "2025-07-01T00:00:00Z",
+        },
+        {
+          shelf_code: "K002",
+          shelf_name: "Kệ B",
+          area: areas[1]._id,
+          shelf_type: "Kệ thường",
+          status: "Hoạt động",
+          note: "Kệ chứa đồ uống",
+          createdAt: "2025-07-01T00:00:00Z",
+          updatedAt: "2025-07-01T00:00:00Z",
+        },
+        {
+          shelf_code: "K003",
+          shelf_name: "Kệ C",
+          area: areas[1]._id,
+          shelf_type: "Kệ thường",
+          status: "Hoạt động",
+          note: "Kệ chứa hóa mỹ phẩm",
+          createdAt: "2025-07-01T00:00:00Z",
+          updatedAt: "2025-07-01T00:00:00Z",
+        },
+      ]);
+      console.log(
+        "Seeded shelves:",
+        shelves.map((s) => s.shelf_code)
+      );
+    } else {
+      shelves = await db.Shelf.find();
+      console.log(
+        "Existing shelves:",
+        shelves.map((s) => s.shelf_code)
+      );
+    }
+
+    // Seed dữ liệu cho ShelfLevel nếu chưa có
+    let shelfLevels = [];
+    const shelfLevelCount = await db.ShelfLevel.countDocuments();
+    console.log(`ShelfLevel count: ${shelfLevelCount}`);
+    if (shelfLevelCount === 0 && shelves.length > 0) {
+      shelfLevels = await db.ShelfLevel.insertMany([
+        {
+          level_code: "K001-T1",
+          shelf_id: shelves[0]._id,
+          floor: "1",
+          status: "Có hàng",
+          stock_quantity: 10,
+          createdAt: "2025-07-01T00:00:00Z",
+          updatedAt: "2025-07-01T00:00:00Z",
+        },
+        {
+          level_code: "K001-T2",
+          shelf_id: shelves[0]._id,
+          floor: "2",
+          status: "Có hàng",
+          stock_quantity: 15,
+          createdAt: "2025-07-01T00:00:00Z",
+          updatedAt: "2025-07-01T00:00:00Z",
+        },
+        {
+          level_code: "K001-T3",
+          shelf_id: shelves[0]._id,
+          floor: "3",
+          status: "Có hàng",
+          stock_quantity: 8,
+          createdAt: "2025-07-01T00:00:00Z",
+          updatedAt: "2025-07-01T00:00:00Z",
+        },
+        {
+          level_code: "K002-T1",
+          shelf_id: shelves[1]._id,
+          floor: "1",
+          status: "Có hàng",
+          stock_quantity: 24,
+          createdAt: "2025-07-01T00:00:00Z",
+          updatedAt: "2025-07-01T00:00:00Z",
+        },
+        {
+          level_code: "K003-T1",
+          shelf_id: shelves[2]._id,
+          floor: "1",
+          status: "Có hàng",
+          stock_quantity: 20,
+          createdAt: "2025-07-01T00:00:00Z",
+          updatedAt: "2025-07-01T00:00:00Z",
+        },
+      ]);
+      console.log(
+        "Seeded shelf levels:",
+        shelfLevels.map((sl) => sl.level_code)
+      );
+    } else {
+      shelfLevels = await db.ShelfLevel.find();
+      console.log(
+        "Existing shelf levels:",
+        shelfLevels.map((sl) => sl.level_code)
+      );
+    }
+
+    // Seed dữ liệu cho Inventory nếu chưa có
+    let inventories = [];
+    const inventoryCount = await db.Inventory.countDocuments();
+    console.log(`Inventory count: ${inventoryCount}`);
+    if (
+      inventoryCount === 0 &&
+      goods.length > 0 &&
+      shelfLevels.length > 0 &&
+      importBatches.length > 0
+    ) {
+      inventories = await db.Inventory.insertMany([
+        {
+          goods_id: goods[0]._id, // Coca Cola
+          import_batch_id: importBatches[0]._id,
+          quantity_remain: 100,
+          manufacturing_batch_number: "CC001",
+          expiry_date: "2026-06-15T00:00:00Z",
+          shelf_level_id: shelfLevels[0]._id,
+          created_at: "2025-06-15T10:30:00Z",
+          updated_at: "2025-06-15T10:30:00Z",
+        },
+        {
+          goods_id: goods[1]._id, // Snack Oishi
+          import_batch_id: importBatches[1]._id,
+          quantity_remain: 50,
+          manufacturing_batch_number: "OI001",
+          expiry_date: "2026-06-16T00:00:00Z",
+          shelf_level_id: shelfLevels[1]._id,
+          created_at: "2025-06-16T11:00:00Z",
+          updated_at: "2025-06-16T11:00:00Z",
+        },
+        {
+          goods_id: goods[3]._id, // Pepsi Cola
+          import_batch_id: importBatches[3]._id,
+          quantity_remain: 60,
+          manufacturing_batch_number: "PP002",
+          expiry_date: "2026-06-17T00:00:00Z",
+          shelf_level_id: shelfLevels[2]._id,
+          created_at: "2025-06-17T15:00:00Z",
+          updated_at: "2025-06-17T15:00:00Z",
+        },
+        {
+          goods_id: goods[4]._id, // Kẹo Chupa Chups
+          import_batch_id: importBatches[2]._id,
+          quantity_remain: 200,
+          manufacturing_batch_number: "CU001",
+          expiry_date: "2027-06-17T00:00:00Z",
+          shelf_level_id: shelfLevels[3]._id,
+          created_at: "2025-06-17T09:30:00Z",
+          updated_at: "2025-06-17T09:30:00Z",
+        },
+      ]);
+      console.log(
+        "Seeded inventories:",
+        inventories.map((i) => i.goods_id)
+      );
+    } else {
+      inventories = await db.Inventory.find();
+      console.log(
+        "Existing inventories:",
+        inventories.map((i) => i.goods_id)
+      );
+    }
+
+    // Seed dữ liệu cho InventorySchedule nếu chưa có
+    let inventorySchedules = [];
+    const inventoryScheduleCount = await db.InventorySchedule.countDocuments();
+    console.log(`InventorySchedule count: ${inventoryScheduleCount}`);
+    if (
+      inventoryScheduleCount === 0 &&
+      accounts.length > 0 &&
+      areas.length > 0
+    ) {
+      inventorySchedules = await db.InventorySchedule.insertMany([
+        {
+          schedule_name: "Kiểm kho định kỳ tháng 7 - Khu vực A",
+          start_date: "2025-07-24T00:00:00Z",
+          end_date: "2025-07-25T00:00:00Z",
+          created_by: accounts[2]._id, // Manager
+          assigned_employees: [{ employee_id: accounts[3]._id }], // WarehouseStaff
+          area: areas[0]._id,
+          inventory_type: "Định kỳ",
+          manager_note: "Kiểm tra toàn bộ khu vực A",
+          status: "Sắp tới",
+          createdAt: "2025-07-01T00:00:00Z",
+          updatedAt: "2025-07-24T13:41:00Z",
+        },
+        {
+          schedule_name: "Kiểm kho đột xuất - Khu vực B",
+          start_date: "2025-07-24T00:00:00Z",
+          end_date: null,
+          created_by: accounts[2]._id, // Manager
+          assigned_employees: [{ employee_id: accounts[3]._id }], // WarehouseStaff
+          area: areas[1]._id,
+          inventory_type: "Đột xuất",
+          manager_note: "Kiểm tra khẩn cấp",
+          status: "Sắp tới",
+          createdAt: "2025-07-01T00:00:00Z",
+          updatedAt: "2025-07-24T13:41:00Z",
+        },
+        {
+          schedule_name: "Kiểm kho định kỳ - Khu vực C",
+          start_date: "2025-07-24T00:00:00Z",
+          end_date: "2025-07-25T00:00:00Z",
+          created_by: accounts[2]._id, // Manager
+          assigned_employees: [{ employee_id: accounts[3]._id }], // WarehouseStaff
+          area: areas[1]._id,
+          inventory_type: "Định kỳ",
+          manager_note: "Kiểm tra toàn bộ khu vực C",
+          status: "Sắp tới",
+          createdAt: "2025-07-01T00:00:00Z",
+          updatedAt: "2025-07-24T13:41:00Z",
+        },
+      ]);
+      console.log(
+        "Seeded inventory schedules:",
+        inventorySchedules.map((is) => is.schedule_name)
+      );
+    } else {
+      inventorySchedules = await db.InventorySchedule.find();
+      console.log(
+        "Existing inventory schedules:",
+        inventorySchedules.map((is) => is.schedule_name)
+      );
+    }
+
+    // Seed dữ liệu cho InventoryCheck nếu chưa có
+    let inventoryChecks = [];
+    const inventoryCheckCount = await db.InventoryCheck.countDocuments();
+    console.log(`InventoryCheck count: ${inventoryCheckCount}`);
+    if (
+      inventoryCheckCount === 0 &&
+      inventorySchedules.length > 0 &&
+      accounts.length > 0 &&
+      areas.length > 0
+    ) {
+      inventoryChecks = await db.InventoryCheck.insertMany([
+        {
+          inventory_code: "KK-20250724-001",
+          inventory_name: "Kiểm kho định kỳ - Khu vực A",
+          schedule_id: inventorySchedules[0]._id,
+          area: areas[0]._id, // Liên kết với Khu vực A
+          check_start_time: "2025-07-24T13:00:00Z",
+          check_end_time: null,
+          note: "Bắt đầu kiểm tra khu vực A",
+          tasks: [
+            "60d5ecda1f1b2c3d4e5f6a8d",
+            "60d5ecda1f1b2c3d4e5f6a95",
+            "60d5ecda1f1b2c3d4e5f6a96",
+          ],
+          status: "Đang kiểm",
+          created_by: accounts[3]._id, // WarehouseStaff
+          assigned_employees: [accounts[3]._id],
+          createdAt: "2025-07-24T13:41:00Z",
+          updatedAt: "2025-07-24T14:18:00Z", // Cập nhật thời gian hiện tại
+        },
+        {
+          inventory_code: "KK-20250724-002",
+          inventory_name: "Kiểm kho đột xuất - Khu vực B",
+          schedule_id: inventorySchedules[1]._id,
+          area: areas[0]._id, // Liên kết với Khu vực B
+          check_start_time: null,
+          check_end_time: null,
+          note: "Chờ kiểm tra khu vực B",
+          tasks: ["60d5ecda1f1b2c3d4e5f6a8f"],
+          status: "Chưa kiểm",
+          created_by: accounts[3]._id, // WarehouseStaff
+          assigned_employees: [accounts[3]._id],
+          createdAt: "2025-07-24T13:41:00Z",
+          updatedAt: "2025-07-24T14:18:00Z", // Cập nhật thời gian hiện tại
+        },
+        {
+          inventory_code: "KK-20250724-003",
+          inventory_name: "Kiểm kho độc lập - Khu vực C",
+          schedule_id: null, // Phiếu không gán lịch
+          area: areas[0]._id, // Liên kết với Khu vực C
+          check_start_time: null,
+          check_end_time: null,
+          note: "Kiểm tra độc lập khu vực C",
+          tasks: [],
+          status: "Chưa kiểm",
+          created_by: accounts[3]._id, // WarehouseStaff
+          assigned_employees: [accounts[3]._id],
+          createdAt: "2025-07-24T14:18:00Z",
+          updatedAt: "2025-07-24T14:18:00Z", // Thời gian hiện tại
+        },
+      ]);
+      console.log(
+        "Seeded inventory checks:",
+        inventoryChecks.map((ic) => ic.inventory_code)
+      );
+    } else {
+      inventoryChecks = await db.InventoryCheck.find();
+      console.log(
+        "Existing inventory checks:",
+        inventoryChecks.map((ic) => ic.inventory_code)
+      );
+    }
+
+    // Seed dữ liệu cho InventoryTask nếu chưa có
+    let inventoryTasks = [];
+    const inventoryTaskCount = await db.InventoryTask.countDocuments();
+    console.log(`InventoryTask count: ${inventoryTaskCount}`);
+    if (
+      inventoryTaskCount === 0 &&
+      inventoryChecks.length > 0 &&
+      shelfLevels.length > 0
+    ) {
+      inventoryTasks = await db.InventoryTask.insertMany([
+        {
+          _id: "60d5ecda1f1b2c3d4e5f6a8d",
+          inventory_id: inventoryChecks[0]._id,
+          shelf_level_id: shelfLevels[0]._id, // K001-T1
+          check_type: "Toàn bộ",
+          target_items: {},
+          status: "Đang kiểm",
+          note: "Kiểm tra tầng 1 kệ A",
+          createdAt: "2025-07-24T13:41:00Z",
+          updatedAt: "2025-07-24T13:41:00Z",
+        },
+        {
+          _id: "60d5ecda1f1b2c3d4e5f6a95",
+          inventory_id: inventoryChecks[0]._id,
+          shelf_level_id: shelfLevels[1]._id, // K001-T2
+          check_type: "Toàn bộ",
+          target_items: {},
+          status: "Chưa kiểm",
+          note: "Kiểm tra tầng 2 kệ A",
+          createdAt: "2025-07-24T13:41:00Z",
+          updatedAt: "2025-07-24T13:41:00Z",
+        },
+        {
+          _id: "60d5ecda1f1b2c3d4e5f6a96",
+          inventory_id: inventoryChecks[0]._id,
+          shelf_level_id: shelfLevels[2]._id, // K001-T3
+          check_type: "Toàn bộ",
+          target_items: {},
+          status: "Chưa kiểm",
+          note: "Kiểm tra tầng 3 kệ A",
+          createdAt: "2025-07-24T13:41:00Z",
+          updatedAt: "2025-07-24T13:41:00Z",
+        },
+        {
+          _id: "60d5ecda1f1b2c3d4e5f6a8f",
+          inventory_id: inventoryChecks[1]._id,
+          shelf_level_id: shelfLevels[3]._id, // K002-T1
+          check_type: "Đột xuất",
+          target_items: {},
+          status: "Chưa kiểm",
+          note: "Kiểm tra tầng 1 kệ B",
+          createdAt: "2025-07-24T13:41:00Z",
+          updatedAt: "2025-07-24T13:41:00Z",
+        },
+      ]);
+      console.log(
+        "Seeded inventory tasks:",
+        inventoryTasks.map((it) => it._id)
+      );
+    } else {
+      inventoryTasks = await db.InventoryTask.find();
+      console.log(
+        "Existing inventory tasks:",
+        inventoryTasks.map((it) => it._id)
+      );
+    }
+
+    // Seed dữ liệu cho InventoryItemCheck nếu chưa có
+    let inventoryItemChecks = [];
+    const inventoryItemCheckCount =
+      await db.InventoryItemCheck.countDocuments();
+    console.log(`InventoryItemCheck count: ${inventoryItemCheckCount}`);
+    if (
+      inventoryItemCheckCount === 0 &&
+      inventoryTasks.length > 0 &&
+      inventories.length > 0
+    ) {
+      inventoryItemChecks = await db.InventoryItemCheck.insertMany([
+        {
+          task_id: inventoryTasks[0]._id, // Task 1 của KK-20250724-001
+          goods_id: inventories[0].goods_id,
+          shelf_level_id: inventoryTasks[0].shelf_level_id,
+          actual_quantity: 95,
+          is_defective: false,
+          note: "Số lượng thiếu 5 chai",
+          status: "Đã kiểm",
+          system_quantity: inventories[0].quantity_remain,
+          discrepancy: -5,
+          createdAt: "2025-07-24T13:41:00Z",
+          updatedAt: "2025-07-24T13:41:00Z",
+        },
+        {
+          task_id: inventoryTasks[3]._id, // Task của KK-20250724-002
+          goods_id: inventories[1].goods_id,
+          shelf_level_id: inventoryTasks[3].shelf_level_id,
+          actual_quantity: null,
+          is_defective: false,
+          note: null,
+          status: "Chưa kiểm",
+          system_quantity: inventories[1].quantity_remain,
+          discrepancy: null,
+          createdAt: "2025-07-24T13:41:00Z",
+          updatedAt: "2025-07-24T13:41:00Z",
+        },
+        {
+          task_id: inventoryTasks[1]._id, // Task 2 của KK-20250724-001
+          goods_id: inventories[2].goods_id,
+          shelf_level_id: inventoryTasks[1].shelf_level_id,
+          actual_quantity: null,
+          is_defective: false,
+          note: null,
+          status: "Chưa kiểm",
+          system_quantity: inventories[2].quantity_remain,
+          discrepancy: null,
+          createdAt: "2025-07-24T13:41:00Z",
+          updatedAt: "2025-07-24T13:41:00Z",
+        },
+        {
+          task_id: inventoryTasks[2]._id, // Task 3 của KK-20250724-001
+          goods_id: inventories[3].goods_id,
+          shelf_level_id: inventoryTasks[2].shelf_level_id,
+          actual_quantity: null,
+          is_defective: false,
+          note: null,
+          status: "Chưa kiểm",
+          system_quantity: inventories[3].quantity_remain,
+          discrepancy: null,
+          createdAt: "2025-07-24T13:41:00Z",
+          updatedAt: "2025-07-24T13:41:00Z",
+        },
+      ]);
+      console.log(
+        "Seeded inventory item checks:",
+        inventoryItemChecks.map((iic) => iic._id)
+      );
+    } else {
+      inventoryItemChecks = await db.InventoryItemCheck.find();
+      console.log(
+        "Existing inventory item checks:",
+        inventoryItemChecks.map((iic) => iic._id)
+      );
+    }
     console.log("=== DATABASE SEEDING COMPLETED ===");
     console.log("All collections have been seeded with sample data!");
   } catch (error) {

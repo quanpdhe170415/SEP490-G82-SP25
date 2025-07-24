@@ -13,20 +13,10 @@ const shelfLevelSchema = new mongoose.Schema({
     ref: 'Shelf',
     required: true, // Tham chiếu đến kệ
   },
-  inventory_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Inventory',
-    required: true, // Tham chiếu đến hàng hóa
-  },
+ 
   floor: {
     type: String,
     required: true, // Tầng của kệ (ví dụ: Tầng 1, Tầng 2)
-  },
-  stock_quantity: {
-    type: Number,
-    required: true,
-    min: 0,
-    default: 0, // Số lượng tồn kho tại tầng
   },
   status: {
     type: String,

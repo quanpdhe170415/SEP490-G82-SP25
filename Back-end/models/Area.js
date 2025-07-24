@@ -1,0 +1,9 @@
+const mongoose = require('mongoose');
+
+const areaSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  code: { type: String, required: true, unique: true },
+  description: String,
+});
+
+module.exports = mongoose.model('Area', areaSchema);
